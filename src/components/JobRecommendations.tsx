@@ -1,23 +1,13 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Bookmark, Target, TrendingUp, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-
-interface CareerRole {
-  id: string;
-  job_title: string;
-  job_description: string;
-  category: string;
-  required_skills: string[];
-  match_percentage?: number;
-  is_bookmarked?: boolean;
-}
+import { CareerRole } from "@/types/jobRecommendations";
+import { calculateCareerMatch } from "@/utils/careerMatching";
+import JobSearchInput from "@/components/JobSearchInput";
+import JobCard from "@/components/JobCard";
 
 const JobRecommendations = () => {
   const { user, profile } = useAuth();
@@ -50,7 +40,7 @@ const JobRecommendations = () => {
       if (error) throw error;
 
       const rolesWithMatches = jobRoles?.map(role => {
-        const matchPercentage = calculateCareerMatch(role, assessment, profile);
+        const matchPercentage = calculateCareerMatch({ role, assessment, profile });
         return {
           ...role,
           match_percentage: matchPercentage
@@ -81,68 +71,6 @@ const JobRecommendations = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const calculateCareerMatch = (role: any, assessment: any, profile: any) => {
-    let matchScore = 0;
-    let totalFactors = 0;
-
-    // Field of Interest Match (40% weight) - highest priority
-    if (profile?.field_of_interest && role.category) {
-      const fieldMatch = profile.field_of_interest.toLowerCase().includes(role.category.toLowerCase()) ||
-                        role.category.toLowerCase().includes(profile.field_of_interest.toLowerCase()) ||
-                        role.job_title.toLowerCase().includes(profile.field_of_interest.toLowerCase());
-      if (fieldMatch) {
-        matchScore += 40;
-      }
-    }
-    totalFactors += 40;
-
-    // Skills Match (35% weight) - technical alignment
-    if (role.required_skills && profile?.hard_skills) {
-      const skillsInCommon = role.required_skills.filter((skill: string) =>
-        profile.hard_skills.some((userSkill: string) =>
-          userSkill.toLowerCase().includes(skill.toLowerCase()) ||
-          skill.toLowerCase().includes(userSkill.toLowerCase())
-        )
-      ).length;
-      
-      const skillsMatch = role.required_skills.length > 0 ? 
-        skillsInCommon / role.required_skills.length : 0;
-      matchScore += skillsMatch * 35;
-    }
-    totalFactors += 35;
-
-    // Assessment Results Match (25% weight) - soft skills and personality fit
-    if (assessment) {
-      let overallAssessmentScore = 0;
-      let assessmentFactors = 0;
-      
-      if (assessment.technical_skills && typeof assessment.technical_skills === 'object') {
-        const techValues = Object.values(assessment.technical_skills) as number[];
-        const techSkillsAvg = techValues.length > 0 ? 
-          techValues.reduce((a, b) => a + b, 0) / techValues.length : 0;
-        overallAssessmentScore += (techSkillsAvg / 5) * 15; // Convert to percentage and weight
-        assessmentFactors += 15;
-      }
-      
-      if (assessment.soft_skills && typeof assessment.soft_skills === 'object') {
-        const softValues = Object.values(assessment.soft_skills) as number[];
-        const softSkillsAvg = softValues.length > 0 ?
-          softValues.reduce((a, b) => a + b, 0) / softValues.length : 0;
-        overallAssessmentScore += (softSkillsAvg / 5) * 10; // Convert to percentage and weight
-        assessmentFactors += 10;
-      }
-
-      if (assessmentFactors > 0) {
-        matchScore += overallAssessmentScore;
-      }
-    }
-    totalFactors += 25;
-
-    // Calculate final match percentage
-    const finalMatch = totalFactors > 0 ? Math.round((matchScore / totalFactors) * 100) : 50;
-    return Math.min(Math.max(finalMatch, 30), 95); // Ensure reasonable range
   };
 
   const handleBookmark = async (roleId: string) => {
@@ -189,20 +117,6 @@ const JobRecommendations = () => {
     }
   };
 
-  const getMatchColor = (match: number) => {
-    if (match >= 80) return "bg-green-500";
-    if (match >= 65) return "bg-blue-500";
-    if (match >= 50) return "bg-yellow-500";
-    return "bg-gray-500";
-  };
-
-  const getMatchDescription = (match: number) => {
-    if (match >= 80) return "Excellent fit based on your goals and skills";
-    if (match >= 65) return "Good alignment with your profile";
-    if (match >= 50) return "Potential match worth exploring";
-    return "Consider developing skills in this area";
-  };
-
   const filteredRoles = careerRoles.filter(role =>
     role.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     role.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -229,76 +143,18 @@ const JobRecommendations = () => {
         </p>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-        <Input
-          placeholder="Search career roles, categories, or skills..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+      <JobSearchInput 
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
 
       <div className="grid gap-6">
         {filteredRoles.map((role) => (
-          <Card key={role.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <CardTitle className="text-xl">{role.job_title}</CardTitle>
-                    <Badge className={`${getMatchColor(role.match_percentage || 0)} text-white`}>
-                      {role.match_percentage || 0}% Match
-                    </Badge>
-                  </div>
-                  <CardDescription className="text-lg font-medium text-slate-700 mb-2">
-                    {role.category}
-                  </CardDescription>
-                  <p className="text-sm text-slate-500">
-                    {getMatchDescription(role.match_percentage || 0)}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleBookmark(role.id)}
-                  className="flex items-center gap-1"
-                >
-                  <Bookmark className={`h-4 w-4 ${role.is_bookmarked ? 'fill-current text-teal-600' : ''}`} />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-slate-600">{role.job_description}</p>
-              
-              <div>
-                <h4 className="text-sm font-semibold text-slate-700 mb-2">Key Skills:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {role.required_skills.map((skill, index) => (
-                    <Badge key={index} variant="secondary">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center pt-4 border-t">
-                <div className="flex items-center gap-4 text-sm text-slate-500">
-                  <div className="flex items-center gap-1">
-                    <Target className="h-4 w-4" />
-                    Career Path
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <TrendingUp className="h-4 w-4" />
-                    {role.match_percentage && role.match_percentage >= 65 ? 'Recommended' : 'Explore Further'}
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Learn More
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <JobCard
+            key={role.id}
+            role={role}
+            onBookmark={handleBookmark}
+          />
         ))}
       </div>
 

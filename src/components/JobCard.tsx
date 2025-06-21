@@ -1,0 +1,77 @@
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Bookmark, Target, TrendingUp } from "lucide-react";
+import { CareerRole } from "@/types/jobRecommendations";
+import { getMatchColor, getMatchDescription } from "@/utils/careerMatching";
+
+interface JobCardProps {
+  role: CareerRole;
+  onBookmark: (roleId: string) => void;
+}
+
+const JobCard = ({ role, onBookmark }: JobCardProps) => {
+  return (
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <CardTitle className="text-xl">{role.job_title}</CardTitle>
+              <Badge className={`${getMatchColor(role.match_percentage || 0)} text-white`}>
+                {role.match_percentage || 0}% Match
+              </Badge>
+            </div>
+            <CardDescription className="text-lg font-medium text-slate-700 mb-2">
+              {role.category}
+            </CardDescription>
+            <p className="text-sm text-slate-500">
+              {getMatchDescription(role.match_percentage || 0)}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onBookmark(role.id)}
+            className="flex items-center gap-1"
+          >
+            <Bookmark className={`h-4 w-4 ${role.is_bookmarked ? 'fill-current text-teal-600' : ''}`} />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-slate-600">{role.job_description}</p>
+        
+        <div>
+          <h4 className="text-sm font-semibold text-slate-700 mb-2">Key Skills:</h4>
+          <div className="flex flex-wrap gap-2">
+            {role.required_skills.map((skill, index) => (
+              <Badge key={index} variant="secondary">
+                {skill}
+              </Badge>
+            ))}
+          </div>
+        </div>
+        
+        <div className="flex justify-between items-center pt-4 border-t">
+          <div className="flex items-center gap-4 text-sm text-slate-500">
+            <div className="flex items-center gap-1">
+              <Target className="h-4 w-4" />
+              Career Path
+            </div>
+            <div className="flex items-center gap-1">
+              <TrendingUp className="h-4 w-4" />
+              {role.match_percentage && role.match_percentage >= 65 ? 'Recommended' : 'Explore Further'}
+            </div>
+          </div>
+          <Button variant="outline" size="sm">
+            Learn More
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default JobCard;
