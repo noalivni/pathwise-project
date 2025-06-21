@@ -119,7 +119,6 @@ const LandingPage = () => {
         open={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
         onLogin={() => setShowAuthModal(false)}
-        initialMode={isSignUp ? 'signup' : 'signin'}
       />
     </div>
   );
