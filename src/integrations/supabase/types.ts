@@ -9,7 +9,248 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      interview_sessions: {
+        Row: {
+          completed_at: string | null
+          feedback: string | null
+          id: string
+          job_role: string | null
+          questions: Json | null
+          responses: Json | null
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          feedback?: string | null
+          id?: string
+          job_role?: string | null
+          questions?: Json | null
+          responses?: Json | null
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          feedback?: string | null
+          id?: string
+          job_role?: string | null
+          questions?: Json | null
+          responses?: Json | null
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      job_roles: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          job_description: string | null
+          job_title: string
+          location: string | null
+          required_skills: string[] | null
+          salary_range: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          job_description?: string | null
+          job_title: string
+          location?: string | null
+          required_skills?: string[] | null
+          salary_range?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          job_description?: string | null
+          job_title?: string
+          location?: string | null
+          required_skills?: string[] | null
+          salary_range?: string | null
+        }
+        Relationships: []
+      }
+      learning_resources: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          related_job_roles: string[] | null
+          related_skills: string[] | null
+          resource_type: string | null
+          title: string
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          related_job_roles?: string[] | null
+          related_skills?: string[] | null
+          resource_type?: string | null
+          title: string
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          related_job_roles?: string[] | null
+          related_skills?: string[] | null
+          resource_type?: string | null
+          title?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          career_history: string | null
+          created_at: string | null
+          degree_certification: string | null
+          email: string | null
+          fields_of_study: string | null
+          full_name: string | null
+          graduation_year: string | null
+          hard_skills: string[] | null
+          id: string
+          location: string | null
+          onboarding_completed: boolean | null
+          subscription_status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          career_history?: string | null
+          created_at?: string | null
+          degree_certification?: string | null
+          email?: string | null
+          fields_of_study?: string | null
+          full_name?: string | null
+          graduation_year?: string | null
+          hard_skills?: string[] | null
+          id: string
+          location?: string | null
+          onboarding_completed?: boolean | null
+          subscription_status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          career_history?: string | null
+          created_at?: string | null
+          degree_certification?: string | null
+          email?: string | null
+          fields_of_study?: string | null
+          full_name?: string | null
+          graduation_year?: string | null
+          hard_skills?: string[] | null
+          id?: string
+          location?: string | null
+          onboarding_completed?: boolean | null
+          subscription_status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      skills_assessments: {
+        Row: {
+          completed_at: string | null
+          id: string
+          recommended_paths: string[] | null
+          soft_skills: Json | null
+          strengths: string[] | null
+          technical_skills: Json | null
+          user_id: string
+          weaknesses: string[] | null
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          recommended_paths?: string[] | null
+          soft_skills?: Json | null
+          strengths?: string[] | null
+          technical_skills?: Json | null
+          user_id: string
+          weaknesses?: string[] | null
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          recommended_paths?: string[] | null
+          soft_skills?: Json | null
+          strengths?: string[] | null
+          technical_skills?: Json | null
+          user_id?: string
+          weaknesses?: string[] | null
+        }
+        Relationships: []
+      }
+      user_activities: {
+        Row: {
+          activity_description: string
+          activity_type: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          activity_description: string
+          activity_type: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          activity_description?: string
+          activity_type?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_job_matches: {
+        Row: {
+          id: string
+          is_bookmarked: boolean | null
+          job_role_id: string
+          match_percentage: number | null
+          user_id: string
+          viewed_at: string | null
+        }
+        Insert: {
+          id?: string
+          is_bookmarked?: boolean | null
+          job_role_id: string
+          match_percentage?: number | null
+          user_id: string
+          viewed_at?: string | null
+        }
+        Update: {
+          id?: string
+          is_bookmarked?: boolean | null
+          job_role_id?: string
+          match_percentage?: number | null
+          user_id?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_job_matches_job_role_id_fkey"
+            columns: ["job_role_id"]
+            isOneToOne: false
+            referencedRelation: "job_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

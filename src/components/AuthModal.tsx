@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Lock, User, Brain } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AuthModalProps {
   open: boolean;
@@ -15,27 +16,69 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
+  const { signIn, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
-  const handleSubmit = async (type: 'signin' | 'signup') => {
+  const handleSignIn = async () => {
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const { error } = await signIn(email, password);
     
-    // Demo login - check for admin credentials
-    const isAdmin = email === "admin@pathwise.com" && password === "admin123";
-    const role = isAdmin ? 'admin' : 'user';
+    if (error) {
+      toast({
+        title: "Sign In Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      const isAdmin = email === "admin@pathwise.com";
+      onLogin(isAdmin ? 'admin' : 'user');
+      onClose();
+    }
     
-    toast({
-      title: `Welcome ${isAdmin ? 'Admin' : 'to Pathwise'}!`,
-      description: `Successfully ${type === 'signin' ? 'signed in' : 'created account'}`,
-    });
+    setIsLoading(false);
+  };
+
+  const handleSignUp = async () => {
+    if (!email || !password || !name) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
     
-    onLogin(role);
+    const { error } = await signUp(email, password, name);
+    
+    if (error) {
+      toast({
+        title: "Sign Up Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Account Created!",
+        description: "Please check your email to verify your account.",
+      });
+      onClose();
+    }
+    
     setIsLoading(false);
   };
 
@@ -98,7 +141,7 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
             </div>
             
             <Button 
-              onClick={() => handleSubmit('signin')} 
+              onClick={handleSignIn} 
               className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
               disabled={isLoading}
             >
@@ -153,7 +196,7 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
             </div>
             
             <Button 
-              onClick={() => handleSubmit('signup')} 
+              onClick={handleSignUp} 
               className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
               disabled={isLoading}
             >

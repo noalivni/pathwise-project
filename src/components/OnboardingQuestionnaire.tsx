@@ -5,32 +5,80 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
-const OnboardingQuestionnaire = () => {
+interface OnboardingQuestionnaireProps {
+  onComplete: () => void;
+}
+
+const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnaireProps) => {
+  const { user, updateProfile } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    name: "",
-    experience: "",
-    interests: "",
-    goals: "",
-    timeline: "",
-    skills: []
+    full_name: "",
+    email: "",
+    location: "",
+    degree_certification: "",
+    fields_of_study: "",
+    graduation_year: "",
+    hard_skills: "",
+    career_history: ""
   });
 
   const totalSteps = 4;
   const progress = (currentStep / totalSteps) * 100;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
+      await handleComplete();
+    }
+  };
+
+  const handleComplete = async () => {
+    if (!user) return;
+
+    try {
+      const skillsArray = formData.hard_skills
+        .split(',')
+        .map(skill => skill.trim())
+        .filter(skill => skill.length > 0);
+
+      await updateProfile({
+        full_name: formData.full_name,
+        email: formData.email,
+        location: formData.location,
+        degree_certification: formData.degree_certification,
+        fields_of_study: formData.fields_of_study,
+        graduation_year: formData.graduation_year,
+        hard_skills: skillsArray,
+        career_history: formData.career_history,
+        onboarding_completed: true,
+      });
+
+      // Log activity
+      await supabase.from('user_activities').insert({
+        user_id: user.id,
+        activity_type: 'onboarding_completed',
+        activity_description: 'Completed onboarding questionnaire',
+      });
+
       toast({
-        title: "Onboarding Complete!",
+        title: "Welcome to Pathwise!",
         description: "Your profile has been created successfully.",
+      });
+
+      onComplete();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to save profile. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -47,27 +95,32 @@ const OnboardingQuestionnaire = () => {
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="full_name">Full Name</Label>
               <Input
-                id="name"
+                id="full_name"
                 placeholder="Enter your full name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
               />
             </div>
             <div>
-              <Label htmlFor="experience">Experience Level</Label>
-              <Select onValueChange={(value) => setFormData({ ...formData, experience: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your experience level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="entry">Entry Level (0-2 years)</SelectItem>
-                  <SelectItem value="mid">Mid Level (3-5 years)</SelectItem>
-                  <SelectItem value="senior">Senior Level (6+ years)</SelectItem>
-                  <SelectItem value="career-change">Career Changer</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                placeholder="Enter your location (e.g., San Francisco, CA)"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              />
             </div>
           </div>
         );
@@ -75,12 +128,30 @@ const OnboardingQuestionnaire = () => {
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="interests">Career Interests</Label>
-              <Textarea
-                id="interests"
-                placeholder="What type of work interests you? (e.g., technology, healthcare, finance)"
-                value={formData.interests}
-                onChange={(e) => setFormData({ ...formData, interests: e.target.value })}
+              <Label htmlFor="degree_certification">Degree/Certification</Label>
+              <Input
+                id="degree_certification"
+                placeholder="Enter your degree or certification"
+                value={formData.degree_certification}
+                onChange={(e) => setFormData({ ...formData, degree_certification: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="fields_of_study">Fields of Study</Label>
+              <Input
+                id="fields_of_study"
+                placeholder="Enter your fields of study"
+                value={formData.fields_of_study}
+                onChange={(e) => setFormData({ ...formData, fields_of_study: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="graduation_year">Graduation Year/Expected</Label>
+              <Input
+                id="graduation_year"
+                placeholder="Enter graduation year (e.g., 2023, Expected 2025)"
+                value={formData.graduation_year}
+                onChange={(e) => setFormData({ ...formData, graduation_year: e.target.value })}
               />
             </div>
           </div>
@@ -89,28 +160,22 @@ const OnboardingQuestionnaire = () => {
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="goals">Career Goals</Label>
+              <Label htmlFor="hard_skills">Hard/Technical Skills</Label>
               <Textarea
-                id="goals"
-                placeholder="What are your career goals for the next 2-3 years?"
-                value={formData.goals}
-                onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
+                id="hard_skills"
+                placeholder="List your technical skills separated by commas (e.g., JavaScript, Python, React, SQL)"
+                value={formData.hard_skills}
+                onChange={(e) => setFormData({ ...formData, hard_skills: e.target.value })}
               />
             </div>
             <div>
-              <Label htmlFor="timeline">Timeline</Label>
-              <Select onValueChange={(value) => setFormData({ ...formData, timeline: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="When are you looking to make a career move?" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="immediate">Immediately</SelectItem>
-                  <SelectItem value="3months">Within 3 months</SelectItem>
-                  <SelectItem value="6months">Within 6 months</SelectItem>
-                  <SelectItem value="1year">Within 1 year</SelectItem>
-                  <SelectItem value="exploring">Just exploring</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="career_history">Career History</Label>
+              <Textarea
+                id="career_history"
+                placeholder="Describe your career history, past roles, or industries you've worked in"
+                value={formData.career_history}
+                onChange={(e) => setFormData({ ...formData, career_history: e.target.value })}
+              />
             </div>
           </div>
         );
@@ -143,9 +208,9 @@ const OnboardingQuestionnaire = () => {
         <CardHeader>
           <CardTitle>Step {currentStep} of {totalSteps}</CardTitle>
           <CardDescription>
-            {currentStep === 1 && "Tell us about yourself"}
-            {currentStep === 2 && "What interests you?"}
-            {currentStep === 3 && "Your career aspirations"}
+            {currentStep === 1 && "Personal Information"}
+            {currentStep === 2 && "Educational Background"}
+            {currentStep === 3 && "Skills & Experience"}
             {currentStep === 4 && "All set!"}
           </CardDescription>
           <Progress value={progress} className="mt-2" />

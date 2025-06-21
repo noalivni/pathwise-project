@@ -1,5 +1,5 @@
 
-import { Brain, Home, FileText, Target, Users, BookOpen, FileUser, Settings, LogOut, BarChart3 } from "lucide-react";
+import { Brain, Home, FileText, Target, Users, BookOpen, FileUser, Settings, LogOut, BarChart3, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
@@ -31,12 +31,12 @@ interface AppSidebarProps {
 const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebarProps) => {
   const userMenuItems: MenuItem[] = [
     { id: 'dashboard', title: 'Dashboard', icon: Home },
-    { id: 'onboarding', title: 'Onboarding', icon: FileText },
     { id: 'assessment', title: 'Skills Assessment', icon: Target },
     { id: 'jobs', title: 'Job Recommendations', icon: Users },
     { id: 'interview', title: 'Interview Practice', icon: Users, premium: true },
     { id: 'learning', title: 'Learning Resources', icon: BookOpen, premium: true },
     { id: 'resume', title: 'Resume Builder', icon: FileUser },
+    { id: 'profile', title: 'Profile', icon: User },
   ];
 
   const adminMenuItems: MenuItem[] = [
