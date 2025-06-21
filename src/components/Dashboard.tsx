@@ -19,7 +19,7 @@ interface DashboardProps {
 }
 
 const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
   const [activeView, setActiveView] = useState('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -52,6 +52,18 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
     setActiveView('dashboard');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // Force a complete page refresh to ensure clean state
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force refresh even if logout fails
+      window.location.href = '/';
+    }
   };
 
   // Show onboarding if user hasn't completed it
@@ -97,7 +109,7 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
           userRole={userRole} 
           activeView={activeView}
           onViewChange={setActiveView}
-          onLogout={onLogout}
+          onLogout={handleLogout}
         />
         <main className="flex-1 p-6">
           {renderContent()}

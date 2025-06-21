@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -95,6 +94,34 @@ const ResumeBuilder = () => {
     newExperience[index] = { ...newExperience[index], [field]: value };
     setResumeData({ ...resumeData, experience: newExperience });
   };
+
+  const getTemplateStyles = () => {
+    switch (activeTemplate) {
+      case "classic":
+        return {
+          headerBg: "bg-gray-800",
+          headerText: "text-white",
+          sectionBorder: "border-b-2 border-gray-800",
+          accentColor: "text-gray-800"
+        };
+      case "creative":
+        return {
+          headerBg: "bg-gradient-to-r from-purple-500 to-pink-500",
+          headerText: "text-white",
+          sectionBorder: "border-b-2 border-purple-500",
+          accentColor: "text-purple-600"
+        };
+      default: // modern
+        return {
+          headerBg: "bg-gradient-to-r from-teal-500 to-blue-600",
+          headerText: "text-white",
+          sectionBorder: "border-b-2 border-teal-500",
+          accentColor: "text-teal-600"
+        };
+    }
+  };
+
+  const templateStyles = getTemplateStyles();
 
   return (
     <div className="space-y-6">
@@ -448,7 +475,7 @@ const ResumeBuilder = () => {
             </CardContent>
           </Card>
 
-          {/* Resume Preview */}
+          {/* Resume Preview with Dynamic Template Styling */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -457,55 +484,65 @@ const ResumeBuilder = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-white border rounded-lg p-6 text-sm space-y-4 max-h-96 overflow-y-auto">
-                <div className="text-center border-b pb-4">
+              <div className="bg-white border rounded-lg text-sm space-y-4 max-h-96 overflow-y-auto">
+                {/* Header with template-specific styling */}
+                <div className={`${templateStyles.headerBg} ${templateStyles.headerText} rounded-t-lg p-6 text-center`}>
                   <h1 className="text-xl font-bold">{resumeData.personalInfo.name}</h1>
-                  <p className="text-slate-600">{resumeData.personalInfo.email} | {resumeData.personalInfo.phone}</p>
-                  <p className="text-slate-600">{resumeData.personalInfo.location}</p>
+                  <p className="opacity-90">{resumeData.personalInfo.email} | {resumeData.personalInfo.phone}</p>
+                  <p className="opacity-90">{resumeData.personalInfo.location}</p>
                 </div>
 
-                <div>
-                  <h2 className="font-semibold text-lg mb-2">Professional Summary</h2>
-                  <p className="text-slate-700">{resumeData.personalInfo.summary}</p>
-                </div>
-
-                <div>
-                  <h2 className="font-semibold text-lg mb-2 flex items-center">
-                    <Briefcase className="mr-2 h-4 w-4" />
-                    Experience
-                  </h2>
-                  {resumeData.experience.map((exp, index) => (
-                    <div key={index} className="mb-4">
-                      <div className="flex justify-between">
-                        <h3 className="font-medium">{exp.title}</h3>
-                        <span className="text-slate-500">{exp.startDate} - {exp.endDate}</span>
-                      </div>
-                      <p className="text-slate-600">{exp.company} | {exp.location}</p>
-                      <p className="text-sm text-slate-700 mt-1">{exp.description}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div>
-                  <h2 className="font-semibold text-lg mb-2 flex items-center">
-                    <GraduationCap className="mr-2 h-4 w-4" />
-                    Education
-                  </h2>
+                <div className="p-6 space-y-4">
                   <div>
-                    <h3 className="font-medium">{resumeData.education[0].degree}</h3>
-                    <p className="text-slate-600">{resumeData.education[0].school}</p>
-                    <p className="text-slate-500">{resumeData.education[0].graduationDate}</p>
+                    <h2 className={`font-semibold text-lg mb-2 ${templateStyles.sectionBorder} pb-1 ${templateStyles.accentColor}`}>
+                      Professional Summary
+                    </h2>
+                    <p className="text-slate-700">{resumeData.personalInfo.summary}</p>
                   </div>
-                </div>
 
-                <div>
-                  <h2 className="font-semibold text-lg mb-2">Skills</h2>
-                  <div className="flex flex-wrap gap-1">
-                    {resumeData.skills.map((skill, index) => (
-                      <span key={index} className="bg-slate-100 px-2 py-1 rounded text-xs">
-                        {skill}
-                      </span>
+                  <div>
+                    <h2 className={`font-semibold text-lg mb-2 flex items-center ${templateStyles.sectionBorder} pb-1 ${templateStyles.accentColor}`}>
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      Experience
+                    </h2>
+                    {resumeData.experience.map((exp, index) => (
+                      <div key={index} className="mb-4">
+                        <div className="flex justify-between">
+                          <h3 className="font-medium">{exp.title}</h3>
+                          <span className="text-slate-500">{exp.startDate} - {exp.endDate}</span>
+                        </div>
+                        <p className="text-slate-600">{exp.company} | {exp.location}</p>
+                        <p className="text-sm text-slate-700 mt-1">{exp.description}</p>
+                      </div>
                     ))}
+                  </div>
+
+                  <div>
+                    <h2 className={`font-semibold text-lg mb-2 flex items-center ${templateStyles.sectionBorder} pb-1 ${templateStyles.accentColor}`}>
+                      <GraduationCap className="mr-2 h-4 w-4" />
+                      Education
+                    </h2>
+                    <div>
+                      <h3 className="font-medium">{resumeData.education[0].degree}</h3>
+                      <p className="text-slate-600">{resumeData.education[0].school}</p>
+                      <p className="text-slate-500">{resumeData.education[0].graduationDate}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h2 className={`font-semibold text-lg mb-2 ${templateStyles.sectionBorder} pb-1 ${templateStyles.accentColor}`}>
+                      Skills
+                    </h2>
+                    <div className="flex flex-wrap gap-1">
+                      {resumeData.skills.map((skill, index) => (
+                        <span key={index} className={`px-2 py-1 rounded text-xs ${
+                          activeTemplate === 'creative' ? 'bg-purple-100' : 
+                          activeTemplate === 'classic' ? 'bg-gray-100' : 'bg-slate-100'
+                        }`}>
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

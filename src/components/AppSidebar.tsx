@@ -13,6 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/useAuth";
 
 interface MenuItem {
   id: string;
@@ -29,6 +30,8 @@ interface AppSidebarProps {
 }
 
 const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebarProps) => {
+  const { signOut } = useAuth();
+
   const userMenuItems: MenuItem[] = [
     { id: 'dashboard', title: 'Dashboard', icon: Home },
     { id: 'assessment', title: 'Skills Assessment', icon: Target },
@@ -44,6 +47,11 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
   ];
 
   const menuItems = userRole === 'admin' ? adminMenuItems : userMenuItems;
+
+  const handleLogout = async () => {
+    await signOut();
+    onLogout();
+  };
 
   return (
     <Sidebar>
@@ -97,7 +105,7 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
       <SidebarFooter className="p-4 border-t">
         <Button
           variant="ghost"
-          onClick={onLogout}
+          onClick={handleLogout}
           className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
         >
           <LogOut className="mr-3 h-4 w-4" />
