@@ -1,16 +1,16 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { User, GraduationCap, Award, Target, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { TOTAL_STEPS } from "@/data/onboardingData";
+import type { OnboardingFormData } from "@/types/onboarding";
+import PersonalInfoStep from "@/components/onboarding/PersonalInfoStep";
+import EducationStep from "@/components/onboarding/EducationStep";
+import CareerGoalsStep from "@/components/onboarding/CareerGoalsStep";
+import ExperienceStep from "@/components/onboarding/ExperienceStep";
+import SubscriptionStep from "@/components/onboarding/SubscriptionStep";
 
 interface OnboardingQuestionnairProps {
   onComplete: () => void;
@@ -19,7 +19,7 @@ interface OnboardingQuestionnairProps {
 const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) => {
   const { updateProfile } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<OnboardingFormData>({
     full_name: "",
     location: "",
     degree_certification: "",
@@ -31,24 +31,14 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
     subscription_status: "free"
   });
 
-  const totalSteps = 5;
-  const progress = (currentStep / totalSteps) * 100;
+  const progress = (currentStep / TOTAL_STEPS) * 100;
 
-  const educationLevels = ["High School", "Bachelor's", "Master's", "PhD"];
-  const fieldsOfStudy = [
-    "Computer Science", "Business Administration", "Engineering", "Marketing",
-    "Finance", "Psychology", "Design", "Data Science", "Healthcare", "Education", "Other"
-  ];
-  const graduationYears = Array.from({ length: 2050 - 1985 + 1 }, (_, i) => (1985 + i).toString());
-  
-  const careerFields = [
-    "UX/UI Design", "Data Analytics", "Marketing", "Product Management", 
-    "Human Resources", "Software Development", "Finance", "Sales", 
-    "Operations", "Content Creation", "Consulting", "Healthcare", "Education"
-  ];
+  const updateFormData = (updates: Partial<OnboardingFormData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+  };
 
   const handleNext = () => {
-    if (currentStep < totalSteps) {
+    if (currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1);
     } else {
       handleSubmit();
@@ -96,203 +86,15 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <User className="mr-2 h-5 w-5 text-teal-600" />
-                Personal Information
-              </CardTitle>
-              <CardDescription>Tell us about yourself</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="full_name">Full Name</Label>
-                <Input
-                  id="full_name"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  placeholder="Enter your full name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="City, Country"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        );
-
+        return <PersonalInfoStep formData={formData} updateFormData={updateFormData} />;
       case 2:
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <GraduationCap className="mr-2 h-5 w-5 text-blue-600" />
-                Educational Background
-              </CardTitle>
-              <CardDescription>Your educational qualifications</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="degree_certification">Education Level</Label>
-                <Select value={formData.degree_certification} onValueChange={(value) => setFormData({ ...formData, degree_certification: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select education level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["High School", "Bachelor's", "Master's", "PhD"].map((level) => (
-                      <SelectItem key={level} value={level}>{level}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="fields_of_study">Field of Study</Label>
-                <Select value={formData.fields_of_study} onValueChange={(value) => setFormData({ ...formData, fields_of_study: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select field of study" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["Computer Science", "Business Administration", "Engineering", "Marketing", "Finance", "Psychology", "Design", "Data Science", "Healthcare", "Education", "Other"].map((field) => (
-                      <SelectItem key={field} value={field}>{field}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="graduation_year">Graduation Year</Label>
-                <Select value={formData.graduation_year} onValueChange={(value) => setFormData({ ...formData, graduation_year: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select graduation year" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 2050 - 1985 + 1 }, (_, i) => (1985 + i).toString()).reverse().map((year) => (
-                      <SelectItem key={year} value={year}>{year}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-        );
-
+        return <EducationStep formData={formData} updateFormData={updateFormData} />;
       case 3:
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Target className="mr-2 h-5 w-5 text-green-600" />
-                Career Goals
-              </CardTitle>
-              <CardDescription>What field are you looking to pursue?</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="field_of_interest">Field of Interest</Label>
-                <Select value={formData.field_of_interest} onValueChange={(value) => setFormData({ ...formData, field_of_interest: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your career field of interest" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["UX/UI Design", "Data Analytics", "Marketing", "Product Management", "Human Resources", "Software Development", "Finance", "Sales", "Operations", "Content Creation", "Consulting", "Healthcare", "Education"].map((field) => (
-                      <SelectItem key={field} value={field}>{field}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="hard_skills">Technical Skills</Label>
-                <Textarea
-                  id="hard_skills"
-                  value={formData.hard_skills}
-                  onChange={(e) => setFormData({ ...formData, hard_skills: e.target.value })}
-                  placeholder="List your technical skills (comma separated)"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        );
-
+        return <CareerGoalsStep formData={formData} updateFormData={updateFormData} />;
       case 4:
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Award className="mr-2 h-5 w-5 text-purple-600" />
-                Experience & Background
-              </CardTitle>
-              <CardDescription>Tell us about your career history</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="career_history">Career History</Label>
-                <Textarea
-                  id="career_history"
-                  value={formData.career_history}
-                  onChange={(e) => setFormData({ ...formData, career_history: e.target.value })}
-                  placeholder="Describe your work experience, internships, or relevant projects"
-                  rows={6}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        );
-
+        return <ExperienceStep formData={formData} updateFormData={updateFormData} />;
       case 5:
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Crown className="mr-2 h-5 w-5 text-yellow-600" />
-                Choose Your Plan
-              </CardTitle>
-              <CardDescription>Select the plan that works best for you</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <RadioGroup 
-                value={formData.subscription_status} 
-                onValueChange={(value) => setFormData({ ...formData, subscription_status: value })}
-                className="space-y-4"
-              >
-                <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-slate-50">
-                  <RadioGroupItem value="free" id="free" />
-                  <div className="flex-1">
-                    <Label htmlFor="free" className="text-lg font-medium cursor-pointer">
-                      Free Plan
-                    </Label>
-                    <p className="text-sm text-slate-600 mt-1">
-                      • Basic skills assessment
-                      • Job recommendations
-                      • Profile creation
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-slate-50 border-teal-200 bg-teal-50">
-                  <RadioGroupItem value="premium" id="premium" />
-                  <div className="flex-1">
-                    <Label htmlFor="premium" className="text-lg font-medium cursor-pointer flex items-center">
-                      <Crown className="w-4 h-4 mr-2 text-yellow-600" />
-                      Pro Plan
-                    </Label>
-                    <p className="text-sm text-slate-600 mt-1">
-                      • Everything in Free
-                      • Advanced learning resources
-                      • Interview practice sessions
-                      • Priority support
-                    </p>
-                  </div>
-                </div>
-              </RadioGroup>
-            </CardContent>
-          </Card>
-        );
-
+        return <SubscriptionStep formData={formData} updateFormData={updateFormData} />;
       default:
         return null;
     }
@@ -307,7 +109,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
 
       <div className="space-y-2">
         <div className="flex justify-between text-sm text-slate-600">
-          <span>Step {currentStep} of {totalSteps}</span>
+          <span>Step {currentStep} of {TOTAL_STEPS}</span>
           <span>{Math.round(progress)}% Complete</span>
         </div>
         <Progress value={progress} />
@@ -327,7 +129,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
           onClick={handleNext}
           className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
         >
-          {currentStep === totalSteps ? 'Complete Profile' : 'Next'}
+          {currentStep === TOTAL_STEPS ? 'Complete Profile' : 'Next'}
         </Button>
       </div>
     </div>
