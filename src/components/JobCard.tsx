@@ -2,16 +2,17 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bookmark, Target, TrendingUp } from "lucide-react";
+import { Bookmark, Target, TrendingUp, CheckCircle } from "lucide-react";
 import { CareerRole } from "@/types/jobRecommendations";
 import { getMatchColor, getMatchDescription } from "@/utils/careerMatching";
 
 interface JobCardProps {
   role: CareerRole;
   onBookmark: (roleId: string) => void;
+  skillFitTags?: string[];
 }
 
-const JobCard = ({ role, onBookmark }: JobCardProps) => {
+const JobCard = ({ role, onBookmark, skillFitTags = [] }: JobCardProps) => {
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -44,15 +45,37 @@ const JobCard = ({ role, onBookmark }: JobCardProps) => {
         <p className="text-slate-600">{role.job_description}</p>
         
         <div>
-          <h4 className="text-sm font-semibold text-slate-700 mb-2">Key Skills:</h4>
+          <h4 className="text-sm font-semibold text-slate-700 mb-2">Required Skills:</h4>
           <div className="flex flex-wrap gap-2">
-            {role.required_skills.map((skill, index) => (
-              <Badge key={index} variant="secondary">
-                {skill}
-              </Badge>
-            ))}
+            {role.required_skills.map((skill, index) => {
+              const isSkillFit = skillFitTags.includes(skill.toLowerCase());
+              return (
+                <Badge 
+                  key={index} 
+                  variant={isSkillFit ? "default" : "secondary"}
+                  className={isSkillFit ? "bg-green-100 text-green-800 border-green-300" : ""}
+                >
+                  {isSkillFit && <CheckCircle className="w-3 h-3 mr-1" />}
+                  {skill}
+                </Badge>
+              );
+            })}
           </div>
         </div>
+
+        {skillFitTags.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold text-green-700 mb-2">Your Skill Matches:</h4>
+            <div className="flex flex-wrap gap-2">
+              {skillFitTags.slice(0, 3).map((skill, index)=> (
+                <Badge key={index} className="bg-green-100 text-green-800 border-green-300">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  {skill}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
         
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="flex items-center gap-4 text-sm text-slate-500">

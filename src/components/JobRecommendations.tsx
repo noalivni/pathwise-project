@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CareerRole } from "@/types/jobRecommendations";
-import { calculateCareerMatch } from "@/utils/careerMatching";
+import { calculateEnhancedCareerMatch } from "@/utils/careerMatching";
 import JobSearchInput from "@/components/JobSearchInput";
 import JobCard from "@/components/JobCard";
 
@@ -25,28 +25,48 @@ const JobRecommendations = () => {
     if (!user || !profile) return;
 
     try {
-      const { data: assessment } = await supabase
+      // Get user's latest skills assessments
+      const { data: softSkillsAssessment } = await supabase
         .from('skills_assessments')
         .select('*')
         .eq('user_id', user.id)
+        .eq('assessment_type', 'soft_skills')
         .order('completed_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
+      const { data: hardSkillsAssessment } = await supabase
+        .from('skills_assessments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('assessment_type', 'hard_skills')
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Get all job roles from Supabase
       const { data: jobRoles, error } = await supabase
         .from('job_roles')
         .select('*');
 
       if (error) throw error;
 
+      // Calculate enhanced matches and get top 4
       const rolesWithMatches = jobRoles?.map(role => {
-        const matchPercentage = calculateCareerMatch({ role, assessment, profile });
+        const matchPercentage = calculateEnhancedCareerMatch({
+          role,
+          profile,
+          softSkillsAssessment,
+          hardSkillsAssessment
+        });
         return {
           ...role,
           match_percentage: matchPercentage
         };
-      }).sort((a, b) => (b.match_percentage || 0) - (a.match_percentage || 0)) || [];
+      }).sort((a, b) => (b.match_percentage || 0) - (a.match_percentage || 0))
+      .slice(0, 4) || []; // Get top 4 matches
 
+      // Check for bookmarked roles
       const { data: bookmarkedRoles } = await supabase
         .from('user_job_matches')
         .select('job_role_id, is_bookmarked')
@@ -137,9 +157,9 @@ const JobRecommendations = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-800">Career Path Recommendations</h1>
+        <h1 className="text-3xl font-bold text-slate-800">Top Career Matches</h1>
         <p className="text-slate-600 mt-2">
-          Roles matched to your profile: {profile?.field_of_interest || 'Complete profile for better matches'}
+          4 best roles matched to your skills and interests: {profile?.field_of_interest || 'Complete profile for better matches'}
         </p>
       </div>
 

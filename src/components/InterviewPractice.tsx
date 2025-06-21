@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Mic, MicOff, Volume2, VolumeX, Play, Pause } from "lucide-react";
+import { MessageCircle, Mic, MicOff, Volume2, VolumeX, Play, Pause, Crown, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -18,7 +17,7 @@ interface InterviewQuestion {
 }
 
 const InterviewPractice = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [selectedRole, setSelectedRole] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState<InterviewQuestion | null>(null);
   const [userResponse, setUserResponse] = useState("");
@@ -28,6 +27,8 @@ const InterviewPractice = () => {
   const [sessionQuestions, setSessionQuestions] = useState<InterviewQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [sessionStarted, setSessionStarted] = useState(false);
+
+  const isPro = profile?.subscription_status === 'premium';
 
   const interviewQuestions: InterviewQuestion[] = [
     { id: 1, question: "Tell me about yourself and your background.", category: "General", difficulty: "Easy" },
@@ -215,14 +216,49 @@ const InterviewPractice = () => {
     }
   };
 
+  if (!isPro) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <Card className="max-w-md text-center">
+          <CardHeader>
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-yellow-100 rounded-full">
+                <Lock className="h-12 w-12 text-yellow-600" />
+              </div>
+            </div>
+            <CardTitle className="flex items-center justify-center gap-2">
+              <Crown className="h-5 w-5 text-yellow-600" />
+              Pro Feature
+            </CardTitle>
+            <CardDescription>
+              Interview Practice is available for Pro subscribers only
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-slate-600 mb-4">
+              Upgrade to Pro to access AI-powered interview practice with personalized feedback and voice recording capabilities.
+            </p>
+            <Button className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700">
+              <Crown className="w-4 h-4 mr-2" />
+              Upgrade to Pro
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!sessionStarted) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-800">Interview Practice</h1>
-          <p className="text-slate-600 mt-2">Practice common interview questions with AI feedback</p>
-          <Badge className="mt-2 bg-gradient-to-r from-teal-500 to-blue-600 text-white">
-            PRO Feature
+        <div className="flex justify-between items-center">
+          <div className="text-center flex-1">
+            <h1 className="text-3xl font-bold text-slate-800">Interview Practice</h1>
+            <p className="text-slate-600 mt-2">Practice common interview questions with AI feedback</p>
+          </div>
+          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white">
+            <Crown className="w-3 h-3 mr-1" />
+            Pro Feature
           </Badge>
         </div>
 
@@ -243,7 +279,7 @@ const InterviewPractice = () => {
                   <SelectValue placeholder="Choose a job role" />
                 </SelectTrigger>
                 <SelectContent>
-                  {jobRoles.map(role => (
+                  {["Frontend Developer", "Backend Developer", "Data Analyst", "UX Designer", "Product Manager", "Marketing Specialist"].map(role => (
                     <SelectItem key={role} value={role}>
                       {role}
                     </SelectItem>

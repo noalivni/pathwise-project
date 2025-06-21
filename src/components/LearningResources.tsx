@@ -1,12 +1,12 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BookOpen, ExternalLink, Search, Filter, Play, FileText, Globe } from "lucide-react";
+import { BookOpen, ExternalLink, Search, Filter, Play, FileText, Globe, Crown, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface LearningResource {
   id: string;
@@ -19,17 +19,23 @@ interface LearningResource {
 }
 
 const LearningResources = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [resources, setResources] = useState<LearningResource[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [loading, setLoading] = useState(true);
 
+  const isPro = profile?.subscription_status === 'premium';
+
   useEffect(() => {
     if (user) {
-      fetchLearningResources();
+      if (isPro) {
+        fetchLearningResources();
+      } else {
+        setLoading(false);
+      }
     }
-  }, [user]);
+  }, [user, isPro]);
 
   const fetchLearningResources = async () => {
     if (!user) return;
@@ -153,6 +159,38 @@ const LearningResources = () => {
 
   const resourceTypes = ['all', ...Array.from(new Set(resources.map(r => r.resource_type)))];
 
+  if (!isPro) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <Card className="max-w-md text-center">
+          <CardHeader>
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-yellow-100 rounded-full">
+                <Lock className="h-12 w-12 text-yellow-600" />
+              </div>
+            </div>
+            <CardTitle className="flex items-center justify-center gap-2">
+              <Crown className="h-5 w-5 text-yellow-600" />
+              Pro Feature
+            </CardTitle>
+            <CardDescription>
+              Learning Resources are available for Pro subscribers only
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-slate-600 mb-4">
+              Upgrade to Pro to access personalized learning materials, courses, and resources tailored to your career goals.
+            </p>
+            <Button className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700">
+              <Crown className="w-4 h-4 mr-2" />
+              Upgrade to Pro
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -166,9 +204,15 @@ const LearningResources = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-800">Learning Resources</h1>
-        <p className="text-slate-600 mt-2">Personalized learning materials based on your career goals</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800">Learning Resources</h1>
+          <p className="text-slate-600 mt-2">Personalized learning materials based on your career goals</p>
+        </div>
+        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white">
+          <Crown className="w-3 h-3 mr-1" />
+          Pro Feature
+        </Badge>
       </div>
 
       {/* Search and Filters */}

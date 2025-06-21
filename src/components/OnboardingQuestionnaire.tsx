@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { User, GraduationCap, Award, Target } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { User, GraduationCap, Award, Target, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
@@ -26,10 +27,11 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
     graduation_year: "",
     field_of_interest: "",
     hard_skills: "",
-    career_history: ""
+    career_history: "",
+    subscription_status: "free"
   });
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
   const educationLevels = ["High School", "Bachelor's", "Master's", "PhD"];
@@ -72,6 +74,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
         field_of_interest: formData.field_of_interest,
         hard_skills: skillsArray,
         career_history: formData.career_history,
+        subscription_status: formData.subscription_status,
         onboarding_completed: true
       });
 
@@ -143,7 +146,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
                     <SelectValue placeholder="Select education level" />
                   </SelectTrigger>
                   <SelectContent>
-                    {educationLevels.map((level) => (
+                    {["High School", "Bachelor's", "Master's", "PhD"].map((level) => (
                       <SelectItem key={level} value={level}>{level}</SelectItem>
                     ))}
                   </SelectContent>
@@ -156,7 +159,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
                     <SelectValue placeholder="Select field of study" />
                   </SelectTrigger>
                   <SelectContent>
-                    {fieldsOfStudy.map((field) => (
+                    {["Computer Science", "Business Administration", "Engineering", "Marketing", "Finance", "Psychology", "Design", "Data Science", "Healthcare", "Education", "Other"].map((field) => (
                       <SelectItem key={field} value={field}>{field}</SelectItem>
                     ))}
                   </SelectContent>
@@ -169,7 +172,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
                     <SelectValue placeholder="Select graduation year" />
                   </SelectTrigger>
                   <SelectContent>
-                    {graduationYears.reverse().map((year) => (
+                    {Array.from({ length: 2050 - 1985 + 1 }, (_, i) => (1985 + i).toString()).reverse().map((year) => (
                       <SelectItem key={year} value={year}>{year}</SelectItem>
                     ))}
                   </SelectContent>
@@ -197,7 +200,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
                     <SelectValue placeholder="Select your career field of interest" />
                   </SelectTrigger>
                   <SelectContent>
-                    {careerFields.map((field) => (
+                    {["UX/UI Design", "Data Analytics", "Marketing", "Product Management", "Human Resources", "Software Development", "Finance", "Sales", "Operations", "Content Creation", "Consulting", "Healthcare", "Education"].map((field) => (
                       <SelectItem key={field} value={field}>{field}</SelectItem>
                     ))}
                   </SelectContent>
@@ -237,6 +240,55 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
                   rows={6}
                 />
               </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 5:
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Crown className="mr-2 h-5 w-5 text-yellow-600" />
+                Choose Your Plan
+              </CardTitle>
+              <CardDescription>Select the plan that works best for you</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <RadioGroup 
+                value={formData.subscription_status} 
+                onValueChange={(value) => setFormData({ ...formData, subscription_status: value })}
+                className="space-y-4"
+              >
+                <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-slate-50">
+                  <RadioGroupItem value="free" id="free" />
+                  <div className="flex-1">
+                    <Label htmlFor="free" className="text-lg font-medium cursor-pointer">
+                      Free Plan
+                    </Label>
+                    <p className="text-sm text-slate-600 mt-1">
+                      • Basic skills assessment
+                      • Job recommendations
+                      • Profile creation
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-slate-50 border-teal-200 bg-teal-50">
+                  <RadioGroupItem value="premium" id="premium" />
+                  <div className="flex-1">
+                    <Label htmlFor="premium" className="text-lg font-medium cursor-pointer flex items-center">
+                      <Crown className="w-4 h-4 mr-2 text-yellow-600" />
+                      Pro Plan
+                    </Label>
+                    <p className="text-sm text-slate-600 mt-1">
+                      • Everything in Free
+                      • Advanced learning resources
+                      • Interview practice sessions
+                      • Priority support
+                    </p>
+                  </div>
+                </div>
+              </RadioGroup>
             </CardContent>
           </Card>
         );
