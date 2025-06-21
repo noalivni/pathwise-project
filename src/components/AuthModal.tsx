@@ -84,7 +84,7 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
   const switchToSignIn = () => {
     setIsSignUp(false);
     resetForm();
-  );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
