@@ -52,7 +52,6 @@ const InterviewPractice = () => {
   ];
 
   useEffect(() => {
-    // Check if user has premium subscription
     checkPremiumAccess();
   }, [user]);
 
@@ -88,7 +87,6 @@ const InterviewPractice = () => {
       return;
     }
 
-    // Select 5 random questions for the session
     const shuffled = [...interviewQuestions].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 5);
     
@@ -99,7 +97,6 @@ const InterviewPractice = () => {
     setUserResponse("");
     setFeedback("");
 
-    // Speak the first question
     speakText(selected[0].question);
   };
 
@@ -120,20 +117,22 @@ const InterviewPractice = () => {
     if (!user) return;
 
     try {
-      // Save interview session to database
+      // Convert questions and responses to JSON format
+      const questionsJson = JSON.stringify(sessionQuestions);
+      const responsesJson = JSON.stringify(sessionQuestions.map((q, index) => ({
+        question: q.question,
+        response: index <= currentQuestionIndex ? userResponse : ""
+      })));
+
       await supabase
         .from('interview_sessions')
         .insert({
           user_id: user.id,
           job_role: selectedRole,
-          questions: sessionQuestions,
-          responses: sessionQuestions.map((q, index) => ({
-            question: q.question,
-            response: index <= currentQuestionIndex ? userResponse : ""
-          }))
+          questions: questionsJson,
+          responses: responsesJson
         });
 
-      // Log activity
       await supabase
         .from('user_activities')
         .insert({
@@ -166,7 +165,6 @@ const InterviewPractice = () => {
       return;
     }
 
-    // Simple feedback generation (in a real app, this would use OpenAI API)
     const feedbackPoints = [
       "Good structure in your response.",
       "Consider providing more specific examples.",
@@ -196,14 +194,12 @@ const InterviewPractice = () => {
 
   const toggleRecording = () => {
     if (isRecording) {
-      // Stop recording logic would go here
       setIsRecording(false);
       toast({
         title: "Recording Stopped",
         description: "Your response has been recorded.",
       });
     } else {
-      // Start recording logic would go here
       setIsRecording(true);
       toast({
         title: "Recording Started",

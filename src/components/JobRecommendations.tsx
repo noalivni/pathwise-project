@@ -37,7 +37,6 @@ const JobRecommendations = () => {
     if (!user) return;
 
     try {
-      // Fetch user's skills assessment
       const { data: assessment } = await supabase
         .from('skills_assessments')
         .select('*')
@@ -46,21 +45,18 @@ const JobRecommendations = () => {
         .limit(1)
         .single();
 
-      // Fetch user profile
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      // Fetch all job roles
       const { data: jobRoles, error } = await supabase
         .from('job_roles')
         .select('*');
 
       if (error) throw error;
 
-      // Calculate match percentages
       const jobsWithMatches = jobRoles?.map(job => {
         const matchPercentage = calculateJobMatch(job, assessment, profile);
         return {
@@ -69,7 +65,6 @@ const JobRecommendations = () => {
         };
       }).sort((a, b) => (b.match_percentage || 0) - (a.match_percentage || 0)) || [];
 
-      // Check bookmarked jobs
       const { data: bookmarkedJobs } = await supabase
         .from('user_job_matches')
         .select('job_role_id, is_bookmarked')
@@ -116,15 +111,22 @@ const JobRecommendations = () => {
 
     // Assessment results match (30% weight)
     if (assessment) {
-      const techSkillsAvg = assessment.technical_skills ? 
-        Object.values(assessment.technical_skills).reduce((a: any, b: any) => a + b, 0) / 
-        Object.keys(assessment.technical_skills).length : 0;
+      let techSkillsAvg = 0;
+      let softSkillsAvg = 0;
       
-      const softSkillsAvg = assessment.soft_skills ?
-        Object.values(assessment.soft_skills).reduce((a: any, b: any) => a + b, 0) /
-        Object.keys(assessment.soft_skills).length : 0;
+      if (assessment.technical_skills && typeof assessment.technical_skills === 'object') {
+        const techValues = Object.values(assessment.technical_skills) as number[];
+        techSkillsAvg = techValues.length > 0 ? 
+          techValues.reduce((a, b) => a + b, 0) / techValues.length : 0;
+      }
+      
+      if (assessment.soft_skills && typeof assessment.soft_skills === 'object') {
+        const softValues = Object.values(assessment.soft_skills) as number[];
+        softSkillsAvg = softValues.length > 0 ?
+          softValues.reduce((a, b) => a + b, 0) / softValues.length : 0;
+      }
 
-      const assessmentMatch = (techSkillsAvg + softSkillsAvg) / 6; // Scale to 0-1
+      const assessmentMatch = (techSkillsAvg + softSkillsAvg) / 6;
       matchScore += assessmentMatch * 30;
       totalFactors += 30;
     }
@@ -141,7 +143,7 @@ const JobRecommendations = () => {
     totalFactors += 10;
 
     const finalMatch = totalFactors > 0 ? Math.round((matchScore / totalFactors) * 100) : 50;
-    return Math.min(Math.max(finalMatch, 30), 95); // Ensure realistic range
+    return Math.min(Math.max(finalMatch, 30), 95);
   };
 
   const handleBookmark = async (jobId: string) => {
@@ -162,12 +164,10 @@ const JobRecommendations = () => {
 
       if (error) throw error;
 
-      // Update local state
       setJobs(jobs.map(j => 
         j.id === jobId ? { ...j, is_bookmarked: newBookmarkStatus } : j
       ));
 
-      // Log activity
       await supabase
         .from('user_activities')
         .insert({
@@ -237,7 +237,6 @@ const JobRecommendations = () => {
         <p className="text-slate-600 mt-2">Personalized job matches based on your skills and preferences</p>
       </div>
 
-      {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -254,7 +253,6 @@ const JobRecommendations = () => {
         </Button>
       </div>
 
-      {/* Job Cards */}
       <div className="grid gap-6">
         {filteredJobs.map((job) => (
           <Card key={job.id} className="hover:shadow-lg transition-shadow">
