@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { LearningResource } from "@/types/learningResources";
-import { getResourceIcon, getResourceColor } from "@/utils/learningResourcesUtils";
+import { getResourceIcon, getResourceColor } from "@/utils/learningResourcesUtils.tsx";
 
 interface ResourceCardProps {
   resource: LearningResource;

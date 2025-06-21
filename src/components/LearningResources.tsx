@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Crown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { LearningResource } from "@/types/learningResources";
-import { calculateRelevance, filterResources } from "@/utils/learningResourcesUtils";
+import { calculateRelevance, filterResources } from "@/utils/learningResourcesUtils.tsx";
 import ProUpgradeNotice from "@/components/learningResources/ProUpgradeNotice";
 import SearchAndFilters from "@/components/learningResources/SearchAndFilters";
 import ResourceCard from "@/components/learningResources/ResourceCard";
