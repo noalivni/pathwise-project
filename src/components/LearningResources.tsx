@@ -1,282 +1,261 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Play, Clock, Star, Search, Crown, ExternalLink } from "lucide-react";
+import { BookOpen, ExternalLink, Search, Filter, Play, FileText, Globe } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+
+interface LearningResource {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  resource_type: string;
+  related_skills: string[];
+  related_job_roles: string[];
+}
 
 const LearningResources = () => {
+  const { user } = useAuth();
+  const [resources, setResources] = useState<LearningResource[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
 
-  const courses = [
-    {
-      id: 1,
-      title: "Complete React Developer Course",
-      provider: "TechAcademy",
-      duration: "8 weeks",
-      rating: 4.8,
-      students: 12543,
-      level: "Intermediate",
-      price: "$99",
-      category: "Web Development",
-      description: "Master React from basics to advanced concepts including hooks, context, and testing.",
-      skills: ["React", "JavaScript", "HTML/CSS", "Testing"]
-    },
-    {
-      id: 2,
-      title: "Data Science Fundamentals",
-      provider: "DataLearn",
-      duration: "12 weeks",
-      rating: 4.9,
-      students: 8932,
-      level: "Beginner",
-      price: "$149",
-      category: "Data Science",
-      description: "Learn Python, statistics, and machine learning fundamentals for data science.",
-      skills: ["Python", "Statistics", "Machine Learning", "Data Visualization"]
-    },
-    {
-      id: 3,
-      title: "UX Design Masterclass",
-      provider: "DesignPro",
-      duration: "6 weeks",
-      rating: 4.7,
-      students: 5621,
-      level: "Intermediate",
-      price: "$79",
-      category: "Design",
-      description: "Complete guide to user experience design with real-world projects.",
-      skills: ["Figma", "User Research", "Prototyping", "Design Thinking"]
-    },
-    {
-      id: 4,
-      title: "Digital Marketing Strategy",
-      provider: "MarketingHub",
-      duration: "4 weeks",
-      rating: 4.6,
-      students: 3421,
-      level: "Beginner",
-      price: "$59",
-      category: "Marketing",
-      description: "Build comprehensive digital marketing campaigns across multiple channels.",
-      skills: ["SEO", "Social Media", "Google Ads", "Analytics"]
+  useEffect(() => {
+    if (user) {
+      fetchLearningResources();
     }
-  ];
+  }, [user]);
 
-  const articles = [
-    {
-      id: 1,
-      title: "10 Essential Skills for Frontend Developers in 2024",
-      author: "Sarah Chen",
-      readTime: "8 min read",
-      category: "Web Development",
-      publishedDate: "2 days ago",
-      excerpt: "Discover the most in-demand frontend skills and how to master them."
-    },
-    {
-      id: 2,
-      title: "How to Transition from Junior to Senior Developer",
-      author: "Michael Rodriguez",
-      readTime: "12 min read",
-      category: "Career Growth",
-      publishedDate: "1 week ago",
-      excerpt: "A comprehensive guide on advancing your development career."
-    },
-    {
-      id: 3,
-      title: "The Future of UX Design: Emerging Trends",
-      author: "Emily Johnson",
-      readTime: "6 min read",
-      category: "Design",
-      publishedDate: "3 days ago",
-      excerpt: "Explore the latest trends shaping the future of user experience design."
-    }
-  ];
+  const fetchLearningResources = async () => {
+    if (!user) return;
 
-  const books = [
-    {
-      id: 1,
-      title: "Clean Code: A Handbook of Agile Software Craftsmanship",
-      author: "Robert C. Martin",
-      rating: 4.9,
-      category: "Software Development",
-      description: "A must-read for any developer looking to write better, cleaner code."
-    },
-    {
-      id: 2,
-      title: "The Design of Everyday Things",
-      author: "Don Norman",
-      rating: 4.7,
-      category: "Design",
-      description: "Fundamental principles of good design and user experience."
-    },
-    {
-      id: 3,
-      title: "Lean Analytics",
-      author: "Alistair Croll & Benjamin Yoskovitz",
-      rating: 4.6,
-      category: "Data Analytics",
-      description: "Use data to build a better startup and make informed decisions."
-    }
-  ];
+    try {
+      // Get user's top job recommendations to personalize resources
+      const { data: jobMatches } = await supabase
+        .from('user_job_matches')
+        .select(`
+          job_role_id,
+          match_percentage,
+          job_roles (
+            job_title,
+            required_skills
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('match_percentage', { ascending: false })
+        .limit(3);
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case "Beginner": return "bg-green-100 text-green-700";
-      case "Intermediate": return "bg-yellow-100 text-yellow-700";
-      case "Advanced": return "bg-red-100 text-red-700";
-      default: return "bg-gray-100 text-gray-700";
+      // Get all learning resources
+      const { data: allResources, error } = await supabase
+        .from('learning_resources')
+        .select('*');
+
+      if (error) throw error;
+
+      // Sort resources by relevance to user's top job matches
+      const topJobTitles = jobMatches?.map(match => match.job_roles.job_title) || [];
+      const topSkills = jobMatches?.flatMap(match => match.job_roles.required_skills || []) || [];
+
+      const sortedResources = allResources?.sort((a, b) => {
+        const aRelevance = calculateRelevance(a, topJobTitles, topSkills);
+        const bRelevance = calculateRelevance(b, topJobTitles, topSkills);
+        return bRelevance - aRelevance;
+      }) || [];
+
+      setResources(sortedResources);
+    } catch (error) {
+      console.error('Error fetching learning resources:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const calculateRelevance = (resource: LearningResource, jobTitles: string[], skills: string[]) => {
+    let relevance = 0;
+    
+    // Check job role relevance
+    resource.related_job_roles.forEach(role => {
+      if (jobTitles.some(title => title.toLowerCase().includes(role.toLowerCase()))) {
+        relevance += 2;
+      }
+    });
+
+    // Check skill relevance
+    resource.related_skills.forEach(skill => {
+      if (skills.some(userSkill => userSkill.toLowerCase().includes(skill.toLowerCase()))) {
+        relevance += 1;
+      }
+    });
+
+    return relevance;
+  };
+
+  const getResourceIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'video':
+        return <Play className="h-5 w-5" />;
+      case 'course':
+        return <BookOpen className="h-5 w-5" />;
+      case 'article':
+        return <FileText className="h-5 w-5" />;
+      default:
+        return <Globe className="h-5 w-5" />;
+    }
+  };
+
+  const getResourceColor = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'video':
+        return 'bg-red-500';
+      case 'course':
+        return 'bg-blue-500';
+      case 'article':
+        return 'bg-green-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
+  const handleResourceClick = async (resource: LearningResource) => {
+    if (!user) return;
+
+    try {
+      // Log the activity
+      await supabase
+        .from('user_activities')
+        .insert({
+          user_id: user.id,
+          activity_type: 'resource_accessed',
+          activity_description: `Accessed learning resource: ${resource.title}`
+        });
+
+      // Open resource in new tab
+      window.open(resource.url, '_blank');
+    } catch (error) {
+      console.error('Error logging resource access:', error);
+    }
+  };
+
+  const filteredResources = resources.filter(resource => {
+    const matchesSearch = resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         resource.related_skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesType = selectedType === "all" || resource.resource_type.toLowerCase() === selectedType.toLowerCase();
+    
+    return matchesSearch && matchesType;
+  });
+
+  const resourceTypes = ['all', ...Array.from(new Set(resources.map(r => r.resource_type)))];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading learning resources...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800">Learning Resources</h1>
-          <p className="text-slate-600 mt-2">Curated content to advance your career</p>
+      <div>
+        <h1 className="text-3xl font-bold text-slate-800">Learning Resources</h1>
+        <p className="text-slate-600 mt-2">Personalized learning materials based on your career goals</p>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search resources, skills, or topics..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
-        <Badge className="bg-gradient-to-r from-teal-500 to-blue-600 text-white flex items-center gap-1">
-          <Crown className="h-4 w-4" />
-          PRO Feature
-        </Badge>
+        <div className="flex gap-2">
+          {resourceTypes.map(type => (
+            <Button
+              key={type}
+              variant={selectedType === type ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedType(type)}
+              className="capitalize"
+            >
+              {type}
+            </Button>
+          ))}
+        </div>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-        <Input
-          placeholder="Search courses, articles, or books..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
-      <Tabs defaultValue="courses" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="courses">Courses</TabsTrigger>
-          <TabsTrigger value="articles">Articles</TabsTrigger>
-          <TabsTrigger value="books">Books</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="courses" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {courses.map((course) => (
-              <Card key={course.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg mb-2">{course.title}</CardTitle>
-                      <CardDescription>{course.provider}</CardDescription>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-teal-600">{course.price}</div>
-                    </div>
+      {/* Resource Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredResources.map((resource) => (
+          <Card key={resource.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`p-2 rounded-lg ${getResourceColor(resource.resource_type)} text-white`}>
+                    {getResourceIcon(resource.resource_type)}
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-slate-600">{course.description}</p>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {course.skills.map((skill, index) => (
+                  <Badge variant="secondary" className="capitalize">
+                    {resource.resource_type}
+                  </Badge>
+                </div>
+              </div>
+              <CardTitle className="text-lg">{resource.title}</CardTitle>
+              <CardDescription>{resource.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-2">
+                {resource.related_skills.map((skill, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+              
+              {resource.related_job_roles.length > 0 && (
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Relevant for:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {resource.related_job_roles.map((role, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
-                        {skill}
+                        {role}
                       </Badge>
                     ))}
                   </div>
-                  
-                  <div className="flex items-center justify-between text-sm text-slate-500">
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {course.duration}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-current text-yellow-500" />
-                        {course.rating}
-                      </div>
-                    </div>
-                    <Badge className={getLevelColor(course.level)}>
-                      {course.level}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button variant="outline" className="flex-1">
-                      Preview
-                    </Button>
-                    <Button className="flex-1 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700">
-                      <Play className="mr-2 h-4 w-4" />
-                      Enroll
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                </div>
+              )}
+              
+              <Button
+                onClick={() => handleResourceClick(resource)}
+                className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Access Resource
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-        <TabsContent value="articles" className="space-y-6">
-          <div className="grid gap-6">
-            {articles.map((article) => (
-              <Card key={article.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg mb-2">{article.title}</CardTitle>
-                      <CardDescription>
-                        By {article.author} • {article.readTime} • {article.publishedDate}
-                      </CardDescription>
-                    </div>
-                    <Badge variant="outline">{article.category}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-slate-600">{article.excerpt}</p>
-                  <Button variant="outline" className="w-full">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Read Article
-                    <ExternalLink className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="books" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {books.map((book) => (
-              <Card key={book.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">{book.title}</CardTitle>
-                  <CardDescription>by {book.author}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-current text-yellow-500" />
-                      <span className="text-sm">{book.rating}</span>
-                    </div>
-                    <Badge variant="outline">{book.category}</Badge>
-                  </div>
-                  
-                  <p className="text-sm text-slate-600">{book.description}</p>
-                  
-                  <Button variant="outline" className="w-full">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    View Book
-                    <ExternalLink className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+      {filteredResources.length === 0 && (
+        <div className="text-center py-12">
+          <BookOpen className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-slate-600 mb-2">No resources found</h3>
+          <p className="text-slate-500">Try adjusting your search terms or filters</p>
+        </div>
+      )}
     </div>
   );
 };

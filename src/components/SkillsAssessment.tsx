@@ -6,8 +6,11 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Circle, Brain, Target } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const SkillsAssessment = () => {
+  const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -34,13 +37,33 @@ const SkillsAssessment = () => {
       ]
     },
     {
-      category: "Soft Skills",
-      question: "How do you handle working in a team?",
+      category: "Communication",
+      question: "How would you rate your communication skills?",
       options: [
-        "I prefer working alone most of the time",
-        "I can work in teams but prefer clear individual tasks",
-        "I actively collaborate and communicate well",
-        "I naturally take leadership roles and facilitate team success"
+        "I struggle to express ideas clearly",
+        "I can communicate basic information effectively",
+        "I communicate well and adapt to different audiences",
+        "I excel at complex communication and public speaking"
+      ]
+    },
+    {
+      category: "Adaptability",
+      question: "How do you handle change and new challenges?",
+      options: [
+        "I find change stressful and prefer routine",
+        "I can adapt with some guidance and time",
+        "I embrace change and learn quickly",
+        "I thrive in dynamic environments and lead change"
+      ]
+    },
+    {
+      category: "Leadership",
+      question: "How comfortable are you in leadership roles?",
+      options: [
+        "I prefer to follow others' lead",
+        "I can lead when necessary but prefer supporting roles",
+        "I naturally take on leadership responsibilities",
+        "I excel at inspiring and guiding teams"
       ]
     },
     {
@@ -51,16 +74,6 @@ const SkillsAssessment = () => {
         "Break it down into smaller parts",
         "Research solutions and adapt them",
         "Develop innovative approaches and solutions"
-      ]
-    },
-    {
-      category: "Communication",
-      question: "How comfortable are you presenting to stakeholders?",
-      options: [
-        "Very nervous, avoid when possible",
-        "Somewhat nervous but can manage",
-        "Comfortable with proper preparation",
-        "Confident and engaging presenter"
       ]
     }
   ];
@@ -73,12 +86,93 @@ const SkillsAssessment = () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
+      saveAssessmentResults(newAnswers);
+    }
+  };
+
+  const saveAssessmentResults = async (finalAnswers: number[]) => {
+    if (!user) return;
+
+    const results = calculateResults(finalAnswers);
+    
+    try {
+      // Save assessment to database
+      const { error: assessmentError } = await supabase
+        .from('skills_assessments')
+        .insert({
+          user_id: user.id,
+          technical_skills: {
+            html_css: finalAnswers[0],
+            javascript: finalAnswers[1]
+          },
+          soft_skills: {
+            communication: finalAnswers[2],
+            adaptability: finalAnswers[3],
+            leadership: finalAnswers[4],
+            problem_solving: finalAnswers[5]
+          },
+          strengths: results.strengths,
+          weaknesses: results.weaknesses,
+          recommended_paths: results.recommendedPaths
+        });
+
+      if (assessmentError) throw assessmentError;
+
+      // Log activity
+      await supabase
+        .from('user_activities')
+        .insert({
+          user_id: user.id,
+          activity_type: 'assessment_completed',
+          activity_description: 'Completed Skills Assessment'
+        });
+
       setShowResults(true);
       toast({
         title: "Assessment Complete!",
-        description: "Your skills have been evaluated successfully.",
+        description: "Your skills have been evaluated and saved successfully.",
+      });
+    } catch (error) {
+      console.error('Error saving assessment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save assessment results. Please try again.",
+        variant: "destructive"
       });
     }
+  };
+
+  const calculateResults = (finalAnswers: number[]) => {
+    const categories = [
+      { name: "HTML/CSS", score: finalAnswers[0] },
+      { name: "JavaScript", score: finalAnswers[1] },
+      { name: "Communication", score: finalAnswers[2] },
+      { name: "Adaptability", score: finalAnswers[3] },
+      { name: "Leadership", score: finalAnswers[4] },
+      { name: "Problem Solving", score: finalAnswers[5] }
+    ];
+
+    const strengths = categories
+      .filter(cat => cat.score >= 2)
+      .map(cat => cat.name);
+
+    const weaknesses = categories
+      .filter(cat => cat.score < 2)
+      .map(cat => cat.name);
+
+    // Determine recommended paths based on strengths
+    const recommendedPaths = [];
+    if (strengths.includes("HTML/CSS") && strengths.includes("JavaScript")) {
+      recommendedPaths.push("Frontend Developer");
+    }
+    if (strengths.includes("Leadership") && strengths.includes("Communication")) {
+      recommendedPaths.push("Product Manager");
+    }
+    if (strengths.includes("Problem Solving") && strengths.includes("Adaptability")) {
+      recommendedPaths.push("Data Analyst");
+    }
+
+    return { strengths, weaknesses, recommendedPaths };
   };
 
   const getSkillLevel = (score: number) => {
@@ -88,23 +182,24 @@ const SkillsAssessment = () => {
     return { level: "Expert", color: "bg-green-500" };
   };
 
-  const calculateResults = () => {
+  const getResults = () => {
     const categories = {
-      "Technical Skills": answers.slice(0, 2).reduce((a, b) => a + b, 0) / 2,
-      "Soft Skills": answers[2] || 0,
-      "Problem Solving": answers[3] || 0,
-      "Communication": answers[4] || 0
+      "Technical Skills": (answers[0] + answers[1]) / 2,
+      "Communication": answers[2],
+      "Adaptability": answers[3],
+      "Leadership": answers[4],
+      "Problem Solving": answers[5]
     };
 
     return Object.entries(categories).map(([category, score]) => ({
       category,
-      score: score,
-      ...getSkillLevel(score)
+      score: score || 0,
+      ...getSkillLevel(score || 0)
     }));
   };
 
   if (showResults) {
-    const results = calculateResults();
+    const results = getResults();
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center">
@@ -126,7 +221,7 @@ const SkillsAssessment = () => {
               <CardContent>
                 <Progress value={(result.score / 3) * 100} className="mb-2" />
                 <p className="text-sm text-slate-600">
-                  Score: {result.score + 1}/4
+                  Score: {Math.round(result.score * 10) / 10 + 1}/4
                 </p>
               </CardContent>
             </Card>
@@ -142,12 +237,12 @@ const SkillsAssessment = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-4 bg-teal-50 rounded-lg">
-              <h3 className="font-semibold text-teal-800">Strengthen Technical Skills</h3>
-              <p className="text-teal-700">Consider taking advanced JavaScript or React courses to boost your technical capabilities.</p>
+              <h3 className="font-semibold text-teal-800">Explore Job Recommendations</h3>
+              <p className="text-teal-700">Based on your skills, we've identified matching career opportunities for you.</p>
             </div>
             <div className="p-4 bg-blue-50 rounded-lg">
-              <h3 className="font-semibold text-blue-800">Enhance Communication</h3>
-              <p className="text-blue-700">Practice presentation skills and consider joining professional speaking groups.</p>
+              <h3 className="font-semibold text-blue-800">Continue Learning</h3>
+              <p className="text-blue-700">Check out personalized learning resources to strengthen your skills.</p>
             </div>
           </CardContent>
         </Card>
@@ -164,7 +259,10 @@ const SkillsAssessment = () => {
           >
             Retake Assessment
           </Button>
-          <Button className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700">
+          <Button 
+            onClick={() => window.dispatchEvent(new CustomEvent('navigate-to-jobs'))}
+            className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+          >
             View Job Recommendations
           </Button>
         </div>
