@@ -4,83 +4,87 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, Lock, User, Brain } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { Brain } from "lucide-react";
 
 interface AuthModalProps {
   open: boolean;
   onClose: () => void;
-  onLogin: (role: 'user' | 'admin') => void;
+  onLogin: () => void;
 }
 
 const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
-  const { signIn, signUp } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSignIn = async () => {
-    if (!email || !password) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: fullName,
+            },
+          },
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Success!",
+          description: "Please check your email to confirm your account.",
+        });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Welcome back!",
+          description: "You have been signed in successfully.",
+        });
+        onLogin();
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    
-    const { error } = await signIn(email, password);
-    
-    if (error) {
-      toast({
-        title: "Sign In Failed",
         description: error.message,
         variant: "destructive",
       });
-    } else {
-      const isAdmin = email === "admin@pathwise.com";
-      onLogin(isAdmin ? 'admin' : 'user');
-      onClose();
+    } finally {
+      setLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
-  const handleSignUp = async () => {
-    if (!email || !password || !name) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    
-    const { error } = await signUp(email, password, name);
-    
-    if (error) {
-      toast({
-        title: "Sign Up Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Account Created!",
-        description: "Please check your email to verify your account.",
-      });
-      onClose();
-    }
-    
-    setIsLoading(false);
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setFullName("");
   };
+
+  const switchToSignUp = () => {
+    setIsSignUp(true);
+    resetForm();
+  };
+
+  const switchToSignIn = () => {
+    setIsSignUp(false);
+    resetForm();
+  );
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -91,119 +95,105 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
               <Brain className="w-6 h-6 text-white" />
             </div>
           </div>
-          <DialogTitle className="text-2xl font-bold">Welcome to Pathwise</DialogTitle>
+          <DialogTitle className="text-2xl">
+            {isSignUp ? "Create Your Account" : "Welcome Back"}
+          </DialogTitle>
           <DialogDescription>
-            Your AI-powered career companion
+            {isSignUp 
+              ? "Join thousands of users discovering their perfect career path" 
+              : "Sign in to continue your career journey"
+            }
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="signin" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignUp && (
+            <div>
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                type="text"
+                placeholder="Enter your full name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
+          )}
           
-          <TabsContent value="signin" className="space-y-4 mt-6">
-            <div className="space-y-2">
-              <Label htmlFor="signin-email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="signin-email"
-                  type="email"
-                  placeholder="Enter your email"
-                  className="pl-10"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="signin-password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="signin-password"
-                  type="password"
-                  placeholder="Enter your password"
-                  className="pl-10"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
 
-            <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-              <strong>Demo Credentials:</strong><br />
-              Admin: admin@pathwise.com / admin123<br />
-              User: any other email / any password
-            </div>
-            
-            <Button 
-              onClick={handleSignIn} 
-              className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-              disabled={isLoading}
-            >
-              {isLoading ? "Signing in..." : "Sign In"}
-            </Button>
-          </TabsContent>
-          
-          <TabsContent value="signup" className="space-y-4 mt-6">
-            <div className="space-y-2">
-              <Label htmlFor="signup-name">Full Name</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="signup-name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  className="pl-10"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="signup-email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="Enter your email"
-                  className="pl-10"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="signup-password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="signup-password"
-                  type="password"
-                  placeholder="Create a password"
-                  className="pl-10"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-            
-            <Button 
-              onClick={handleSignUp} 
-              className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-              disabled={isLoading}
-            >
-              {isLoading ? "Creating account..." : "Create Account"}
-            </Button>
-          </TabsContent>
-        </Tabs>
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+            disabled={loading}
+          >
+            {loading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
+          </Button>
+        </form>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <Separator className="w-full" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">or</span>
+          </div>
+        </div>
+
+        <div className="text-center space-y-2">
+          {isSignUp ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Already have an account?
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={switchToSignIn}
+                className="w-full"
+              >
+                Sign In (Returning Users)
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Don't have an account?
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={switchToSignUp}
+                className="w-full"
+              >
+                Sign Up (New Users)
+              </Button>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

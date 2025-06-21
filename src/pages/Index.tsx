@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import AuthModal from "@/components/AuthModal";
@@ -9,6 +8,17 @@ import { Brain, Target, Users, BookOpen, ArrowRight } from "lucide-react";
 
 const LandingPage = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
+
+  const handleSignUp = () => {
+    setIsSignUp(true);
+    setShowAuthModal(true);
+  };
+
+  const handleSignIn = () => {
+    setIsSignUp(false);
+    setShowAuthModal(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -23,12 +33,21 @@ const LandingPage = () => {
               Pathwise
             </span>
           </div>
-          <Button 
-            onClick={() => setShowAuthModal(true)}
-            className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-          >
-            Get Started
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={handleSignIn}
+              variant="outline"
+              className="border-teal-200 text-teal-700 hover:bg-teal-50"
+            >
+              Sign In (Returning Users)
+            </Button>
+            <Button 
+              onClick={handleSignUp}
+              className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+            >
+              Sign Up (New Users)
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -43,7 +62,7 @@ const LandingPage = () => {
         </p>
         <Button 
           size="lg"
-          onClick={() => setShowAuthModal(true)}
+          onClick={handleSignUp}
           className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-lg px-8 py-6"
         >
           Start Your Journey
@@ -99,7 +118,8 @@ const LandingPage = () => {
       <AuthModal 
         open={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
-        onLogin={() => setShowAuthModal(false)} 
+        onLogin={() => setShowAuthModal(false)}
+        initialMode={isSignUp ? 'signup' : 'signin'}
       />
     </div>
   );

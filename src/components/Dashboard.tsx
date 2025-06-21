@@ -10,7 +10,7 @@ import JobRecommendations from "@/components/JobRecommendations";
 import InterviewPractice from "@/components/InterviewPractice";
 import LearningResources from "@/components/LearningResources";
 import ResumeBuilder from "@/components/ResumeBuilder";
-import UserProfile from "@/components/UserProfile";
+import EditableProfile from "@/components/EditableProfile";
 import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardProps {
@@ -27,6 +27,8 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
     // Check if user needs onboarding
     if (profile && !profile.onboarding_completed && userRole === 'user') {
       setShowOnboarding(true);
+    } else {
+      setShowOnboarding(false);
     }
   }, [profile, userRole]);
 
@@ -82,7 +84,7 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
       case 'resume':
         return <ResumeBuilder />;
       case 'profile':
-        return <UserProfile />;
+        return <EditableProfile />;
       default:
         return <UserDashboard />;
     }

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface OnboardingQuestionnaireProps {
   onComplete: () => void;
@@ -19,8 +20,6 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnaireProps) =
   const { user, updateProfile } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    full_name: "",
-    email: "",
     location: "",
     degree_certification: "",
     fields_of_study: "",
@@ -29,8 +28,44 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnaireProps) =
     career_history: ""
   });
 
-  const totalSteps = 4;
+  const totalSteps = 3; // Reduced from 4 since we're removing personal info step
   const progress = (currentStep / totalSteps) * 100;
+
+  // Pre-populate user data from auth
+  useEffect(() => {
+    if (user) {
+      console.log('User data for onboarding:', user);
+      // User name and email are already captured during sign-up
+      // We don't need to ask for them again
+    }
+  }, [user]);
+
+  const educationLevels = [
+    "High School",
+    "Bachelor's",
+    "Master's",
+    "PhD"
+  ];
+
+  const fieldsOfStudy = [
+    "Computer Science",
+    "Business Administration",
+    "Engineering",
+    "Marketing",
+    "Finance",
+    "Psychology",
+    "Design",
+    "Data Science",
+    "Healthcare",
+    "Education",
+    "Other"
+  ];
+
+  // Generate graduation years from 1985 to 2050
+  const graduationYears = Array.from(
+    { length: 2050 - 1985 + 1 }, 
+    (_, i) => (1985 + i).toString()
+  );
 
   const handleNext = async () => {
     if (currentStep < totalSteps) {
@@ -49,9 +84,14 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnaireProps) =
         .map(skill => skill.trim())
         .filter(skill => skill.length > 0);
 
+      // Get user's display name from auth metadata or email
+      const fullName = user.user_metadata?.full_name || 
+                      user.user_metadata?.name || 
+                      user.email?.split('@')[0] || '';
+
       await updateProfile({
-        full_name: formData.full_name,
-        email: formData.email,
+        full_name: fullName,
+        email: user.email,
         location: formData.location,
         degree_certification: formData.degree_certification,
         fields_of_study: formData.fields_of_study,
@@ -75,6 +115,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnaireProps) =
 
       onComplete();
     } catch (error: any) {
+      console.error('Error completing onboarding:', error);
       toast({
         title: "Error",
         description: "Failed to save profile. Please try again.",
@@ -95,25 +136,6 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnaireProps) =
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="full_name">Full Name</Label>
-              <Input
-                id="full_name"
-                placeholder="Enter your full name"
-                value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
-            <div>
               <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
@@ -122,45 +144,67 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnaireProps) =
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               />
             </div>
+            <div>
+              <Label htmlFor="degree_certification">Education Level</Label>
+              <Select 
+                value={formData.degree_certification} 
+                onValueChange={(value) => setFormData({ ...formData, degree_certification: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your education level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {educationLevels.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {level}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="fields_of_study">Field of Study</Label>
+              <Select 
+                value={formData.fields_of_study} 
+                onValueChange={(value) => setFormData({ ...formData, fields_of_study: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your field of study" />
+                </SelectTrigger>
+                <SelectContent>
+                  {fieldsOfStudy.map((field) => (
+                    <SelectItem key={field} value={field}>
+                      {field}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="graduation_year">Graduation Year</Label>
+              <Select 
+                value={formData.graduation_year} 
+                onValueChange={(value) => setFormData({ ...formData, graduation_year: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select graduation year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {graduationYears.reverse().map((year) => (
+                    <SelectItem key={year} value={year}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         );
       case 2:
         return (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="degree_certification">Degree/Certification</Label>
-              <Input
-                id="degree_certification"
-                placeholder="Enter your degree or certification"
-                value={formData.degree_certification}
-                onChange={(e) => setFormData({ ...formData, degree_certification: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="fields_of_study">Fields of Study</Label>
-              <Input
-                id="fields_of_study"
-                placeholder="Enter your fields of study"
-                value={formData.fields_of_study}
-                onChange={(e) => setFormData({ ...formData, fields_of_study: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="graduation_year">Graduation Year/Expected</Label>
-              <Input
-                id="graduation_year"
-                placeholder="Enter graduation year (e.g., 2023, Expected 2025)"
-                value={formData.graduation_year}
-                onChange={(e) => setFormData({ ...formData, graduation_year: e.target.value })}
-              />
-            </div>
-          </div>
-        );
-      case 3:
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="hard_skills">Hard/Technical Skills</Label>
+              <Label htmlFor="hard_skills">Technical Skills</Label>
               <Textarea
                 id="hard_skills"
                 placeholder="List your technical skills separated by commas (e.g., JavaScript, Python, React, SQL)"
@@ -179,7 +223,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnaireProps) =
             </div>
           </div>
         );
-      case 4:
+      case 3:
         return (
           <div className="space-y-4">
             <div className="text-center">
@@ -201,17 +245,16 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnaireProps) =
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-800">Welcome to Pathwise!</h1>
-        <p className="text-slate-600 mt-2">Let's get to know you better to provide personalized career guidance</p>
+        <p className="text-slate-600 mt-2">Let's complete your profile to provide personalized career guidance</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Step {currentStep} of {totalSteps}</CardTitle>
           <CardDescription>
-            {currentStep === 1 && "Personal Information"}
-            {currentStep === 2 && "Educational Background"}
-            {currentStep === 3 && "Skills & Experience"}
-            {currentStep === 4 && "All set!"}
+            {currentStep === 1 && "Educational Background"}
+            {currentStep === 2 && "Skills & Experience"}
+            {currentStep === 3 && "All set!"}
           </CardDescription>
           <Progress value={progress} className="mt-2" />
         </CardHeader>
@@ -231,7 +274,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnaireProps) =
               onClick={handleNext}
               className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
             >
-              {currentStep === totalSteps ? "Complete" : "Next"}
+              {currentStep === totalSteps ? "Complete Onboarding" : "Next"}
               {currentStep !== totalSteps && <ArrowRight className="w-4 h-4 ml-2" />}
             </Button>
           </div>
