@@ -114,6 +114,7 @@ export type Database = {
           created_at: string | null
           degree_certification: string | null
           email: string | null
+          field_of_interest: string | null
           fields_of_study: string | null
           full_name: string | null
           graduation_year: string | null
@@ -129,6 +130,7 @@ export type Database = {
           created_at?: string | null
           degree_certification?: string | null
           email?: string | null
+          field_of_interest?: string | null
           fields_of_study?: string | null
           full_name?: string | null
           graduation_year?: string | null
@@ -144,6 +146,7 @@ export type Database = {
           created_at?: string | null
           degree_certification?: string | null
           email?: string | null
+          field_of_interest?: string | null
           fields_of_study?: string | null
           full_name?: string | null
           graduation_year?: string | null
@@ -158,8 +161,11 @@ export type Database = {
       }
       skills_assessments: {
         Row: {
+          assessment_type: string | null
           completed_at: string | null
+          field_specific_skills: Json | null
           id: string
+          personality_traits: Json | null
           recommended_paths: string[] | null
           soft_skills: Json | null
           strengths: string[] | null
@@ -168,8 +174,11 @@ export type Database = {
           weaknesses: string[] | null
         }
         Insert: {
+          assessment_type?: string | null
           completed_at?: string | null
+          field_specific_skills?: Json | null
           id?: string
+          personality_traits?: Json | null
           recommended_paths?: string[] | null
           soft_skills?: Json | null
           strengths?: string[] | null
@@ -178,8 +187,11 @@ export type Database = {
           weaknesses?: string[] | null
         }
         Update: {
+          assessment_type?: string | null
           completed_at?: string | null
+          field_specific_skills?: Json | null
           id?: string
+          personality_traits?: Json | null
           recommended_paths?: string[] | null
           soft_skills?: Json | null
           strengths?: string[] | null

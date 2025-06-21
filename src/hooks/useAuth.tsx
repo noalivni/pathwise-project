@@ -12,6 +12,7 @@ interface Profile {
   degree_certification: string | null;
   fields_of_study: string | null;
   graduation_year: string | null;
+  field_of_interest: string | null;
   hard_skills: string[] | null;
   career_history: string | null;
   subscription_status: string;

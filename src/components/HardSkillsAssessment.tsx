@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,12 +11,66 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 const HardSkillsAssessment = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [currentSkill, setCurrentSkill] = useState(0);
   const [skillRatings, setSkillRatings] = useState<{ [key: string]: number }>({});
   const [showResults, setShowResults] = useState(false);
+  const [relevantSkills, setRelevantSkills] = useState<Array<{ name: string; category: string }>>([]);
 
-  const hardSkills = [
+  const skillsByField = {
+    "UX/UI Design": [
+      { name: "Figma", category: "Design Tools" },
+      { name: "Adobe XD", category: "Design Tools" },
+      { name: "Sketch", category: "Design Tools" },
+      { name: "Photoshop", category: "Design Tools" },
+      { name: "User Research", category: "Research" },
+      { name: "Prototyping", category: "Design Process" },
+      { name: "HTML/CSS", category: "Frontend" },
+      { name: "JavaScript", category: "Frontend" }
+    ],
+    "Data Analytics": [
+      { name: "Excel", category: "Data Analysis" },
+      { name: "SQL", category: "Database" },
+      { name: "Python", category: "Programming" },
+      { name: "R", category: "Programming" },
+      { name: "Tableau", category: "Visualization" },
+      { name: "Power BI", category: "Visualization" },
+      { name: "Statistics", category: "Analytics" },
+      { name: "Machine Learning", category: "Analytics" }
+    ],
+    "Marketing": [
+      { name: "Google Analytics", category: "Analytics" },
+      { name: "Facebook Ads", category: "Advertising" },
+      { name: "Google Ads", category: "Advertising" },
+      { name: "SEO", category: "Digital Marketing" },
+      { name: "Content Marketing", category: "Strategy" },
+      { name: "Email Marketing", category: "Communication" },
+      { name: "Social Media", category: "Social" },
+      { name: "Adobe Creative Suite", category: "Design" }
+    ],
+    "Software Development": [
+      { name: "JavaScript", category: "Programming" },
+      { name: "Python", category: "Programming" },
+      { name: "React", category: "Frontend" },
+      { name: "Node.js", category: "Backend" },
+      { name: "SQL", category: "Database" },
+      { name: "Git", category: "Version Control" },
+      { name: "AWS", category: "Cloud" },
+      { name: "Docker", category: "DevOps" }
+    ],
+    "Product Management": [
+      { name: "Roadmapping", category: "Strategy" },
+      { name: "User Research", category: "Research" },
+      { name: "Analytics", category: "Data" },
+      { name: "A/B Testing", category: "Experimentation" },
+      { name: "Agile/Scrum", category: "Methodology" },
+      { name: "Wireframing", category: "Design" },
+      { name: "SQL", category: "Data" },
+      { name: "Project Management", category: "Management" }
+    ]
+  };
+
+  const defaultSkills = [
     { name: "Microsoft Excel", category: "Data Analysis" },
     { name: "SQL", category: "Database" },
     { name: "Python", category: "Programming" },
@@ -29,8 +83,16 @@ const HardSkillsAssessment = () => {
     { name: "WordPress", category: "Web Development" }
   ];
 
+  useEffect(() => {
+    if (profile?.field_of_interest && skillsByField[profile.field_of_interest as keyof typeof skillsByField]) {
+      setRelevantSkills(skillsByField[profile.field_of_interest as keyof typeof skillsByField]);
+    } else {
+      setRelevantSkills(defaultSkills);
+    }
+  }, [profile]);
+
   const handleRatingChange = (value: number[]) => {
-    const skillName = hardSkills[currentSkill].name;
+    const skillName = relevantSkills[currentSkill].name;
     setSkillRatings(prev => ({
       ...prev,
       [skillName]: value[0]
@@ -38,7 +100,7 @@ const HardSkillsAssessment = () => {
   };
 
   const handleNext = () => {
-    if (currentSkill < hardSkills.length - 1) {
+    if (currentSkill < relevantSkills.length - 1) {
       setCurrentSkill(currentSkill + 1);
     } else {
       saveAssessmentResults();
@@ -46,7 +108,7 @@ const HardSkillsAssessment = () => {
   };
 
   const handleSkip = () => {
-    const skillName = hardSkills[currentSkill].name;
+    const skillName = relevantSkills[currentSkill].name;
     setSkillRatings(prev => ({
       ...prev,
       [skillName]: 0
@@ -63,7 +125,10 @@ const HardSkillsAssessment = () => {
         .insert({
           user_id: user.id,
           technical_skills: skillRatings,
-          soft_skills: {},
+          field_specific_skills: {
+            field: profile?.field_of_interest || 'General',
+            skills: skillRatings
+          },
           assessment_type: 'hard_skills'
         });
 
@@ -108,6 +173,17 @@ const HardSkillsAssessment = () => {
     };
   };
 
+  if (relevantSkills.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-slate-800">Loading Assessment...</h1>
+          <p className="text-slate-600 mt-2">Preparing your personalized skills assessment</p>
+        </div>
+      </div>
+    );
+  }
+
   if (showResults) {
     const recommendations = getRecommendations();
     
@@ -115,11 +191,13 @@ const HardSkillsAssessment = () => {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-slate-800">Hard Skills Assessment Results</h1>
-          <p className="text-slate-600 mt-2">Your technical skill proficiency overview</p>
+          <p className="text-slate-600 mt-2">
+            Your technical skill proficiency for {profile?.field_of_interest || 'General'}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {hardSkills.map((skill, index) => {
+          {relevantSkills.map((skill, index) => {
             const rating = skillRatings[skill.name] || 0;
             const skillInfo = getSkillLevel(rating);
             
@@ -204,15 +282,17 @@ const HardSkillsAssessment = () => {
     );
   }
 
-  const progress = ((currentSkill + 1) / hardSkills.length) * 100;
-  const currentSkillData = hardSkills[currentSkill];
+  const progress = ((currentSkill + 1) / relevantSkills.length) * 100;
+  const currentSkillData = relevantSkills[currentSkill];
   const currentRating = skillRatings[currentSkillData.name] || 0;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-slate-800">Hard Skills Assessment</h1>
-        <p className="text-slate-600 mt-2">Rate your proficiency with technical tools and software</p>
+        <p className="text-slate-600 mt-2">
+          Rate your proficiency with {profile?.field_of_interest || 'technical'} tools and skills
+        </p>
       </div>
 
       <Card>
@@ -220,7 +300,7 @@ const HardSkillsAssessment = () => {
           <div className="flex justify-between items-center">
             <CardTitle className="flex items-center">
               <Wrench className="mr-2 h-5 w-5 text-teal-600" />
-              Skill {currentSkill + 1} of {hardSkills.length}
+              Skill {currentSkill + 1} of {relevantSkills.length}
             </CardTitle>
             <Badge variant="outline">
               {currentSkillData.category}
@@ -268,7 +348,7 @@ const HardSkillsAssessment = () => {
               onClick={handleNext}
               className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
             >
-              {currentSkill === hardSkills.length - 1 ? 'Complete Assessment' : 'Next Skill'}
+              {currentSkill === relevantSkills.length - 1 ? 'Complete Assessment' : 'Next Skill'}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
