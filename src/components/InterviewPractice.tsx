@@ -22,7 +22,6 @@ const InterviewPractice = () => {
   const [currentQuestion, setCurrentQuestion] = useState<InterviewQuestion | null>(null);
   const [userResponse, setUserResponse] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [sessionQuestions, setSessionQuestions] = useState<InterviewQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -193,22 +192,6 @@ const InterviewPractice = () => {
     }
   };
 
-  const toggleRecording = () => {
-    if (isRecording) {
-      setIsRecording(false);
-      toast({
-        title: "Recording Stopped",
-        description: "Your response has been recorded.",
-      });
-    } else {
-      setIsRecording(true);
-      toast({
-        title: "Recording Started",
-        description: "Speak your response now.",
-      });
-    }
-  };
-
   const stopSpeaking = () => {
     if ('speechSynthesis' in window) {
       speechSynthesis.cancel();
@@ -293,7 +276,6 @@ const InterviewPractice = () => {
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• 5 randomized interview questions</li>
                 <li>• Text-to-speech for questions</li>
-                <li>• Voice recording capability</li>
                 <li>• AI-powered feedback on your responses</li>
               </ul>
             </div>
@@ -362,30 +344,12 @@ const InterviewPractice = () => {
             <Textarea
               value={userResponse}
               onChange={(e) => setUserResponse(e.target.value)}
-              placeholder="Type your response here or use voice recording..."
+              placeholder="Type your response here..."
               rows={6}
               className="mb-4"
             />
             
             <div className="flex gap-2">
-              <Button
-                onClick={toggleRecording}
-                variant={isRecording ? "destructive" : "outline"}
-                size="sm"
-              >
-                {isRecording ? (
-                  <>
-                    <MicOff className="w-4 h-4 mr-2" />
-                    Stop Recording
-                  </>
-                ) : (
-                  <>
-                    <Mic className="w-4 h-4 mr-2" />
-                    Record Response
-                  </>
-                )}
-              </Button>
-              
               <Button onClick={generateFeedback} variant="outline" size="sm">
                 Get Feedback
               </Button>
