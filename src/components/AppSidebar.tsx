@@ -14,6 +14,13 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
+interface MenuItem {
+  id: string;
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  premium?: boolean;
+}
+
 interface AppSidebarProps {
   userRole: 'user' | 'admin';
   activeView: string;
@@ -22,7 +29,7 @@ interface AppSidebarProps {
 }
 
 const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebarProps) => {
-  const userMenuItems = [
+  const userMenuItems: MenuItem[] = [
     { id: 'dashboard', title: 'Dashboard', icon: Home },
     { id: 'onboarding', title: 'Onboarding', icon: FileText },
     { id: 'assessment', title: 'Skills Assessment', icon: Target },
@@ -32,7 +39,7 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
     { id: 'resume', title: 'Resume Builder', icon: FileUser },
   ];
 
-  const adminMenuItems = [
+  const adminMenuItems: MenuItem[] = [
     { id: 'dashboard', title: 'Admin Dashboard', icon: BarChart3 },
   ];
 
