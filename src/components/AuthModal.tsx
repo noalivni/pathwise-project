@@ -175,7 +175,7 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
                 onClick={switchToSignIn}
                 className="w-full"
               >
-                Sign In (Returning Users)
+                Sign In
               </Button>
             </>
           ) : (
@@ -189,7 +189,7 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
                 onClick={switchToSignUp}
                 className="w-full"
               >
-                Sign Up (New Users)
+                Sign Up
               </Button>
             </>
           )}

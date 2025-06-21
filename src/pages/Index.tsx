@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import AuthModal from "@/components/AuthModal";
@@ -39,13 +40,13 @@ const LandingPage = () => {
               variant="outline"
               className="border-teal-200 text-teal-700 hover:bg-teal-50"
             >
-              Sign In (Returning Users)
+              Sign In
             </Button>
             <Button 
               onClick={handleSignUp}
               className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
             >
-              Sign Up (New Users)
+              Sign Up
             </Button>
           </div>
         </div>
