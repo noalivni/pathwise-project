@@ -44,7 +44,7 @@ export const calculateCareerMatch = ({ role, assessment, profile }: MatchCalcula
     let assessmentFactors = 0;
     
     if (assessment.technical_skills && typeof assessment.technical_skills === 'object') {
-      const techValues = Object.values(assessment.technical_skills) as number[];
+      const techValues = Object.values(assessment.technical_skills).filter((val): val is number => typeof val === 'number');
       const techSkillsAvg = techValues.length > 0 ? 
         techValues.reduce((a, b) => a + b, 0) / techValues.length : 0;
       overallAssessmentScore += (techSkillsAvg / 5) * 15; // Convert to percentage and weight
@@ -52,7 +52,7 @@ export const calculateCareerMatch = ({ role, assessment, profile }: MatchCalcula
     }
     
     if (assessment.soft_skills && typeof assessment.soft_skills === 'object') {
-      const softValues = Object.values(assessment.soft_skills) as number[];
+      const softValues = Object.values(assessment.soft_skills).filter((val): val is number => typeof val === 'number');
       const softSkillsAvg = softValues.length > 0 ?
         softValues.reduce((a, b) => a + b, 0) / softValues.length : 0;
       overallAssessmentScore += (softSkillsAvg / 5) * 10; // Convert to percentage and weight
@@ -115,7 +115,7 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
   // 2. Hard Skills Assessment Match (25% weight)
   if (hardSkillsAssessment?.technical_skills) {
     const userSkills = Object.keys(hardSkillsAssessment.technical_skills);
-    const skillScores = Object.values(hardSkillsAssessment.technical_skills) as number[];
+    const skillScores = Object.values(hardSkillsAssessment.technical_skills).filter((val): val is number => typeof val === 'number');
     const avgUserSkillLevel = skillScores.length > 0 ? 
       skillScores.reduce((a, b) => a + b, 0) / skillScores.length : 2.5;
     
@@ -163,11 +163,11 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
     const softSkills = softSkillsAssessment.soft_skills;
     let personalityScore = 0;
 
-    const communication = softSkills["Communication"] || 2.5;
-    const leadership = softSkills["Leadership"] || 2.5;
-    const teamwork = softSkills["Teamwork"] || 2.5;
-    const adaptability = softSkills["Adaptability"] || 2.5;
-    const creativity = softSkills["Creativity"] || 2.5;
+    const communication = typeof softSkills["Communication"] === 'number' ? softSkills["Communication"] : 2.5;
+    const leadership = typeof softSkills["Leadership"] === 'number' ? softSkills["Leadership"] : 2.5;
+    const teamwork = typeof softSkills["Teamwork"] === 'number' ? softSkills["Teamwork"] : 2.5;
+    const adaptability = typeof softSkills["Adaptability"] === 'number' ? softSkills["Adaptability"] : 2.5;
+    const creativity = typeof softSkills["Creativity"] === 'number' ? softSkills["Creativity"] : 2.5;
 
     const roleTitle = role.job_title.toLowerCase();
     const roleDesc = role.job_description?.toLowerCase() || '';
@@ -226,7 +226,9 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
     }
 
     // Base personality score from overall soft skills average
-    const avgSoftSkills = Object.values(softSkills).reduce((a: number, b: any) => a + (typeof b === 'number' ? b : 0), 0) / Object.keys(softSkills).length;
+    const softSkillValues = Object.values(softSkills).filter((val): val is number => typeof val === 'number');
+    const avgSoftSkills = softSkillValues.length > 0 ? 
+      softSkillValues.reduce((a, b) => a + b, 0) / softSkillValues.length : 2.5;
     personalityScore += (avgSoftSkills / 5) * 8;
 
     matchScore += Math.max(personalityScore, 0);
