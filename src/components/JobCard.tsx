@@ -14,20 +14,20 @@ interface JobCardProps {
 
 const JobCard = ({ role, onBookmark, skillFitTags = [] }: JobCardProps) => {
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="card-hover transition-all duration-200">
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <CardTitle className="text-xl">{role.job_title}</CardTitle>
+              <CardTitle className="text-xl text-pathwise-text">{role.job_title}</CardTitle>
               <Badge className={`${getMatchColor(role.match_percentage || 0)} text-white`}>
                 {role.match_percentage || 0}% Match
               </Badge>
             </div>
-            <CardDescription className="text-lg font-medium text-slate-700 mb-2">
+            <CardDescription className="text-lg font-medium text-pathwise-text-muted mb-2">
               {role.category}
             </CardDescription>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-pathwise-text-secondary">
               {getMatchDescription(role.match_percentage || 0)}
             </p>
           </div>
@@ -35,17 +35,17 @@ const JobCard = ({ role, onBookmark, skillFitTags = [] }: JobCardProps) => {
             variant="ghost"
             size="sm"
             onClick={() => onBookmark(role.id)}
-            className="flex items-center gap-1"
+            className="flex items-center gap-1 hover:bg-standard-hover"
           >
-            <Bookmark className={`h-4 w-4 ${role.is_bookmarked ? 'fill-current text-teal-600' : ''}`} />
+            <Bookmark className={`h-4 w-4 ${role.is_bookmarked ? 'fill-current text-teal-600' : 'text-pathwise-text-muted'}`} />
           </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-slate-600">{role.job_description}</p>
+        <p className="text-pathwise-text-secondary">{role.job_description}</p>
         
         <div>
-          <h4 className="text-sm font-semibold text-slate-700 mb-2">Required Skills:</h4>
+          <h4 className="text-sm font-semibold text-pathwise-text mb-2">Required Skills:</h4>
           <div className="flex flex-wrap gap-2">
             {role.required_skills.map((skill, index) => {
               const isSkillFit = skillFitTags.includes(skill.toLowerCase());
@@ -77,8 +77,8 @@ const JobCard = ({ role, onBookmark, skillFitTags = [] }: JobCardProps) => {
           </div>
         )}
         
-        <div className="flex justify-between items-center pt-4 border-t">
-          <div className="flex items-center gap-4 text-sm text-slate-500">
+        <div className="flex justify-between items-center pt-4 border-t border-border">
+          <div className="flex items-center gap-4 text-sm text-pathwise-text-secondary">
             <div className="flex items-center gap-1">
               <Target className="h-4 w-4" />
               Career Path
@@ -88,7 +88,7 @@ const JobCard = ({ role, onBookmark, skillFitTags = [] }: JobCardProps) => {
               {role.match_percentage && role.match_percentage >= 65 ? 'Recommended' : 'Explore Further'}
             </div>
           </div>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="hover:bg-standard-hover">
             Learn More
           </Button>
         </div>

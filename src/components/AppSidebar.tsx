@@ -62,7 +62,7 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
             alt="Pathwise Logo" 
             className="w-10 h-10"
           />
-          <span className="text-2xl font-bold text-sidebar-foreground">
+          <span className="text-2xl font-bold text-pathwise-text">
             Pathwise
           </span>
         </div>
@@ -75,7 +75,7 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
       
       <SidebarContent className="bg-sidebar">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/60 font-medium">
+          <SidebarGroupLabel className="text-pathwise-text-secondary font-medium">
             {userRole === 'admin' ? 'Admin Tools' : 'Career Tools'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -85,8 +85,10 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
                   <SidebarMenuButton 
                     onClick={() => onViewChange(item.id)}
                     isActive={activeView === item.id}
-                    className={`flex items-center justify-between hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200 ${
-                      activeView === item.id ? 'bg-sidebar-accent text-sidebar-accent-foreground border-l-2 border-primary' : ''
+                    className={`flex items-center justify-between nav-link transition-colors duration-200 ${
+                      activeView === item.id 
+                        ? 'bg-standard-hover text-pathwise-text border-l-2 border-primary' 
+                        : 'text-pathwise-text hover:bg-standard-hover hover:text-pathwise-text'
                     }`}
                   >
                     <div className="flex items-center">

@@ -51,6 +51,7 @@
     /* Custom hover states */
     --primary-hover: 267 78% 78%; /* #B889F5 */
     --secondary-hover: 256 45% 55%; /* Lighter version of secondary */
+    --standard-hover: 256 38% 46%; /* #5C469C for general hover states */
   }
 
   .dark {
@@ -84,6 +85,7 @@
     --sidebar-ring: 267 87% 84%;
     --primary-hover: 267 78% 78%;
     --secondary-hover: 256 45% 55%;
+    --standard-hover: 256 38% 46%;
   }
 }
 
@@ -143,5 +145,35 @@
 
   .input-valid {
     @apply border-green-500 focus:border-green-500 focus:ring-green-500/20;
+  }
+
+  /* Global hover states for interactive elements */
+  .hover-pathwise {
+    @apply transition-colors duration-200;
+  }
+
+  .hover-pathwise:hover {
+    background-color: hsl(var(--standard-hover));
+  }
+
+  /* Card hover states */
+  .card-hover {
+    @apply transition-all duration-200 cursor-pointer;
+  }
+
+  .card-hover:hover {
+    background-color: hsl(var(--standard-hover));
+    transform: translateY(-2px);
+    @apply shadow-lg;
+  }
+
+  /* Navigation link hover states */
+  .nav-link {
+    @apply transition-colors duration-200;
+  }
+
+  .nav-link:hover {
+    background-color: hsl(var(--standard-hover));
+    color: hsl(var(--foreground));
   }
 }

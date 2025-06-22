@@ -77,8 +77,11 @@ export default {
 					'light-purple': '#D4ADFC',
 					'purple-hover': '#B889F5',
 					'text': '#F0F0F0',
-					'text-muted': '#BBBBBB'
-				}
+					'text-muted': '#D0D0D0',
+					'text-secondary': '#BBBBBB'
+				},
+				// Standard hover color
+				'standard-hover': 'hsl(var(--standard-hover))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
