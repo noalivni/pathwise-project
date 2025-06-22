@@ -30,7 +30,7 @@ const WelcomeModal = ({
           <div className="bg-primary p-8 text-center text-primary-foreground">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <img 
-                src="/lovable-uploads/ceb34abc-2d20-4666-9bc9-a202c773db0a.png" 
+                src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
                 alt="Pathwise Logo" 
                 className="w-10 h-10"
               />

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -120,7 +119,7 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">
             <img 
-              src="/lovable-uploads/ceb34abc-2d20-4666-9bc9-a202c773db0a.png" 
+              src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
               alt="Pathwise Logo" 
               className="w-16 h-16"
             />
