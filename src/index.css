@@ -52,6 +52,10 @@
     --primary-hover: 222.2 47.4% 20%;
     --secondary-hover: 210 40% 90%;
     --standard-hover: 210 40% 90%;
+    
+    /* Global text colors for light mode */
+    --main-text: 222.2 84% 4.9%;
+    --sub-text: 215.4 16.3% 46.9%;
   }
 
   .dark {
@@ -93,10 +97,14 @@
     --sidebar-border: 256 38% 46%;
     --sidebar-ring: 267 87% 84%;
 
-    /* Custom hover states */
+    /* Custom hover states - using #5C469C as requested */
     --primary-hover: 267 78% 78%; /* #B889F5 */
-    --secondary-hover: 256 45% 55%; /* Lighter version of secondary */
+    --secondary-hover: 256 38% 46%; /* #5C469C */
     --standard-hover: 256 38% 46%; /* #5C469C for general hover states */
+    
+    /* Global text colors for dark mode */
+    --main-text: 0 0% 94%; /* #F0F0F0 */
+    --sub-text: 0 0% 82%; /* #D0D0D0 */
   }
 }
 
@@ -108,6 +116,15 @@
   body {
     @apply bg-background text-foreground font-inter;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+
+  /* Global text styling */
+  .text-main {
+    color: hsl(var(--main-text));
+  }
+  
+  .text-sub {
+    color: hsl(var(--sub-text));
   }
 
   /* Custom animations for dark mode */
@@ -158,7 +175,7 @@
     @apply border-green-500 focus:border-green-500 focus:ring-green-500/20;
   }
 
-  /* Global hover states for interactive elements */
+  /* Global hover states for interactive elements - using #5C469C */
   .hover-pathwise {
     @apply transition-colors duration-200;
   }
@@ -186,5 +203,10 @@
   .nav-link:hover {
     background-color: hsl(var(--standard-hover));
     color: hsl(var(--foreground));
+  }
+
+  /* Button hover states - ensuring consistent #5C469C hover */
+  .btn-hover:hover {
+    background-color: #5C469C !important;
   }
 }

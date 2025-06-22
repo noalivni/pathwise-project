@@ -146,11 +146,11 @@ const ResumeBuilder = () => {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-pathwise-text">Smart Resume Builder</h1>
-          <p className="text-pathwise-text-muted mt-2">Generate a professional resume using your profile data</p>
+          <h1 className="text-3xl font-bold text-main">Smart Resume Builder</h1>
+          <p className="text-sub mt-2">Generate a professional resume using your profile data</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setIsEditing(!isEditing)} variant="outline">
+          <Button onClick={() => setIsEditing(!isEditing)} variant="outline" className="btn-hover">
             {isEditing ? <Eye className="w-4 h-4 mr-2" /> : <Edit3 className="w-4 h-4 mr-2" />}
             {isEditing ? 'Preview Mode' : 'Edit Mode'}
           </Button>
@@ -161,33 +161,46 @@ const ResumeBuilder = () => {
         {/* Template Selection */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center text-pathwise-text">
+            <CardTitle className="flex items-center text-main">
               <FileText className="mr-2 h-5 w-5 text-teal-600" />
               Resume Templates
             </CardTitle>
-            <CardDescription className="text-pathwise-text-muted">Choose your resume design</CardDescription>
+            <CardDescription className="text-sub">Choose your resume design</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {templates.map((template) => (
               <div
                 key={template.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
                   selectedTemplate === template.id 
-                    ? 'border-teal-500 bg-teal-50 shadow-md' 
+                    ? 'border-teal-500 shadow-md' 
                     : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }`}
+                style={{
+                  backgroundColor: selectedTemplate === template.id ? '#5C469C' : 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedTemplate !== template.id) {
+                    e.currentTarget.style.backgroundColor = '#5C469C';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedTemplate !== template.id) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
                 onClick={() => handleTemplateChange(template.id)}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <h3 className="font-semibold text-pathwise-text">{template.name}</h3>
-                    <p className="text-sm text-pathwise-text-muted">{template.description}</p>
+                    <h3 className="font-semibold text-main">{template.name}</h3>
+                    <p className="text-sm text-sub">{template.description}</p>
                   </div>
                   {selectedTemplate === template.id && (
                     <Badge className="bg-teal-500">Active</Badge>
                   )}
                 </div>
-                <p className="text-xs text-pathwise-text-secondary mt-2 italic">{template.preview}</p>
+                <p className="text-xs text-sub mt-2 italic">{template.preview}</p>
               </div>
             ))}
           </CardContent>
@@ -197,56 +210,56 @@ const ResumeBuilder = () => {
         {isEditing && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-pathwise-text">Edit Resume Content</CardTitle>
-              <CardDescription className="text-pathwise-text-muted">Customize your resume information</CardDescription>
+              <CardTitle className="text-main">Edit Resume Content</CardTitle>
+              <CardDescription className="text-sub">Customize your resume information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="fullName" className="text-pathwise-text-muted">Full Name</Label>
+                <Label htmlFor="fullName" className="text-sub">Full Name</Label>
                 <Input
                   id="fullName"
                   value={resumeData.fullName}
                   onChange={(e) => setResumeData({ ...resumeData, fullName: e.target.value })}
-                  className="text-pathwise-text"
+                  className="text-main"
                 />
               </div>
               <div>
-                <Label htmlFor="careerGoal" className="text-pathwise-text-muted">Career Goal</Label>
+                <Label htmlFor="careerGoal" className="text-sub">Career Goal</Label>
                 <Input
                   id="careerGoal"
                   value={resumeData.careerGoal}
                   onChange={(e) => setResumeData({ ...resumeData, careerGoal: e.target.value })}
-                  className="text-pathwise-text"
+                  className="text-main"
                 />
               </div>
               <div>
-                <Label htmlFor="summary" className="text-pathwise-text-muted">Professional Summary</Label>
+                <Label htmlFor="summary" className="text-sub">Professional Summary</Label>
                 <Textarea
                   id="summary"
                   value={resumeData.summary}
                   onChange={(e) => setResumeData({ ...resumeData, summary: e.target.value })}
                   rows={3}
-                  className="text-pathwise-text"
+                  className="text-main"
                 />
               </div>
               <div>
-                <Label htmlFor="skills" className="text-pathwise-text-muted">Skills (comma separated)</Label>
+                <Label htmlFor="skills" className="text-sub">Skills (comma separated)</Label>
                 <Textarea
                   id="skills"
                   value={resumeData.skills.join(', ')}
                   onChange={(e) => handleSkillsChange(e.target.value)}
                   rows={2}
-                  className="text-pathwise-text"
+                  className="text-main"
                 />
               </div>
               <div>
-                <Label htmlFor="experience" className="text-pathwise-text-muted">Experience</Label>
+                <Label htmlFor="experience" className="text-sub">Experience</Label>
                 <Textarea
                   id="experience"
                   value={resumeData.experience}
                   onChange={(e) => setResumeData({ ...resumeData, experience: e.target.value })}
                   rows={4}
-                  className="text-pathwise-text"
+                  className="text-main"
                 />
               </div>
             </CardContent>
@@ -256,8 +269,8 @@ const ResumeBuilder = () => {
         {/* Resume Preview */}
         <Card className={`lg:col-span-${isEditing ? '1' : '2'}`}>
           <CardHeader>
-            <CardTitle className="text-pathwise-text">Resume Preview</CardTitle>
-            <CardDescription className="text-pathwise-text-muted">
+            <CardTitle className="text-main">Resume Preview</CardTitle>
+            <CardDescription className="text-sub">
               Template: {templates.find(t => t.id === selectedTemplate)?.name}
             </CardDescription>
           </CardHeader>
@@ -303,7 +316,7 @@ const ResumeBuilder = () => {
                   <h2 className={styles.title}>Technical Skills</h2>
                   <div className="flex flex-wrap gap-2">
                     {resumeData.skills.map((skill, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                      <Badge key={index} variant="outline" className="text-xs text-black bg-white border-gray-300">
                         {skill}
                       </Badge>
                     ))}
