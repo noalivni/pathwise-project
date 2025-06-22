@@ -6,6 +6,7 @@ import Dashboard from "@/components/Dashboard";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Target, Users, BookOpen, ArrowRight } from "lucide-react";
+import { TextShimmer } from "@/components/ui/text-shimmer";
 
 const LandingPage = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -64,7 +65,13 @@ const LandingPage = () => {
           />
         </div>
         <h1 className="text-5xl font-bold text-foreground mb-6">
-          Your AI-Powered <span className="text-primary">Career Companion</span>
+          <TextShimmer
+            duration={1.2}
+            className="text-5xl font-bold [--base-color:theme(colors.indigo.600)] [--base-gradient-color:theme(colors.indigo.300)] dark:[--base-color:theme(colors.indigo.700)] dark:[--base-gradient-color:theme(colors.indigo.400)]"
+            as="span"
+          >
+            Your AI-Powered Career Companion
+          </TextShimmer>
         </h1>
         <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
           Discover your perfect career path with personalized assessments, job recommendations, 
