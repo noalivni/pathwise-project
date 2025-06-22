@@ -1,0 +1,74 @@
+
+@layer base {
+  /* Enhanced button states */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground active:scale-95 transition-all duration-200;
+  }
+
+  .btn-primary:hover {
+    background-color: hsl(var(--primary-hover));
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground active:scale-95 transition-all duration-200;
+  }
+
+  .btn-secondary:hover {
+    background-color: hsl(var(--secondary-hover));
+  }
+
+  /* Enhanced input states */
+  .input-dark {
+    @apply bg-input border-border text-foreground placeholder:text-muted-foreground;
+    @apply focus:border-primary focus:ring-2 focus:ring-primary/20;
+    @apply transition-all duration-200;
+  }
+
+  .input-error {
+    @apply border-destructive focus:border-destructive focus:ring-destructive/20;
+  }
+
+  .input-valid {
+    @apply border-green-500 focus:border-green-500 focus:ring-green-500/20;
+  }
+
+  /* Global hover states for interactive elements */
+  .hover-pathwise {
+    @apply transition-colors duration-200;
+  }
+
+  .hover-pathwise:hover {
+    background-color: hsl(var(--standard-hover));
+  }
+
+  /* Card hover states */
+  .card-hover {
+    @apply transition-all duration-200 cursor-pointer;
+  }
+
+  .card-hover:hover {
+    background-color: hsl(var(--standard-hover));
+    transform: translateY(-2px);
+    @apply shadow-lg;
+  }
+
+  /* Navigation link hover states */
+  .nav-link {
+    @apply transition-colors duration-200;
+  }
+
+  .nav-link:hover {
+    background-color: hsl(var(--standard-hover));
+    color: hsl(var(--foreground));
+  }
+
+  /* Button hover states */
+  .btn-hover:hover {
+    background-color: hsl(var(--standard-hover)) !important;
+  }
+
+  /* Dark mode specific hover adjustments */
+  .dark .btn-hover:hover {
+    background-color: #5C469C !important;
+  }
+}

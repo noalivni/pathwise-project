@@ -1,0 +1,30 @@
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Global text styling */
+  .text-main {
+    color: hsl(var(--main-text));
+  }
+  
+  .text-sub {
+    color: hsl(var(--sub-text));
+  }
+
+  /* Theme-specific adjustments */
+  .light .pathwise-sidebar {
+    @apply border-r border-gray-200 bg-white shadow-sm;
+  }
+
+  .dark .pathwise-sidebar {
+    @apply border-r border-pathwise-purple bg-pathwise-dark-blue;
+  }
+}
