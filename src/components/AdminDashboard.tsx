@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -77,7 +76,7 @@ const AdminDashboard = () => {
       const combinedMonthlyData = combineMonthlyData(monthlyUserData, monthlyInterviewData);
       setMonthlyData(combinedMonthlyData);
 
-      // Fetch popular job roles data
+      // Fetch popular job roles data with updated join
       const { data: jobMatchData } = await supabase
         .from('user_job_matches')
         .select(`
@@ -119,7 +118,7 @@ const AdminDashboard = () => {
     return monthlyCount;
   };
 
-  const combineMonthlyData = (userData: { [key: string]: number }, interviewData: { [key: string]: number }) => {
+  const combineMonthlyData = (userData: { [key: string]: number }, interviewData: {[key: string]: number }) => {
     const months = Object.keys(userData);
     return months.map(month => ({
       month,
@@ -133,7 +132,7 @@ const AdminDashboard = () => {
     
     data.forEach(match => {
       const jobTitle = match.job_roles?.job_title || 'Unknown';
-      jobCounts[jobTitle] = (jobCounts[jobTitle] ||0) + 1;
+      jobCounts[jobTitle] = (jobCounts[jobTitle] || 0) + 1;
     });
 
     const sortedJobs = Object.entries(jobCounts)

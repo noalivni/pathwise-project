@@ -44,34 +44,28 @@ export type Database = {
       }
       job_roles: {
         Row: {
-          category: string | null
-          created_at: string | null
-          id: string
-          job_description: string | null
-          job_title: string
-          location: string | null
-          required_skills: string[] | null
-          salary_range: string | null
+          ID_num: number
+          Industry: string | null
+          job_title: string | null
+          Pay_grade: string | null
+          Short_description: string | null
+          Skills_required: string | null
         }
         Insert: {
-          category?: string | null
-          created_at?: string | null
-          id?: string
-          job_description?: string | null
-          job_title: string
-          location?: string | null
-          required_skills?: string[] | null
-          salary_range?: string | null
+          ID_num: number
+          Industry?: string | null
+          job_title?: string | null
+          Pay_grade?: string | null
+          Short_description?: string | null
+          Skills_required?: string | null
         }
         Update: {
-          category?: string | null
-          created_at?: string | null
-          id?: string
-          job_description?: string | null
-          job_title?: string
-          location?: string | null
-          required_skills?: string[] | null
-          salary_range?: string | null
+          ID_num?: number
+          Industry?: string | null
+          job_title?: string | null
+          Pay_grade?: string | null
+          Short_description?: string | null
+          Skills_required?: string | null
         }
         Relationships: []
       }
@@ -232,7 +226,7 @@ export type Database = {
         Row: {
           id: string
           is_bookmarked: boolean | null
-          job_role_id: string
+          job_role_id: number
           match_percentage: number | null
           user_id: string
           viewed_at: string | null
@@ -240,7 +234,7 @@ export type Database = {
         Insert: {
           id?: string
           is_bookmarked?: boolean | null
-          job_role_id: string
+          job_role_id: number
           match_percentage?: number | null
           user_id: string
           viewed_at?: string | null
@@ -248,7 +242,7 @@ export type Database = {
         Update: {
           id?: string
           is_bookmarked?: boolean | null
-          job_role_id?: string
+          job_role_id?: number
           match_percentage?: number | null
           user_id?: string
           viewed_at?: string | null
@@ -259,7 +253,7 @@ export type Database = {
             columns: ["job_role_id"]
             isOneToOne: false
             referencedRelation: "job_roles"
-            referencedColumns: ["id"]
+            referencedColumns: ["ID_num"]
           },
         ]
       }

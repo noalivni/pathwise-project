@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CareerRole } from "@/types/jobRecommendations";
-import { calculatePersonalizedCareerMatch } from "@/utils/careerMatching";
+import { calculatePersonalizedCareerMatch, parseSkillsFromText } from "@/utils/careerMatching";
 import JobSearchInput from "@/components/JobSearchInput";
 import JobCard from "@/components/JobCard";
 
@@ -68,7 +68,7 @@ const JobRecommendations = () => {
         
         // Primary filter: exact or partial matches
         const primaryMatches = allJobRoles.filter(role => {
-          const categoryLower = role.category?.toLowerCase() || '';
+          const categoryLower = role.Industry?.toLowerCase() || '';
           const titleLower = role.job_title?.toLowerCase() || '';
           
           return categoryLower.includes(fieldLower) || 
@@ -85,9 +85,9 @@ const JobRecommendations = () => {
         } else {
           // Fallback: include broader matches and general roles
           const secondaryMatches = allJobRoles.filter(role => {
-            const categoryLower = role.category?.toLowerCase() || '';
+            const categoryLower = role.Industry?.toLowerCase() || '';
             const titleLower = role.job_title?.toLowerCase() || '';
-            const descriptionLower = role.job_description?.toLowerCase() || '';
+            const descriptionLower = role.Short_description?.toLowerCase() || '';
             
             // Check for keyword overlap or general business roles
             const fieldWords = fieldLower.split(' ');
@@ -105,7 +105,7 @@ const JobRecommendations = () => {
           // Combine primary and secondary matches, remove duplicates
           const combinedMatches = [...primaryMatches];
           secondaryMatches.forEach(role => {
-            if (!combinedMatches.find(existing => existing.id === role.id)) {
+            if (!combinedMatches.find(existing => existing.ID_num === role.ID_num)) {
               combinedMatches.push(role);
             }
           });
@@ -148,7 +148,7 @@ const JobRecommendations = () => {
 
       const finalRoles = rolesWithMatches.map(role => ({
         ...role,
-        is_bookmarked: bookmarkedIds.has(role.id)
+        is_bookmarked: bookmarkedIds.has(role.ID_num)
       }));
 
       setCareerRoles(finalRoles);
@@ -167,7 +167,7 @@ const JobRecommendations = () => {
   const handleBookmark = async (roleId: string) => {
     if (!user) return;
 
-    const role = careerRoles.find(r => r.id === roleId);
+    const role = careerRoles.find(r => r.ID_num.toString() === roleId);
     const newBookmarkStatus = !role?.is_bookmarked;
 
     try {
@@ -175,7 +175,7 @@ const JobRecommendations = () => {
         .from('user_job_matches')
         .upsert({
           user_id: user.id,
-          job_role_id: roleId,
+          job_role_id: parseInt(roleId),
           is_bookmarked: newBookmarkStatus,
           match_percentage: role?.match_percentage || 0
         });
@@ -183,7 +183,7 @@ const JobRecommendations = () => {
       if (error) throw error;
 
       setCareerRoles(careerRoles.map(r => 
-        r.id === roleId ? { ...r, is_bookmarked: newBookmarkStatus } : r
+        r.ID_num.toString() === roleId ? { ...r, is_bookmarked: newBookmarkStatus } : r
       ));
 
       await supabase
@@ -208,11 +208,12 @@ const JobRecommendations = () => {
     }
   };
 
-  const filteredRoles = careerRoles.filter(role =>
-    role.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    role.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    role.required_skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredRoles = careerRoles.filter(role => {
+    const skills = parseSkillsFromText(role.Skills_required || '');
+    return role.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           role.Industry.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+  });
 
   if (loading) {
     return (
@@ -249,8 +250,16 @@ const JobRecommendations = () => {
       <div className="grid gap-6">
         {filteredRoles.map((role) => (
           <JobCard
-            key={role.id}
-            role={role}
+            key={role.ID_num}
+            role={{
+              id: role.ID_num.toString(),
+              job_title: role.job_title,
+              job_description: role.Short_description || '',
+              category: role.Industry,
+              required_skills: parseSkillsFromText(role.Skills_required || ''),
+              match_percentage: role.match_percentage,
+              is_bookmarked: role.is_bookmarked
+            }}
             onBookmark={handleBookmark}
           />
         ))}

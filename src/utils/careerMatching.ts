@@ -8,14 +8,20 @@ interface PersonalizedMatchParams {
   hardSkillsAssessment: any;
 }
 
+// Utility function to parse Skills_required text into array
+export const parseSkillsFromText = (skillsText: string): string[] => {
+  if (!skillsText || typeof skillsText !== 'string') return [];
+  return skillsText.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
+};
+
 export const calculateCareerMatch = ({ role, assessment, profile }: MatchCalculationParams): number => {
   let matchScore = 0;
   let totalFactors = 0;
 
   // Field of Interest Match (40% weight) - highest priority
-  if (profile?.field_of_interest && role.category) {
-    const fieldMatch = profile.field_of_interest.toLowerCase().includes(role.category.toLowerCase()) ||
-                      role.category.toLowerCase().includes(profile.field_of_interest.toLowerCase()) ||
+  if (profile?.field_of_interest && role.Industry) {
+    const fieldMatch = profile.field_of_interest.toLowerCase().includes(role.Industry.toLowerCase()) ||
+                      role.Industry.toLowerCase().includes(profile.field_of_interest.toLowerCase()) ||
                       role.job_title.toLowerCase().includes(profile.field_of_interest.toLowerCase());
     if (fieldMatch) {
       matchScore += 40;
@@ -24,16 +30,17 @@ export const calculateCareerMatch = ({ role, assessment, profile }: MatchCalcula
   totalFactors += 40;
 
   // Skills Match (35% weight) - technical alignment
-  if (role.required_skills && profile?.hard_skills) {
-    const skillsInCommon = role.required_skills.filter((skill: string) =>
+  if (role.Skills_required && profile?.hard_skills) {
+    const roleSkills = parseSkillsFromText(role.Skills_required);
+    const skillsInCommon = roleSkills.filter((skill: string) =>
       profile.hard_skills.some((userSkill: string) =>
         userSkill.toLowerCase().includes(skill.toLowerCase()) ||
         skill.toLowerCase().includes(userSkill.toLowerCase())
       )
     ).length;
     
-    const skillsMatch = role.required_skills.length > 0 ? 
-      skillsInCommon / role.required_skills.length : 0;
+    const skillsMatch = roleSkills.length > 0 ? 
+      skillsInCommon / roleSkills.length : 0;
     matchScore += skillsMatch * 35;
   }
   totalFactors += 35;
@@ -78,9 +85,9 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
   console.log('User field of interest:', profile?.field_of_interest);
 
   // 1. Field of Interest Match (35% weight) - Primary factor
-  if (profile?.field_of_interest && role.category) {
+  if (profile?.field_of_interest && role.Industry) {
     const fieldLower = profile.field_of_interest.toLowerCase();
-    const categoryLower = role.category.toLowerCase();
+    const categoryLower = role.Industry.toLowerCase();
     const titleLower = role.job_title.toLowerCase();
     
     const directMatch = fieldLower.includes(categoryLower) ||
@@ -121,31 +128,38 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
     
     let skillMatchScore = 0;
     
-    if (role.required_skills && role.required_skills.length > 0) {
-      let matchedSkills = 0;
-      let totalSkillScore = 0;
+    if (role.Skills_required) {
+      const roleSkills = parseSkillsFromText(role.Skills_required);
+      
+      if (roleSkills.length > 0) {
+        let matchedSkills = 0;
+        let totalSkillScore = 0;
 
-      role.required_skills.forEach((requiredSkill: string) => {
-        const matchingUserSkill = userSkills.find(userSkill => 
-          userSkill.toLowerCase().includes(requiredSkill.toLowerCase()) ||
-          requiredSkill.toLowerCase().includes(userSkill.toLowerCase())
-        );
-        
-        if (matchingUserSkill) {
-          const skillIndex = userSkills.indexOf(matchingUserSkill);
-          const skillScore = skillScores[skillIndex] || 0;
-          totalSkillScore += skillScore;
-          matchedSkills++;
+        roleSkills.forEach((requiredSkill: string) => {
+          const matchingUserSkill = userSkills.find(userSkill => 
+            userSkill.toLowerCase().includes(requiredSkill.toLowerCase()) ||
+            requiredSkill.toLowerCase().includes(userSkill.toLowerCase())
+          );
+          
+          if (matchingUserSkill) {
+            const skillIndex = userSkills.indexOf(matchingUserSkill);
+            const skillScore = skillScores[skillIndex] || 0;
+            totalSkillScore += skillScore;
+            matchedSkills++;
+          }
+        });
+
+        if (matchedSkills > 0) {
+          const avgMatchedSkillScore = totalSkillScore / matchedSkills;
+          const matchRatio = matchedSkills / roleSkills.length;
+          skillMatchScore = (avgMatchedSkillScore / 5) * matchRatio * 25;
+        } else {
+          // No specific skill matches, use general skill level
+          skillMatchScore = (avgUserSkillLevel / 5) * 10;
         }
-      });
-
-      if (matchedSkills > 0) {
-        const avgMatchedSkillScore = totalSkillScore / matchedSkills;
-        const matchRatio = matchedSkills / role.required_skills.length;
-        skillMatchScore = (avgMatchedSkillScore / 5) * matchRatio * 25;
       } else {
-        // No specific skill matches, use general skill level
-        skillMatchScore = (avgUserSkillLevel / 5) * 10;
+        // No required skills specified, use general assessment
+        skillMatchScore = (avgUserSkillLevel / 5) * 15;
       }
     } else {
       // No required skills specified, use general assessment
@@ -170,7 +184,7 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
     const creativity = typeof softSkills["Creativity"] === 'number' ? softSkills["Creativity"] : 2.5;
 
     const roleTitle = role.job_title.toLowerCase();
-    const roleDesc = role.job_description?.toLowerCase() || '';
+    const roleDesc = role.Short_description?.toLowerCase() || '';
 
     // Client-facing roles need high communication
     if (roleTitle.includes('sales') || roleTitle.includes('customer') || 
@@ -249,9 +263,9 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
     }
   }
 
-  if (profile?.fields_of_study && role.category) {
-    const studyFieldMatch = profile.fields_of_study.toLowerCase().includes(role.category.toLowerCase()) ||
-                           role.category.toLowerCase().includes(profile.fields_of_study.toLowerCase());
+  if (profile?.fields_of_study && role.Industry) {
+    const studyFieldMatch = profile.fields_of_study.toLowerCase().includes(role.Industry.toLowerCase()) ||
+                           role.Industry.toLowerCase().includes(profile.fields_of_study.toLowerCase());
     if (studyFieldMatch) {
       backgroundScore += 5;
     }
@@ -264,23 +278,16 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
   matchScore += Math.min(backgroundScore, 15);
   console.log('Background match: +', Math.min(backgroundScore, 15));
 
-  // 5. Location Bonus (5% weight)
-  if (profile?.location && role.location) {
-    const locationMatch = profile.location.toLowerCase().includes(role.location.toLowerCase()) ||
-                         role.location.toLowerCase().includes(profile.location.toLowerCase()) ||
-                         role.location.toLowerCase() === 'remote';
-    if (locationMatch) {
-      matchScore += 5;
-    }
-  }
+  // 5. Location Bonus (5% weight) - Note: new table doesn't have location field
+  // This section is removed since the new table structure doesn't include location
 
   // Calculate final score with base
   let finalMatch = Math.round(baseScore + matchScore);
   
   // Ensure minimum score for field matches
-  if (profile?.field_of_interest && role.category) {
-    const fieldMatch = profile.field_of_interest.toLowerCase().includes(role.category.toLowerCase()) ||
-                      role.category.toLowerCase().includes(profile.field_of_interest.toLowerCase());
+  if (profile?.field_of_interest && role.Industry) {
+    const fieldMatch = profile.field_of_interest.toLowerCase().includes(role.Industry.toLowerCase()) ||
+                      role.Industry.toLowerCase().includes(profile.field_of_interest.toLowerCase());
     if (fieldMatch && finalMatch < 60) {
       finalMatch = 60; // Minimum 60% for field matches
     }

@@ -1,10 +1,11 @@
 
 export interface CareerRole {
-  id: string;
+  ID_num: number;
   job_title: string;
-  job_description: string;
-  category: string;
-  required_skills: string[];
+  Short_description: string;
+  Industry: string;
+  Skills_required: string;
+  Pay_grade: string;
   match_percentage?: number;
   is_bookmarked?: boolean;
 }
