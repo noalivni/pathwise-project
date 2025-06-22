@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
 
@@ -116,17 +116,19 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-card border-border">
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <Brain className="w-6 h-6 text-white" />
-            </div>
+            <img 
+              src="/lovable-uploads/ceb34abc-2d20-4666-9bc9-a202c773db0a.png" 
+              alt="Pathwise Logo" 
+              className="w-16 h-16"
+            />
           </div>
-          <DialogTitle className="text-2xl">
+          <DialogTitle className="text-2xl text-foreground">
             {isSignUp ? "Create Your Account" : "Welcome Back"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-muted-foreground">
             {isSignUp 
               ? "Join thousands of users discovering their perfect career path" 
               : "Sign in to continue your career journey"
@@ -137,7 +139,7 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {isSignUp && (
             <div>
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="fullName" className="text-foreground">Full Name</Label>
               <Input
                 id="fullName"
                 type="text"
@@ -145,18 +147,19 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className={cn(
-                  "transition-colors focus-visible:ring-2 focus-visible:ring-teal-500",
-                  errors.fullName ? "border-red-500 focus-visible:ring-red-500" : "",
-                  fullName ? "border-green-500" : ""
+                  "bg-input border-border text-foreground placeholder:text-muted-foreground",
+                  "focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200",
+                  errors.fullName ? "border-destructive focus:border-destructive focus:ring-destructive/20" : "",
+                  fullName && !errors.fullName ? "border-green-500 focus:border-green-500 focus:ring-green-500/20" : ""
                 )}
                 required
               />
-              {errors.fullName && <p className="text-sm text-red-600 mt-1">{errors.fullName}</p>}
+              {errors.fullName && <p className="text-sm text-destructive mt-1">{errors.fullName}</p>}
             </div>
           )}
           
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-foreground">Email</Label>
             <Input
               id="email"
               type="email"
@@ -164,17 +167,18 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={cn(
-                "transition-colors focus-visible:ring-2 focus-visible:ring-teal-500",
-                errors.email ? "border-red-500 focus-visible:ring-red-500" : "",
-                email && !errors.email ? "border-green-500" : ""
+                "bg-input border-border text-foreground placeholder:text-muted-foreground",
+                "focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200",
+                errors.email ? "border-destructive focus:border-destructive focus:ring-destructive/20" : "",
+                email && !errors.email ? "border-green-500 focus:border-green-500 focus:ring-green-500/20" : ""
               )}
               required
             />
-            {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email}</p>}
+            {errors.email && <p className="text-sm text-destructive mt-1">{errors.email}</p>}
           </div>
           
           <div>
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-foreground">Password</Label>
             <Input
               id="password"
               type="password"
@@ -182,18 +186,19 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={cn(
-                "transition-colors focus-visible:ring-2 focus-visible:ring-teal-500",
-                errors.password ? "border-red-500 focus-visible:ring-red-500" : "",
-                password && !errors.password ? "border-green-500" : ""
+                "bg-input border-border text-foreground placeholder:text-muted-foreground",
+                "focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200",
+                errors.password ? "border-destructive focus:border-destructive focus:ring-destructive/20" : "",
+                password && !errors.password ? "border-green-500 focus:border-green-500 focus:ring-green-500/20" : ""
               )}
               required
             />
-            {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password}</p>}
+            {errors.password && <p className="text-sm text-destructive mt-1">{errors.password}</p>}
           </div>
 
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-teal-500 disabled:hover:to-blue-600"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
@@ -202,10 +207,10 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
+            <Separator className="w-full bg-border" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">or</span>
+            <span className="bg-card px-2 text-muted-foreground">or</span>
           </div>
         </div>
 
@@ -219,7 +224,7 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
                 type="button"
                 variant="outline"
                 onClick={switchToSignIn}
-                className="w-full hover:bg-slate-50 active:scale-95 transition-all duration-200"
+                className="w-full border-border text-foreground hover:bg-muted active:scale-95 transition-all duration-200"
               >
                 Sign In
               </Button>
@@ -233,7 +238,7 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
                 type="button"
                 variant="outline"
                 onClick={switchToSignUp}
-                className="w-full hover:bg-slate-50 active:scale-95 transition-all duration-200"
+                className="w-full border-border text-foreground hover:bg-muted active:scale-95 transition-all duration-200"
               >
                 Sign Up
               </Button>

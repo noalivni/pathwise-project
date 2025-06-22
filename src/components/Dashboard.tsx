@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
@@ -92,7 +91,7 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
   // Show onboarding if user hasn't completed it
   if (showOnboarding) {
     return (
-      <div className="min-h-screen flex w-full bg-slate-50">
+      <div className="min-h-screen flex w-full bg-background">
         <main className="flex-1 p-6">
           <OnboardingQuestionnaire onComplete={handleOnboardingComplete} />
         </main>
@@ -127,14 +126,14 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-slate-50">
+      <div className="min-h-screen flex w-full bg-background">
         <AppSidebar 
           userRole={userRole} 
           activeView={activeView}
           onViewChange={setActiveView}
           onLogout={handleLogout}
         />
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 bg-background">
           {renderContent()}
         </main>
       </div>
