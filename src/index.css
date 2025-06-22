@@ -4,62 +4,63 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Dark mode design system with custom Pathwise palette */
+/* Light and Dark mode design system with custom Pathwise palette */
 
 @layer base {
   :root {
-    /* Light mode color palette */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Light mode color palette - Pathwise branded */
+    --background: 0 0% 98%; /* Very light gray background */
+    --foreground: 218 68% 18%; /* Dark blue text (same as dark mode bg) */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%; /* Pure white cards */
+    --card-foreground: 218 68% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 218 68% 18%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 256 38% 46%; /* Pathwise purple for primary elements */
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary: 267 87% 94%; /* Very light purple for secondary */
+    --secondary-foreground: 218 68% 18%;
 
-    --muted: 210 40% 96%;
+    --muted: 0 0% 96%; /* Light gray for muted elements */
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --accent: 267 87% 94%; /* Light purple accent */
+    --accent-foreground: 218 68% 18%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 91%; /* Light border */
+    --input: 0 0% 100%; /* White input backgrounds */
+    --ring: 256 38% 46%; /* Purple focus ring */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    /* Sidebar colors for light mode */
+    --sidebar-background: 0 0% 100%; /* White sidebar */
+    --sidebar-foreground: 218 68% 18%;
+    --sidebar-primary: 256 38% 46%; /* Pathwise purple */
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent: 0 0% 96%; /* Light gray accent */
+    --sidebar-accent-foreground: 218 68% 18%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 256 38% 46%;
 
     /* Light mode hover states */
-    --primary-hover: 222.2 47.4% 20%;
-    --secondary-hover: 210 40% 90%;
-    --standard-hover: 210 40% 90%;
+    --primary-hover: 256 38% 40%; /* Darker purple on hover */
+    --secondary-hover: 267 87% 90%; /* Slightly darker light purple */
+    --standard-hover: 0 0% 94%; /* Light gray hover */
     
     /* Global text colors for light mode */
-    --main-text: 222.2 84% 4.9%;
-    --sub-text: 215.4 16.3% 46.9%;
+    --main-text: 218 68% 18%; /* Dark blue text */
+    --sub-text: 215.4 16.3% 46.9%; /* Medium gray text */
   }
 
   .dark {
-    /* Dark mode color palette */
+    /* Dark mode color palette - keep existing */
     --background: 218 68% 18%; /* #0C134F */
     --foreground: 0 0% 94%; /* #F0F0F0 */
 
@@ -116,6 +117,7 @@
   body {
     @apply bg-background text-foreground font-inter;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   /* Global text styling */
@@ -127,7 +129,7 @@
     color: hsl(var(--sub-text));
   }
 
-  /* Custom animations for dark mode */
+  /* Custom animations */
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -143,7 +145,7 @@
     animation: fade-in 0.3s ease-out;
   }
 
-  /* Enhanced button states for dark mode */
+  /* Enhanced button states */
   .btn-primary {
     @apply bg-primary text-primary-foreground active:scale-95 transition-all duration-200;
   }
@@ -160,7 +162,7 @@
     background-color: hsl(var(--secondary-hover));
   }
 
-  /* Enhanced input states for dark mode */
+  /* Enhanced input states */
   .input-dark {
     @apply bg-input border-border text-foreground placeholder:text-muted-foreground;
     @apply focus:border-primary focus:ring-2 focus:ring-primary/20;
@@ -175,7 +177,7 @@
     @apply border-green-500 focus:border-green-500 focus:ring-green-500/20;
   }
 
-  /* Global hover states for interactive elements - using #5C469C */
+  /* Global hover states for interactive elements */
   .hover-pathwise {
     @apply transition-colors duration-200;
   }
@@ -205,8 +207,22 @@
     color: hsl(var(--foreground));
   }
 
-  /* Button hover states - ensuring consistent #5C469C hover */
+  /* Button hover states */
   .btn-hover:hover {
+    background-color: hsl(var(--standard-hover)) !important;
+  }
+
+  /* Theme-specific adjustments */
+  .dark .btn-hover:hover {
     background-color: #5C469C !important;
+  }
+
+  /* Light mode specific styles */
+  .light .pathwise-sidebar {
+    @apply border-r border-gray-200 bg-white shadow-sm;
+  }
+
+  .dark .pathwise-sidebar {
+    @apply border-r border-pathwise-purple bg-pathwise-dark-blue;
   }
 }
