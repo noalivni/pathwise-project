@@ -54,9 +54,9 @@
     --secondary-hover: 267 87% 90%; /* Slightly darker light purple */
     --standard-hover: 0 0% 94%; /* Light gray hover */
     
-    /* Global text colors for light mode - Updated to match Resume Builder */
-    --main-text: 207 66% 18%; /* #0e264d - Dark navy blue */
-    --sub-text: 208 20% 48%; /* #66778d - Medium gray-blue */
+    /* Global text colors for light mode - CORRECTED HSL VALUES */
+    --main-text: 210 69% 18%; /* #0e264d - Dark navy blue - CORRECTED */
+    --sub-text: 210 16% 48%; /* #66778d - Medium gray-blue - CORRECTED */
   }
 
   .dark {

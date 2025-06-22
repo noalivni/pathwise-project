@@ -10,7 +10,7 @@ interface JobSearchInputProps {
 const JobSearchInput = ({ searchTerm, onSearchChange }: JobSearchInputProps) => {
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+      <Search className="absolute left-3 top-3 h-4 w-4 text-sub" />
       <Input
         placeholder="Search career roles, categories, or skills..."
         value={searchTerm}
