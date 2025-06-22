@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { NotificationProvider } from "@/hooks/useNotifications";
+import { ThemeProvider } from "@/hooks/useTheme";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
@@ -12,26 +13,23 @@ import { useEffect } from "react";
 const queryClient = new QueryClient();
 
 const App = () => {
-  useEffect(() => {
-    // Apply dark mode by default
-    document.documentElement.classList.add('dark');
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <NotificationProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </NotificationProvider>
-      </TooltipProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <NotificationProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </NotificationProvider>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

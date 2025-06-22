@@ -146,8 +146,8 @@ const ResumeBuilder = () => {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Smart Resume Builder</h1>
-          <p className="text-slate-600 mt-2">Generate a professional resume using your profile data</p>
+          <h1 className="text-3xl font-bold text-pathwise-text">Smart Resume Builder</h1>
+          <p className="text-pathwise-text-muted mt-2">Generate a professional resume using your profile data</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setIsEditing(!isEditing)} variant="outline">
@@ -161,11 +161,11 @@ const ResumeBuilder = () => {
         {/* Template Selection */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
+            <CardTitle className="flex items-center text-pathwise-text">
               <FileText className="mr-2 h-5 w-5 text-teal-600" />
               Resume Templates
             </CardTitle>
-            <CardDescription>Choose your resume design</CardDescription>
+            <CardDescription className="text-pathwise-text-muted">Choose your resume design</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {templates.map((template) => (
@@ -180,14 +180,14 @@ const ResumeBuilder = () => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <h3 className="font-semibold text-slate-800">{template.name}</h3>
-                    <p className="text-sm text-gray-600">{template.description}</p>
+                    <h3 className="font-semibold text-pathwise-text">{template.name}</h3>
+                    <p className="text-sm text-pathwise-text-muted">{template.description}</p>
                   </div>
                   {selectedTemplate === template.id && (
                     <Badge className="bg-teal-500">Active</Badge>
                   )}
                 </div>
-                <p className="text-xs text-gray-500 mt-2 italic">{template.preview}</p>
+                <p className="text-xs text-pathwise-text-secondary mt-2 italic">{template.preview}</p>
               </div>
             ))}
           </CardContent>
@@ -197,51 +197,56 @@ const ResumeBuilder = () => {
         {isEditing && (
           <Card>
             <CardHeader>
-              <CardTitle>Edit Resume Content</CardTitle>
-              <CardDescription>Customize your resume information</CardDescription>
+              <CardTitle className="text-pathwise-text">Edit Resume Content</CardTitle>
+              <CardDescription className="text-pathwise-text-muted">Customize your resume information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName" className="text-pathwise-text-muted">Full Name</Label>
                 <Input
                   id="fullName"
                   value={resumeData.fullName}
                   onChange={(e) => setResumeData({ ...resumeData, fullName: e.target.value })}
+                  className="text-pathwise-text"
                 />
               </div>
               <div>
-                <Label htmlFor="careerGoal">Career Goal</Label>
+                <Label htmlFor="careerGoal" className="text-pathwise-text-muted">Career Goal</Label>
                 <Input
                   id="careerGoal"
                   value={resumeData.careerGoal}
                   onChange={(e) => setResumeData({ ...resumeData, careerGoal: e.target.value })}
+                  className="text-pathwise-text"
                 />
               </div>
               <div>
-                <Label htmlFor="summary">Professional Summary</Label>
+                <Label htmlFor="summary" className="text-pathwise-text-muted">Professional Summary</Label>
                 <Textarea
                   id="summary"
                   value={resumeData.summary}
                   onChange={(e) => setResumeData({ ...resumeData, summary: e.target.value })}
                   rows={3}
+                  className="text-pathwise-text"
                 />
               </div>
               <div>
-                <Label htmlFor="skills">Skills (comma separated)</Label>
+                <Label htmlFor="skills" className="text-pathwise-text-muted">Skills (comma separated)</Label>
                 <Textarea
                   id="skills"
                   value={resumeData.skills.join(', ')}
                   onChange={(e) => handleSkillsChange(e.target.value)}
                   rows={2}
+                  className="text-pathwise-text"
                 />
               </div>
               <div>
-                <Label htmlFor="experience">Experience</Label>
+                <Label htmlFor="experience" className="text-pathwise-text-muted">Experience</Label>
                 <Textarea
                   id="experience"
                   value={resumeData.experience}
                   onChange={(e) => setResumeData({ ...resumeData, experience: e.target.value })}
                   rows={4}
+                  className="text-pathwise-text"
                 />
               </div>
             </CardContent>
@@ -251,8 +256,8 @@ const ResumeBuilder = () => {
         {/* Resume Preview */}
         <Card className={`lg:col-span-${isEditing ? '1' : '2'}`}>
           <CardHeader>
-            <CardTitle>Resume Preview</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-pathwise-text">Resume Preview</CardTitle>
+            <CardDescription className="text-pathwise-text-muted">
               Template: {templates.find(t => t.id === selectedTemplate)?.name}
             </CardDescription>
           </CardHeader>
