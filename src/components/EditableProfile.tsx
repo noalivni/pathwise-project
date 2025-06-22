@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, GraduationCap, Briefcase, Award, Edit2, Save, X } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Award, Edit2, Save, X, Crown, CreditCard } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
@@ -126,6 +126,36 @@ const EditableProfile = () => {
           )}
         </div>
       </div>
+
+      {/* Account Type Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center text-pathwise-text">
+            <CreditCard className="mr-2 h-5 w-5 text-orange-600" />
+            Account Type
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-3">
+            <Badge 
+              variant={profile.subscription_status === 'premium' ? 'default' : 'secondary'}
+              className={profile.subscription_status === 'premium' ? 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white' : 'bg-gray-100 text-gray-700'}
+            >
+              {profile.subscription_status === 'premium' && <Crown className="w-3 h-3 mr-1" />}
+              {profile.subscription_status === 'premium' ? 'Premium' : 'Free'}
+            </Badge>
+            {profile.subscription_status === 'premium' ? (
+              <span className="text-sm text-pathwise-text-muted">
+                You have access to all premium features
+              </span>
+            ) : (
+              <span className="text-sm text-pathwise-text-muted">
+                Upgrade to unlock premium features
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Personal Information */}
       <Card>
