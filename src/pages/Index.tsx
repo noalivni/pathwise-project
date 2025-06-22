@@ -4,7 +4,6 @@ import { Toaster } from "@/components/ui/toaster";
 import AuthModal from "@/components/AuthModal";
 import Dashboard from "@/components/Dashboard";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { NotificationProvider } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
 import { Target, Users, BookOpen, ArrowRight } from "lucide-react";
 
@@ -29,10 +28,13 @@ const LandingPage = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <img 
-              src="/lovable-uploads/a434d155-ce05-4ed6-99dc-48727d407120.png" 
+              src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
               alt="Pathwise Logo" 
-              className="w-12 h-12 object-contain"
+              className="w-12 h-12"
             />
+            <span className="text-3xl font-bold text-foreground">
+              Pathwise
+            </span>
           </div>
           <div className="flex gap-3">
             <Button 
@@ -56,9 +58,9 @@ const LandingPage = () => {
       <section className="container mx-auto px-6 py-16 text-center">
         <div className="mb-8">
           <img 
-            src="/lovable-uploads/a434d155-ce05-4ed6-99dc-48727d407120.png" 
+            src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
             alt="Pathwise Logo" 
-            className="w-20 h-20 mx-auto mb-6 object-contain opacity-90"
+            className="w-20 h-20 mx-auto mb-6 opacity-90"
           />
         </div>
         <h1 className="text-5xl font-bold text-foreground mb-6">
@@ -114,9 +116,9 @@ const LandingPage = () => {
           <div className="text-center p-6 rounded-lg bg-card border border-border hover:border-primary/50 transition-all duration-200">
             <div className="w-16 h-16 bg-purple-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
               <img 
-                src="/lovable-uploads/a434d155-ce05-4ed6-99dc-48727d407120.png" 
+                src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
                 alt="AI Guidance" 
-                className="w-8 h-8 object-contain opacity-80"
+                className="w-8 h-8 opacity-80"
               />
             </div>
             <h3 className="text-xl font-semibold mb-2 text-foreground">AI Guidance</h3>
@@ -158,9 +160,9 @@ const AppContent = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <img 
-            src="/lovable-uploads/a434d155-ce05-4ed6-99dc-48727d407120.png" 
+            src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
             alt="Pathwise Logo" 
-            className="w-16 h-16 mx-auto mb-4 object-contain animate-pulse"
+            className="w-16 h-16 mx-auto mb-4 animate-pulse"
           />
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
         </div>
@@ -169,11 +171,7 @@ const AppContent = () => {
   }
 
   if (user) {
-    return (
-      <NotificationProvider>
-        <Dashboard userRole={userRole} onLogout={handleLogout} />
-      </NotificationProvider>
-    );
+    return <Dashboard userRole={userRole} onLogout={handleLogout} />;
   }
 
   return <LandingPage />;
