@@ -27,8 +27,8 @@ const SkillsResultsView = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-slate-800">Your Soft Skills Profile</h1>
-        <p className="text-slate-600 mt-2">Personalized insights about your work style and career fit</p>
+        <h1 className="text-3xl font-bold text-pathwise-text">Your Soft Skills Profile</h1>
+        <p className="text-pathwise-text-muted mt-2">Personalized insights about your work style and career fit</p>
       </div>
 
       {/* Personality Profile Card */}
@@ -81,7 +81,7 @@ const SkillsResultsView = ({
       {/* Detailed Insights */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-pathwise-text">
             <Lightbulb className="mr-2 h-5 w-5 text-yellow-600" />
             Personalized Career Insights
           </CardTitle>
@@ -107,7 +107,7 @@ const SkillsResultsView = ({
           return (
             <Card key={index}>
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center justify-between text-base">
+                <CardTitle className="flex items-center justify-between text-base text-pathwise-text">
                   <div className="flex items-center">
                     <span className="text-2xl mr-2">{skill.icon}</span>
                     <span>{skill.name}</span>
@@ -119,7 +119,7 @@ const SkillsResultsView = ({
               </CardHeader>
               <CardContent>
                 <Progress value={(rating / 5) * 100} className="mb-2" />
-                <p className="text-sm text-slate-600">Rating: {rating}/5</p>
+                <p className="text-sm text-pathwise-text-secondary">Rating: {rating}/5</p>
               </CardContent>
             </Card>
           );

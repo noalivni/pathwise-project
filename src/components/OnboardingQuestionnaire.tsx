@@ -100,12 +100,12 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-slate-800">Complete Your Profile</h1>
-        <p className="text-slate-600 mt-2">Help us personalize your experience</p>
+        <h1 className="text-3xl font-bold text-pathwise-text">Complete Your Profile</h1>
+        <p className="text-pathwise-text-muted mt-2">Help us personalize your experience</p>
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between text-sm text-slate-600">
+        <div className="flex justify-between text-sm text-pathwise-text-secondary">
           <span>Step {currentStep} of {TOTAL_STEPS}</span>
           <span>{Math.round(progress)}% Complete</span>
         </div>
@@ -119,7 +119,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
           variant="outline"
           onClick={handleBack}
           disabled={currentStep === 1 || loading}
-          className="hover:bg-slate-50 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="hover:bg-standard-hover active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Previous
         </Button>

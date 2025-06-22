@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Crown } from "lucide-react";
@@ -105,7 +106,7 @@ const LearningResources = () => {
       <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading learning resources...</p>
+          <p className="text-pathwise-text-muted">Loading learning resources...</p>
         </div>
       </div>
     );
@@ -115,8 +116,8 @@ const LearningResources = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Learning Resources</h1>
-          <p className="text-slate-600 mt-2">Personalized learning materials based on your career goals</p>
+          <h1 className="text-3xl font-bold text-pathwise-text">Learning Resources</h1>
+          <p className="text-pathwise-text-muted mt-2">Personalized learning materials based on your career goals</p>
         </div>
         <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white">
           <Crown className="w-3 h-3 mr-1" />

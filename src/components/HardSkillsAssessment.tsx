@@ -94,8 +94,8 @@ const HardSkillsAssessment = () => {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-800">Loading Assessment...</h1>
-          <p className="text-slate-600 mt-2">Preparing your personalized skills assessment</p>
+          <h1 className="text-3xl font-bold text-pathwise-text">Loading Assessment...</h1>
+          <p className="text-pathwise-text-muted mt-2">Preparing your personalized skills assessment</p>
         </div>
       </div>
     );
@@ -119,8 +119,8 @@ const HardSkillsAssessment = () => {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-800">Hard Skills Assessment</h1>
-        <p className="text-slate-600 mt-2">
+        <h1 className="text-3xl font-bold text-pathwise-text">Hard Skills Assessment</h1>
+        <p className="text-pathwise-text-muted mt-2">
           Rate your proficiency with {profile?.field_of_interest || 'technical'} tools and skills
         </p>
       </div>
