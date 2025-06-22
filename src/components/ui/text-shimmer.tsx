@@ -40,7 +40,7 @@ export function TextShimmer({
         repeat: Infinity,
         duration,
         ease: 'linear',
-        repeatDelay: 10, // run shimmer every 10 seconds
+        repeatDelay: 5, // run shimmer every 5 seconds
       }}
       style={
         {
