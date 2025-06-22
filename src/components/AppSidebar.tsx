@@ -7,14 +7,11 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { LogOut, User, Settings, Crown, Home, Target, BookOpen, MessageSquare, FileText, Award, Users, BarChart3, Database } from "lucide-react";
+import { LogOut, User, Crown, Home, Target, BookOpen, MessageSquare, FileText, Award, Users, BarChart3, Database } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -59,7 +56,7 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
   const adminMenuItems: MenuItem[] = [
     { key: 'dashboard', label: 'Admin Dashboard', icon: BarChart3 },
     { key: 'users', label: 'User Management', icon: Users },
-    { key: 'data', label: 'Data Analytics', icon: Database },
+    { key: 'analytics', label: 'Analytics', icon: Database },
   ];
 
   const menuItems = userRole === 'admin' ? adminMenuItems : userMenuItems;
@@ -86,20 +83,29 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
           <ThemeToggle />
         </div>
         
-        {profile && userRole === 'user' && (
+        {profile && (
           <div className="mt-4 p-3 bg-muted rounded-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-sub">Welcome back,</p>
                 <p className="font-semibold text-main">{profile.full_name || 'User'}</p>
               </div>
-              <Badge 
-                variant={profile.subscription_status === 'premium' ? 'default' : 'secondary'}
-                className={profile.subscription_status === 'premium' ? 'bg-gradient-to-r from-teal-500 to-blue-600' : ''}
-              >
-                {profile.subscription_status === 'premium' && <Crown className="w-3 h-3 mr-1" />}
-                {profile.subscription_status.toUpperCase()}
-              </Badge>
+              <div className="flex flex-col gap-1">
+                {userRole === 'admin' && (
+                  <Badge variant="destructive" className="text-xs">
+                    ADMIN
+                  </Badge>
+                )}
+                {userRole === 'user' && (
+                  <Badge 
+                    variant={profile.subscription_status === 'premium' ? 'default' : 'secondary'}
+                    className={profile.subscription_status === 'premium' ? 'bg-gradient-to-r from-teal-500 to-blue-600' : ''}
+                  >
+                    {profile.subscription_status === 'premium' && <Crown className="w-3 h-3 mr-1" />}
+                    {profile.subscription_status.toUpperCase()}
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -107,7 +113,9 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sub">Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sub">
+            {userRole === 'admin' ? 'Admin Panel' : 'Navigation'}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (

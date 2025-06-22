@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,10 +18,13 @@ interface Profile {
   onboarding_completed: boolean;
 }
 
+type UserRole = 'user' | 'admin';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
+  userRole: UserRole;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
@@ -37,7 +39,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [userRole, setUserRole] = useState<UserRole>('user');
   const [loading, setLoading] = useState(true);
+
+  const fetchUserRole = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_user_role', { user_uuid: userId });
+
+      if (error) {
+        console.error('Error fetching user role:', error);
+        return 'user';
+      }
+
+      return data as UserRole;
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      return 'user';
+    }
+  }, []);
 
   const fetchProfile = useCallback(async (userId: string) => {
     try {
@@ -53,10 +73,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       setProfile(data);
+
+      // Fetch user role
+      const role = await fetchUserRole(userId);
+      setUserRole(role);
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
-  }, []);
+  }, [fetchUserRole]);
 
   const refreshProfile = useCallback(async () => {
     if (user) {
@@ -133,6 +157,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setSession(null);
       setProfile(null);
+      setUserRole('user');
     } catch (error: any) {
       toast({
         title: "Error",
@@ -164,6 +189,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }, 100);
         } else {
           setProfile(null);
+          setUserRole('user');
         }
         
         if (mounted) {
@@ -199,6 +225,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     session,
     profile,
+    userRole,
     loading,
     signIn,
     signUp,

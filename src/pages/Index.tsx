@@ -147,20 +147,6 @@ const LandingPage = () => {
 
 const AppContent = () => {
   const { user, loading } = useAuth();
-  const [userRole, setUserRole] = useState<'user' | 'admin'>('user');
-
-  useEffect(() => {
-    if (user) {
-      // Check if user is admin based on email
-      const isAdmin = user.email === "admin@pathwise.com";
-      setUserRole(isAdmin ? 'admin' : 'user');
-    }
-  }, [user]);
-
-  const handleLogout = async () => {
-    // This will be handled by the auth context
-    window.location.reload();
-  };
 
   if (loading) {
     return (
@@ -178,7 +164,7 @@ const AppContent = () => {
   }
 
   if (user) {
-    return <Dashboard userRole={userRole} onLogout={handleLogout} />;
+    return <Dashboard />;
   }
 
   return <LandingPage />;

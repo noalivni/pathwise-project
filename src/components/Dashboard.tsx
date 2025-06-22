@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/AppSidebar";
@@ -13,20 +14,15 @@ import EditableProfile from "@/components/EditableProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 
-interface DashboardProps {
-  userRole: 'user' | 'admin';
-  onLogout: () => void;
-}
-
-const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
-  const { profile, signOut } = useAuth();
+const Dashboard = () => {
+  const { profile, userRole, signOut } = useAuth();
   const { showWelcome, showUpgrade } = useNotifications();
   const [activeView, setActiveView] = useState('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
 
   useEffect(() => {
-    // Check if user needs onboarding
+    // Check if user needs onboarding (only for regular users)
     if (profile && !profile.onboarding_completed && userRole === 'user') {
       setShowOnboarding(true);
     } else {
@@ -46,13 +42,14 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
   }, [profile, userRole, hasShownWelcome, showWelcome]);
 
   useEffect(() => {
-    // Listen for navigation events from dashboard buttons
+    // Listen for navigation events from dashboard buttons (only for users)
+    if (userRole !== 'user') return;
+
     const handleNavigateToAssessment = () => setActiveView('assessment');
     const handleNavigateToJobs = () => setActiveView('jobs');
     const handleNavigateToInterview = () => {
       if (profile?.subscription_status !== 'premium') {
         showUpgrade('Interview Practice', () => {
-          // Handle upgrade logic here
           console.log('Upgrade to premium');
         });
         return;
@@ -69,7 +66,7 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
       window.removeEventListener('navigate-to-jobs', handleNavigateToJobs);
       window.removeEventListener('navigate-to-interview', handleNavigateToInterview);
     };
-  }, [profile, showUpgrade]);
+  }, [profile, showUpgrade, userRole]);
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
@@ -79,17 +76,15 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
   const handleLogout = async () => {
     try {
       await signOut();
-      // Force a complete page refresh to ensure clean state
       window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
-      // Force refresh even if logout fails
       window.location.href = '/';
     }
   };
 
-  // Show onboarding if user hasn't completed it
-  if (showOnboarding) {
+  // Show onboarding if user hasn't completed it (only for regular users)
+  if (showOnboarding && userRole === 'user') {
     return (
       <div className="min-h-screen flex w-full bg-background">
         <main className="flex-1 p-6">
@@ -100,10 +95,12 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
   }
 
   const renderContent = () => {
+    // Admin users only see admin dashboard
     if (userRole === 'admin') {
       return <AdminDashboard />;
     }
 
+    // Regular users see user-specific views
     switch (activeView) {
       case 'dashboard':
         return <UserDashboard />;
