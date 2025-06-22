@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -51,8 +50,8 @@ const JobRecommendations = () => {
 
       if (error) throw error;
 
-      // Calculate enhanced matches and get top 4
-      const rolesWithMatches = jobRoles?.map(role => {
+      // Calculate enhanced matches and get top 4 roles most relevant to user's field of interest
+      let rolesWithMatches = jobRoles?.map(role => {
         const matchPercentage = calculateEnhancedCareerMatch({
           role,
           profile,
@@ -63,8 +62,34 @@ const JobRecommendations = () => {
           ...role,
           match_percentage: matchPercentage
         };
-      }).sort((a, b) => (b.match_percentage || 0) - (a.match_percentage || 0))
-      .slice(0, 4) || []; // Get top 4 matches
+      }) || [];
+
+      // If user has a field of interest, prioritize roles in that field
+      if (profile.field_of_interest) {
+        // First get roles that match the field of interest
+        const fieldMatchingRoles = rolesWithMatches.filter(role =>
+          role.category.toLowerCase().includes(profile.field_of_interest.toLowerCase()) ||
+          profile.field_of_interest.toLowerCase().includes(role.category.toLowerCase()) ||
+          role.job_title.toLowerCase().includes(profile.field_of_interest.toLowerCase())
+        ).sort((a, b) => (b.match_percentage || 0) - (a.match_percentage || 0));
+
+        // If we have enough field-matching roles, use top 4 from those
+        if (fieldMatchingRoles.length >= 4) {
+          rolesWithMatches = fieldMatchingRoles.slice(0, 4);
+        } else {
+          // Otherwise, take all field-matching roles and supplement with highest-scoring others
+          const otherRoles = rolesWithMatches
+            .filter(role => !fieldMatchingRoles.some(fr => fr.id === role.id))
+            .sort((a, b) => (b.match_percentage || 0) - (a.match_percentage || 0));
+          
+          rolesWithMatches = [...fieldMatchingRoles, ...otherRoles].slice(0, 4);
+        }
+      } else {
+        // No field preference, just take top 4 by match score
+        rolesWithMatches = rolesWithMatches
+          .sort((a, b) => (b.match_percentage || 0) - (a.match_percentage || 0))
+          .slice(0, 4);
+      }
 
       // Check for bookmarked roles
       const { data: bookmarkedRoles } = await supabase
@@ -154,12 +179,19 @@ const JobRecommendations = () => {
     );
   }
 
+  const getRecommendationSubtitle = () => {
+    if (profile?.field_of_interest) {
+      return `Top roles in ${profile.field_of_interest} matched to your skills and background`;
+    }
+    return "Complete your profile and skills assessment for personalized matches based on your field of interest";
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-main">Top Career Matches</h1>
+        <h1 className="text-3xl font-bold text-main">Personalized Career Matches</h1>
         <p className="text-sub mt-2">
-          4 best roles matched to your skills and interests: {profile?.field_of_interest || 'Complete profile for better matches'}
+          {getRecommendationSubtitle()}
         </p>
       </div>
 
@@ -184,8 +216,8 @@ const JobRecommendations = () => {
           <h3 className="text-lg font-medium text-sub mb-2">No matching roles found</h3>
           <p className="text-sub">
             {!profile?.field_of_interest 
-              ? "Complete your profile and skills assessment for personalized recommendations"
-              : "Try adjusting your search terms or complete additional assessments"
+              ? "Complete your profile to get personalized recommendations based on your field of interest"
+              : "Try adjusting your search terms or complete additional assessments for better matches"
             }
           </p>
         </div>

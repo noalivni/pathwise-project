@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, GraduationCap, Briefcase, Award, Edit2, Save, X, Crown, CreditCard } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Award, Edit2, Save, X, Crown, CreditCard, Target } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { CAREER_FIELDS } from "@/data/onboardingData";
 
 const EditableProfile = () => {
   const { profile, updateProfile } = useAuth();
@@ -20,6 +21,7 @@ const EditableProfile = () => {
     degree_certification: "",
     fields_of_study: "",
     graduation_year: "",
+    field_of_interest: "",
     hard_skills: [] as string[],
     career_history: ""
   });
@@ -39,6 +41,7 @@ const EditableProfile = () => {
         degree_certification: profile.degree_certification || "",
         fields_of_study: profile.fields_of_study || "",
         graduation_year: profile.graduation_year || "",
+        field_of_interest: profile.field_of_interest || "",
         hard_skills: profile.hard_skills || [],
         career_history: profile.career_history || ""
       });
@@ -53,6 +56,7 @@ const EditableProfile = () => {
         degree_certification: formData.degree_certification,
         fields_of_study: formData.fields_of_study,
         graduation_year: formData.graduation_year,
+        field_of_interest: formData.field_of_interest,
         hard_skills: formData.hard_skills,
         career_history: formData.career_history
       });
@@ -80,6 +84,7 @@ const EditableProfile = () => {
         degree_certification: profile.degree_certification || "",
         fields_of_study: profile.fields_of_study || "",
         graduation_year: profile.graduation_year || "",
+        field_of_interest: profile.field_of_interest || "",
         hard_skills: profile.hard_skills || [],
         career_history: profile.career_history || ""
       });
@@ -198,6 +203,26 @@ const EditableProfile = () => {
                 />
               ) : (
                 <p className="text-pathwise-text-muted mt-1">{profile.location || 'Not provided'}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="field_of_interest" className="flex items-center text-gray-400">
+                <Target className="w-4 h-4 mr-1" />
+                Field of Interest
+              </Label>
+              {isEditing ? (
+                <Select value={formData.field_of_interest} onValueChange={(value) => setFormData({ ...formData, field_of_interest: value })}>
+                  <SelectTrigger className="text-pathwise-text-muted">
+                    <SelectValue placeholder="Select your field of interest" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CAREER_FIELDS.map((field) => (
+                      <SelectItem key={field} value={field}>{field}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-pathwise-text-muted mt-1">{profile.field_of_interest || 'Not provided'}</p>
               )}
             </div>
           </div>

@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, GraduationCap, Briefcase, Award, Crown, CreditCard } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Award, Crown, CreditCard, Target } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const UserProfile = () => {
@@ -84,6 +84,13 @@ const UserProfile = () => {
                 Location
               </h3>
               <p className="text-pathwise-text">{profile.location || 'Not provided'}</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-sm text-pathwise-text-muted mb-1 flex items-center">
+                <Target className="w-4 h-4 mr-1" />
+                Field of Interest
+              </h3>
+              <p className="text-pathwise-text">{profile.field_of_interest || 'Not provided'}</p>
             </div>
           </div>
         </CardContent>
