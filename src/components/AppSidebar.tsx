@@ -73,15 +73,14 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
       <SidebarHeader className="border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div 
-            className="flex items-center space-x-3 cursor-pointer hover:bg-muted rounded-lg p-2 -m-2 transition-colors duration-200" 
+            className="flex items-center justify-center cursor-pointer hover:bg-muted rounded-lg p-2 -m-2 transition-colors duration-200" 
             onClick={handleLogoClick}
           >
             <img 
-              src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
+              src="/lovable-uploads/a434d155-ce05-4ed6-99dc-48727d407120.png" 
               alt="Pathwise Logo" 
-              className="w-8 h-8"
+              className="w-10 h-10 object-contain"
             />
-            <span className="text-xl font-bold text-main">Pathwise</span>
           </div>
           <ThemeToggle />
         </div>
