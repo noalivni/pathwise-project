@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -43,20 +44,80 @@ const JobRecommendations = () => {
         .limit(1)
         .maybeSingle();
 
-      // Get job roles filtered by field of interest
-      let jobRolesQuery = supabase.from('job_roles').select('*');
-      
-      if (profile.field_of_interest) {
-        // Filter roles that match the user's field of interest
-        jobRolesQuery = jobRolesQuery.or(`category.ilike.%${profile.field_of_interest}%,job_title.ilike.%${profile.field_of_interest}%`);
-      }
-
-      const { data: jobRoles, error } = await jobRolesQuery;
+      // Get all job roles first
+      const { data: allJobRoles, error } = await supabase
+        .from('job_roles')
+        .select('*');
 
       if (error) throw error;
 
-      // Calculate personalized matches and get top 4 roles
-      let rolesWithMatches = jobRoles?.map(role => {
+      if (!allJobRoles || allJobRoles.length === 0) {
+        console.log('No job roles found in database');
+        setCareerRoles([]);
+        return;
+      }
+
+      console.log('All job roles:', allJobRoles.length);
+      console.log('User field of interest:', profile.field_of_interest);
+
+      // Filter by field of interest with more flexible matching
+      let filteredRoles = allJobRoles;
+      
+      if (profile.field_of_interest) {
+        const fieldLower = profile.field_of_interest.toLowerCase();
+        
+        // Primary filter: exact or partial matches
+        const primaryMatches = allJobRoles.filter(role => {
+          const categoryLower = role.category?.toLowerCase() || '';
+          const titleLower = role.job_title?.toLowerCase() || '';
+          
+          return categoryLower.includes(fieldLower) || 
+                 fieldLower.includes(categoryLower) ||
+                 titleLower.includes(fieldLower) ||
+                 fieldLower.includes(titleLower);
+        });
+        
+        console.log('Primary matches:', primaryMatches.length);
+        
+        // If we have enough primary matches, use them
+        if (primaryMatches.length >= 4) {
+          filteredRoles = primaryMatches;
+        } else {
+          // Fallback: include broader matches and general roles
+          const secondaryMatches = allJobRoles.filter(role => {
+            const categoryLower = role.category?.toLowerCase() || '';
+            const titleLower = role.job_title?.toLowerCase() || '';
+            const descriptionLower = role.job_description?.toLowerCase() || '';
+            
+            // Check for keyword overlap or general business roles
+            const fieldWords = fieldLower.split(' ');
+            return fieldWords.some(word => 
+              categoryLower.includes(word) || 
+              titleLower.includes(word) ||
+              descriptionLower.includes(word)
+            ) || 
+            categoryLower.includes('business') ||
+            categoryLower.includes('general') ||
+            titleLower.includes('analyst') ||
+            titleLower.includes('coordinator');
+          });
+          
+          // Combine primary and secondary matches, remove duplicates
+          const combinedMatches = [...primaryMatches];
+          secondaryMatches.forEach(role => {
+            if (!combinedMatches.find(existing => existing.id === role.id)) {
+              combinedMatches.push(role);
+            }
+          });
+          
+          filteredRoles = combinedMatches.length >= 4 ? combinedMatches : allJobRoles;
+        }
+      }
+
+      console.log('Filtered roles:', filteredRoles.length);
+
+      // Calculate personalized matches for all filtered roles
+      let rolesWithMatches = filteredRoles.map(role => {
         const matchPercentage = calculatePersonalizedCareerMatch({
           role,
           profile,
@@ -67,12 +128,14 @@ const JobRecommendations = () => {
           ...role,
           match_percentage: matchPercentage
         };
-      }) || [];
+      });
 
       // Sort by match percentage and take top 4
       rolesWithMatches = rolesWithMatches
         .sort((a, b) => (b.match_percentage || 0) - (a.match_percentage || 0))
         .slice(0, 4);
+
+      console.log('Final roles with matches:', rolesWithMatches.length);
 
       // Check for bookmarked roles
       const { data: bookmarkedRoles } = await supabase
@@ -164,9 +227,9 @@ const JobRecommendations = () => {
 
   const getRecommendationSubtitle = () => {
     if (profile?.field_of_interest) {
-      return `Top 4 ${profile.field_of_interest} roles matched to your skills assessments and background`;
+      return `Top 4 ${profile.field_of_interest} roles matched to your skills and background`;
     }
-    return "Complete your profile and skills assessments for personalized matches based on your field of interest";
+    return "Complete your profile and skills assessments for personalized matches";
   };
 
   return (
@@ -193,15 +256,25 @@ const JobRecommendations = () => {
         ))}
       </div>
 
-      {filteredRoles.length === 0 && (
+      {filteredRoles.length === 0 && !loading && (
         <div className="text-center py-12">
           <Search className="h-12 w-12 text-slate-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-sub mb-2">No matching roles found</h3>
           <p className="text-sub">
-            {!profile?.field_of_interest 
-              ? "Complete your profile to get personalized recommendations based on your field of interest"
-              : "Complete both skills assessments to see personalized job matches for your field"
+            {searchTerm 
+              ? "Try adjusting your search terms or clear the search to see all recommendations"
+              : "We're working to add more job opportunities to match your profile"
             }
+          </p>
+        </div>
+      )}
+
+      {careerRoles.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <Search className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-sub mb-2">No career recommendations available</h3>
+          <p className="text-sub">
+            Complete your onboarding and skills assessments to see personalized job matches
           </p>
         </div>
       )}

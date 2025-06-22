@@ -72,50 +72,90 @@ export const calculateCareerMatch = ({ role, assessment, profile }: MatchCalcula
 
 export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAssessment, hardSkillsAssessment }: PersonalizedMatchParams): number => {
   let matchScore = 0;
+  const baseScore = 50; // Start with a base score
 
-  // 1. Field of Interest Match (40% weight) - Primary factor
+  console.log('Calculating match for role:', role.job_title);
+  console.log('User field of interest:', profile?.field_of_interest);
+
+  // 1. Field of Interest Match (35% weight) - Primary factor
   if (profile?.field_of_interest && role.category) {
-    const directMatch = profile.field_of_interest.toLowerCase().includes(role.category.toLowerCase()) ||
-                       role.category.toLowerCase().includes(profile.field_of_interest.toLowerCase()) ||
-                       role.job_title.toLowerCase().includes(profile.field_of_interest.toLowerCase());
+    const fieldLower = profile.field_of_interest.toLowerCase();
+    const categoryLower = role.category.toLowerCase();
+    const titleLower = role.job_title.toLowerCase();
+    
+    const directMatch = fieldLower.includes(categoryLower) ||
+                       categoryLower.includes(fieldLower) ||
+                       titleLower.includes(fieldLower);
+    
     if (directMatch) {
-      matchScore += 40;
+      matchScore += 35;
+      console.log('Direct field match: +35');
     } else {
       // Partial match for related fields
-      const partialMatch = role.job_title.toLowerCase().includes(profile.field_of_interest.toLowerCase().split(' ')[0]) ||
-                          profile.field_of_interest.toLowerCase().includes(role.category.toLowerCase().split(' ')[0]);
-      if (partialMatch) {
-        matchScore += 20;
+      const fieldWords = fieldLower.split(' ');
+      const categoryWords = categoryLower.split(' ');
+      const titleWords = titleLower.split(' ');
+      
+      const wordOverlap = fieldWords.some(word => 
+        categoryWords.includes(word) || titleWords.includes(word)
+      );
+      
+      if (wordOverlap) {
+        matchScore += 15;
+        console.log('Partial field match: +15');
+      } else {
+        matchScore += 5; // Small bonus for any role
+        console.log('No field match: +5');
       }
     }
+  } else {
+    matchScore += 10; // Base field score when no preference
   }
 
   // 2. Hard Skills Assessment Match (25% weight)
-  if (hardSkillsAssessment?.technical_skills && role.required_skills) {
+  if (hardSkillsAssessment?.technical_skills) {
     const userSkills = Object.keys(hardSkillsAssessment.technical_skills);
     const skillScores = Object.values(hardSkillsAssessment.technical_skills) as number[];
+    const avgUserSkillLevel = skillScores.length > 0 ? 
+      skillScores.reduce((a, b) => a + b, 0) / skillScores.length : 2.5;
     
-    let assessmentSkillScore = 0;
-    let matchedSkills = 0;
+    let skillMatchScore = 0;
+    
+    if (role.required_skills && role.required_skills.length > 0) {
+      let matchedSkills = 0;
+      let totalSkillScore = 0;
 
-    role.required_skills.forEach((requiredSkill: string) => {
-      const matchingUserSkill = userSkills.find(userSkill => 
-        userSkill.toLowerCase().includes(requiredSkill.toLowerCase()) ||
-        requiredSkill.toLowerCase().includes(userSkill.toLowerCase())
-      );
-      
-      if (matchingUserSkill) {
-        const skillIndex = userSkills.indexOf(matchingUserSkill);
-        const skillScore = skillScores[skillIndex] || 0;
-        assessmentSkillScore += skillScore;
-        matchedSkills++;
+      role.required_skills.forEach((requiredSkill: string) => {
+        const matchingUserSkill = userSkills.find(userSkill => 
+          userSkill.toLowerCase().includes(requiredSkill.toLowerCase()) ||
+          requiredSkill.toLowerCase().includes(userSkill.toLowerCase())
+        );
+        
+        if (matchingUserSkill) {
+          const skillIndex = userSkills.indexOf(matchingUserSkill);
+          const skillScore = skillScores[skillIndex] || 0;
+          totalSkillScore += skillScore;
+          matchedSkills++;
+        }
+      });
+
+      if (matchedSkills > 0) {
+        const avgMatchedSkillScore = totalSkillScore / matchedSkills;
+        const matchRatio = matchedSkills / role.required_skills.length;
+        skillMatchScore = (avgMatchedSkillScore / 5) * matchRatio * 25;
+      } else {
+        // No specific skill matches, use general skill level
+        skillMatchScore = (avgUserSkillLevel / 5) * 10;
       }
-    });
-
-    if (matchedSkills > 0) {
-      const avgSkillScore = assessmentSkillScore / matchedSkills;
-      matchScore += (avgSkillScore / 5) * 25; // Convert 0-5 scale to percentage and apply weight
+    } else {
+      // No required skills specified, use general assessment
+      skillMatchScore = (avgUserSkillLevel / 5) * 15;
     }
+    
+    matchScore += skillMatchScore;
+    console.log('Hard skills match: +', skillMatchScore);
+  } else {
+    matchScore += 10; // Base score when no hard skills assessment
   }
 
   // 3. Personality & Role Fit Match (20% weight)
@@ -123,65 +163,87 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
     const softSkills = softSkillsAssessment.soft_skills;
     let personalityScore = 0;
 
-    // Check for personality-role alignment
-    const communication = softSkills["Communication"] || 0;
-    const leadership = softSkills["Leadership"] || 0;
-    const teamwork = softSkills["Teamwork"] || 0;
-    const adaptability = softSkills["Adaptability"] || 0;
+    const communication = softSkills["Communication"] || 2.5;
+    const leadership = softSkills["Leadership"] || 2.5;
+    const teamwork = softSkills["Teamwork"] || 2.5;
+    const adaptability = softSkills["Adaptability"] || 2.5;
+    const creativity = softSkills["Creativity"] || 2.5;
+
+    const roleTitle = role.job_title.toLowerCase();
+    const roleDesc = role.job_description?.toLowerCase() || '';
 
     // Client-facing roles need high communication
-    if (role.job_title.toLowerCase().includes('sales') || 
-        role.job_title.toLowerCase().includes('customer') ||
-        role.job_title.toLowerCase().includes('client')) {
+    if (roleTitle.includes('sales') || roleTitle.includes('customer') || 
+        roleTitle.includes('client') || roleDesc.includes('client')) {
       if (communication >= 4) {
-        personalityScore += 15;
-      } else if (communication <= 2) {
-        personalityScore -= 5; // Penalty for poor fit
+        personalityScore += 8;
+      } else if (communication >= 3) {
+        personalityScore += 4;
+      } else {
+        personalityScore -= 2; // Small penalty for poor fit
       }
     }
 
     // Leadership roles need leadership skills
-    if (role.job_title.toLowerCase().includes('manager') || 
-        role.job_title.toLowerCase().includes('lead') ||
-        role.job_title.toLowerCase().includes('director')) {
+    if (roleTitle.includes('manager') || roleTitle.includes('lead') || 
+        roleTitle.includes('director') || roleTitle.includes('supervisor')) {
       if (leadership >= 4) {
-        personalityScore += 15;
-      } else if (leadership <= 2) {
-        personalityScore -= 5;
+        personalityScore += 8;
+      } else if (leadership >= 3) {
+        personalityScore += 4;
+      } else {
+        personalityScore -= 1;
+      }
+    }
+
+    // Creative roles need creativity
+    if (roleTitle.includes('design') || roleTitle.includes('creative') || 
+        roleTitle.includes('marketing') || roleDesc.includes('creative')) {
+      if (creativity >= 4) {
+        personalityScore += 6;
+      } else if (creativity >= 3) {
+        personalityScore += 3;
       }
     }
 
     // Team-based roles need teamwork
-    if (role.job_description?.toLowerCase().includes('team') ||
-        role.job_description?.toLowerCase().includes('collaborative')) {
+    if (roleDesc.includes('team') || roleDesc.includes('collaborative')) {
       if (teamwork >= 4) {
-        personalityScore += 10;
+        personalityScore += 5;
+      } else if (teamwork >= 3) {
+        personalityScore += 2;
       }
     }
 
     // Dynamic environments need adaptability
-    if (role.job_description?.toLowerCase().includes('fast-paced') ||
-        role.job_description?.toLowerCase().includes('startup') ||
-        role.job_description?.toLowerCase().includes('agile')) {
+    if (roleDesc.includes('fast-paced') || roleDesc.includes('startup') || 
+        roleDesc.includes('agile') || roleDesc.includes('dynamic')) {
       if (adaptability >= 4) {
-        personalityScore += 10;
-      } else if (adaptability <= 2) {
-        personalityScore -= 3;
+        personalityScore += 5;
+      } else if (adaptability >= 3) {
+        personalityScore += 2;
       }
     }
 
-    matchScore += Math.max(personalityScore, 0); // Ensure no negative scores
+    // Base personality score from overall soft skills average
+    const avgSoftSkills = Object.values(softSkills).reduce((a: number, b: any) => a + (typeof b === 'number' ? b : 0), 0) / Object.keys(softSkills).length;
+    personalityScore += (avgSoftSkills / 5) * 8;
+
+    matchScore += Math.max(personalityScore, 0);
+    console.log('Personality match: +', Math.max(personalityScore, 0));
+  } else {
+    matchScore += 10; // Base score when no soft skills assessment
   }
 
-  // 4. Education & Experience Alignment (10% weight)
-  let educationScore = 0;
+  // 4. Education & Experience Alignment (15% weight)
+  let backgroundScore = 0;
   
   if (profile?.degree_certification) {
     const hasAdvancedDegree = ['Bachelor\'s', 'Master\'s', 'PhD'].includes(profile.degree_certification);
     if (hasAdvancedDegree) {
-      educationScore += 5;
+      backgroundScore += 6;
     } else {
-      educationScore += 2;
+      backgroundScore += 3;
     }
   }
 
@@ -189,17 +251,18 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
     const studyFieldMatch = profile.fields_of_study.toLowerCase().includes(role.category.toLowerCase()) ||
                            role.category.toLowerCase().includes(profile.fields_of_study.toLowerCase());
     if (studyFieldMatch) {
-      educationScore += 3;
+      backgroundScore += 5;
     }
   }
 
   if (profile?.career_history && profile.career_history.length > 50) {
-    educationScore += 2;
+    backgroundScore += 4;
   }
 
-  matchScore += Math.min(educationScore, 10);
+  matchScore += Math.min(backgroundScore, 15);
+  console.log('Background match: +', Math.min(backgroundScore, 15));
 
-  // 5. Location Match Bonus (5% weight)
+  // 5. Location Bonus (5% weight)
   if (profile?.location && role.location) {
     const locationMatch = profile.location.toLowerCase().includes(role.location.toLowerCase()) ||
                          role.location.toLowerCase().includes(profile.location.toLowerCase()) ||
@@ -209,19 +272,23 @@ export const calculatePersonalizedCareerMatch = ({ role, profile, softSkillsAsse
     }
   }
 
-  // Ensure reasonable range with field-specific boosts
-  let finalMatch = Math.round(matchScore);
+  // Calculate final score with base
+  let finalMatch = Math.round(baseScore + matchScore);
   
-  // Boost scores for direct field matches
+  // Ensure minimum score for field matches
   if (profile?.field_of_interest && role.category) {
-    const directFieldMatch = profile.field_of_interest.toLowerCase().includes(role.category.toLowerCase()) ||
-                            role.category.toLowerCase().includes(profile.field_of_interest.toLowerCase());
-    if (directFieldMatch && finalMatch < 65) {
-      finalMatch = Math.max(finalMatch, 65); // Minimum 65% for direct field matches
+    const fieldMatch = profile.field_of_interest.toLowerCase().includes(role.category.toLowerCase()) ||
+                      role.category.toLowerCase().includes(profile.field_of_interest.toLowerCase());
+    if (fieldMatch && finalMatch < 60) {
+      finalMatch = 60; // Minimum 60% for field matches
     }
   }
 
-  return Math.min(Math.max(finalMatch, 30), 98);
+  // Ensure reasonable range
+  finalMatch = Math.min(Math.max(finalMatch, 35), 95);
+  
+  console.log('Final match score:', finalMatch);
+  return finalMatch;
 };
 
 export const getMatchColor = (match: number): string => {
