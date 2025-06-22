@@ -27,25 +27,22 @@ const ResumeBuilder = () => {
         </div>
       </div>
 
-      {/* Top Section: Template Selection and Edit Form */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Template Selection */}
-        <TemplateSelector 
-          selectedTemplate={selectedTemplate}
-          onTemplateChange={setSelectedTemplate}
+      {/* Full Width Template Selection */}
+      <TemplateSelector 
+        selectedTemplate={selectedTemplate}
+        onTemplateChange={setSelectedTemplate}
+      />
+
+      {/* Edit Form - Only show when editing */}
+      {isEditing && (
+        <ResumeEditForm
+          resumeData={resumeData}
+          onResumeDataChange={setResumeData}
+          onSkillsChange={handleSkillsChange}
         />
+      )}
 
-        {/* Edit Form */}
-        {isEditing && (
-          <ResumeEditForm
-            resumeData={resumeData}
-            onResumeDataChange={setResumeData}
-            onSkillsChange={handleSkillsChange}
-          />
-        )}
-      </div>
-
-      {/* Bottom Section: Full-Width Resume Preview */}
+      {/* Full-Width Resume Preview */}
       <ResumePreview 
         resumeData={resumeData}
         selectedTemplate={selectedTemplate}

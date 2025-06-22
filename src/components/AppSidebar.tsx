@@ -1,4 +1,3 @@
-
 import {
   Sidebar,
   SidebarContent,
@@ -46,7 +45,12 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
       icon: MessageSquare,
       isPremium: true 
     },
-    { key: 'learning', label: 'Learning Resources', icon: Award },
+    { 
+      key: 'learning', 
+      label: 'Learning Resources', 
+      icon: Award,
+      isPremium: true 
+    },
     { key: 'resume', label: 'Resume Builder', icon: FileText },
     { key: 'profile', label: 'Profile', icon: User },
   ];

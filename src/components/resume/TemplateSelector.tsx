@@ -28,29 +28,31 @@ const TemplateSelector = ({ selectedTemplate, onTemplateChange }: TemplateSelect
         </CardTitle>
         <CardDescription className="text-sub">Choose your resume design</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {templates.map((template) => (
-          <div
-            key={template.id}
-            className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
-              selectedTemplate === template.id 
-                ? 'border-teal-500 shadow-md bg-[#5C469C]' 
-                : 'border-gray-200 hover:border-gray-300 hover:shadow-sm hover:bg-[#5C469C]'
-            }`}
-            onClick={() => handleTemplateChange(template.id)}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <h3 className="font-semibold text-main">{template.name}</h3>
-                <p className="text-sm text-sub">{template.description}</p>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {templates.map((template) => (
+            <div
+              key={template.id}
+              className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+                selectedTemplate === template.id 
+                  ? 'border-teal-500 shadow-md bg-[#5C469C]' 
+                  : 'border-gray-200 hover:border-gray-300 hover:shadow-sm hover:bg-[#5C469C]'
+              }`}
+              onClick={() => handleTemplateChange(template.id)}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h3 className="font-semibold text-main">{template.name}</h3>
+                  <p className="text-sm text-sub">{template.description}</p>
+                </div>
+                {selectedTemplate === template.id && (
+                  <Badge className="bg-teal-500">Active</Badge>
+                )}
               </div>
-              {selectedTemplate === template.id && (
-                <Badge className="bg-teal-500">Active</Badge>
-              )}
+              <p className="text-xs text-sub mt-2 italic">{template.preview}</p>
             </div>
-            <p className="text-xs text-sub mt-2 italic">{template.preview}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
