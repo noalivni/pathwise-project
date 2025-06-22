@@ -34,7 +34,7 @@ const SkillQuestion = ({
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-main">
             <Wrench className="mr-2 h-5 w-5 text-teal-600" />
             Skill {currentSkill + 1} of {totalSkills}
           </CardTitle>
@@ -46,8 +46,8 @@ const SkillQuestion = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="text-center">
-          <h3 className="text-2xl font-semibold mb-2">{skillData.name}</h3>
-          <p className="text-slate-600 mb-6">How would you rate your skill level?</p>
+          <h3 className="text-2xl font-semibold mb-2 text-main">{skillData.name}</h3>
+          <p className="text-sub mb-6">How would you rate your skill level?</p>
           
           <div className="space-y-4">
             <Slider
@@ -59,7 +59,7 @@ const SkillQuestion = ({
               className="w-full"
             />
             
-            <div className="flex justify-between text-sm text-slate-500">
+            <div className="flex justify-between text-sm text-sub">
               <span>No Experience</span>
               <span>Beginner</span>
               <span>Basic</span>

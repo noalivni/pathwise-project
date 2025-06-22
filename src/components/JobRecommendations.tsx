@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -148,7 +147,7 @@ const JobRecommendations = () => {
       <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
-          <p className="text-pathwise-text-muted">Loading personalized recommendations...</p>
+          <p className="text-sub">Loading personalized recommendations...</p>
         </div>
       </div>
     );
@@ -157,8 +156,8 @@ const JobRecommendations = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-pathwise-text">Top Career Matches</h1>
-        <p className="text-pathwise-text-muted mt-2">
+        <h1 className="text-3xl font-bold text-main">Top Career Matches</h1>
+        <p className="text-sub mt-2">
           4 best roles matched to your skills and interests: {profile?.field_of_interest || 'Complete profile for better matches'}
         </p>
       </div>
@@ -181,8 +180,8 @@ const JobRecommendations = () => {
       {filteredRoles.length === 0 && (
         <div className="text-center py-12">
           <Search className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-pathwise-text-muted mb-2">No matching roles found</h3>
-          <p className="text-pathwise-text-secondary">
+          <h3 className="text-lg font-medium text-sub mb-2">No matching roles found</h3>
+          <p className="text-sub">
             {!profile?.field_of_interest 
               ? "Complete your profile and skills assessment for personalized recommendations"
               : "Try adjusting your search terms or complete additional assessments"

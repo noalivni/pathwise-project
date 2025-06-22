@@ -13,16 +13,16 @@ const ProUpgradeNotice = () => {
               <Lock className="h-12 w-12 text-yellow-600" />
             </div>
           </div>
-          <CardTitle className="flex items-center justify-center gap-2">
+          <CardTitle className="flex items-center justify-center gap-2 text-main">
             <Crown className="h-5 w-5 text-yellow-600" />
             Pro Feature
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sub">
             Learning Resources are available for Pro subscribers only
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-slate-600 mb-4">
+          <p className="text-sub mb-4">
             Upgrade to Pro to access personalized learning materials, courses, and resources tailored to your career goals.
           </p>
           <Button className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700">

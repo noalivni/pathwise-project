@@ -25,8 +25,8 @@ const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
             </Badge>
           </div>
         </div>
-        <CardTitle className="text-lg">{resource.title}</CardTitle>
-        <CardDescription>{resource.description}</CardDescription>
+        <CardTitle className="text-lg text-main">{resource.title}</CardTitle>
+        <CardDescription className="text-sub">{resource.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
@@ -39,7 +39,7 @@ const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
         
         {resource.related_job_roles.length > 0 && (
           <div>
-            <p className="text-xs text-slate-500 mb-1">Relevant for:</p>
+            <p className="text-xs text-sub mb-1">Relevant for:</p>
             <div className="flex flex-wrap gap-1">
               {resource.related_job_roles.map((role, index) => (
                 <Badge key={index} variant="secondary" className="text-xs">
