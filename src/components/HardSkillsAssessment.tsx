@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -93,8 +94,8 @@ const HardSkillsAssessment = () => {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-main">Loading Assessment...</h1>
-          <p className="text-sub mt-2">Preparing your personalized skills assessment</p>
+          <h1 className="text-3xl font-bold text-pathwise-text">Loading Assessment...</h1>
+          <p className="text-pathwise-text-muted mt-2">Preparing your personalized skills assessment</p>
         </div>
       </div>
     );
@@ -118,8 +119,8 @@ const HardSkillsAssessment = () => {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-main">Hard Skills Assessment</h1>
-        <p className="text-sub mt-2">
+        <h1 className="text-3xl font-bold text-pathwise-text">Hard Skills Assessment</h1>
+        <p className="text-pathwise-text-muted mt-2">
           Rate your proficiency with {profile?.field_of_interest || 'technical'} tools and skills
         </p>
       </div>

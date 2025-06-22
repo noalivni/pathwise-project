@@ -95,10 +95,10 @@ const UserDashboard = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-main">
+          <h1 className="text-3xl font-bold text-pathwise-text">
             Welcome back, {profile?.full_name || 'there'}!
           </h1>
-          <p className="text-sub mt-1">Continue your career journey</p>
+          <p className="text-pathwise-text-secondary mt-1">Continue your career journey</p>
         </div>
         <Button 
           onClick={handleNavigateToAssessment}
@@ -113,13 +113,13 @@ const UserDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="card-hover">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-main">Profile Completion</CardTitle>
+            <CardTitle className="text-sm font-medium text-pathwise-text">Profile Completion</CardTitle>
             <Target className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-main">{profileCompletion}%</div>
+            <div className="text-2xl font-bold text-pathwise-text">{profileCompletion}%</div>
             <Progress value={profileCompletion} className="mt-2" />
-            <p className="text-xs text-sub mt-2">
+            <p className="text-xs text-pathwise-text-secondary mt-2">
               {profileCompletion < 100 ? 'Complete your profile' : 'Profile completed!'}
             </p>
           </CardContent>
@@ -127,12 +127,12 @@ const UserDashboard = () => {
 
         <Card className="card-hover">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-main">Job Matches</CardTitle>
+            <CardTitle className="text-sm font-medium text-pathwise-text">Job Matches</CardTitle>
             <Users className="h-4 w-4 text-secondary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-main">{jobMatches}</div>
-            <p className="text-xs text-sub mt-2">
+            <div className="text-2xl font-bold text-pathwise-text">{jobMatches}</div>
+            <p className="text-xs text-pathwise-text-secondary mt-2">
               {jobMatches > 0 ? 'Matches found' : 'Complete assessment for matches'}
             </p>
           </CardContent>
@@ -140,12 +140,12 @@ const UserDashboard = () => {
 
         <Card className="card-hover">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-main">Assessments</CardTitle>
+            <CardTitle className="text-sm font-medium text-pathwise-text">Assessments</CardTitle>
             <BookOpen className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-main">{completedAssessments}</div>
-            <p className="text-xs text-sub mt-2">
+            <div className="text-2xl font-bold text-pathwise-text">{completedAssessments}</div>
+            <p className="text-xs text-pathwise-text-secondary mt-2">
               {completedAssessments > 0 ? 'Assessments completed' : 'Take your first assessment'}
             </p>
           </CardContent>
@@ -155,11 +155,11 @@ const UserDashboard = () => {
       {/* Recommended Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center text-main">
+          <CardTitle className="flex items-center text-pathwise-text">
             <TrendingUp className="mr-2 h-5 w-5 text-primary" />
             Recommended Next Steps
           </CardTitle>
-          <CardDescription className="text-sub">Personalized actions to advance your career</CardDescription>
+          <CardDescription className="text-pathwise-text-secondary">Personalized actions to advance your career</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <button 
@@ -171,11 +171,11 @@ const UserDashboard = () => {
                 <Target className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-main">Complete Skills Assessment</h3>
-                <p className="text-sm text-sub">Get personalized job recommendations</p>
+                <h3 className="font-semibold text-pathwise-text">Complete Skills Assessment</h3>
+                <p className="text-sm text-pathwise-text-secondary">Get personalized job recommendations</p>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-sub" />
+            <ChevronRight className="h-5 w-5 text-pathwise-text-secondary" />
           </button>
 
           <button 
@@ -187,11 +187,11 @@ const UserDashboard = () => {
                 <Users className="w-5 h-5 text-secondary" />
               </div>
               <div>
-                <h3 className="font-semibold text-main">View Job Recommendations</h3>
-                <p className="text-sm text-sub">Explore matching career opportunities</p>
+                <h3 className="font-semibold text-pathwise-text">View Job Recommendations</h3>
+                <p className="text-sm text-pathwise-text-secondary">Explore matching career opportunities</p>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-sub" />
+            <ChevronRight className="h-5 w-5 text-pathwise-text-secondary" />
           </button>
 
           <button 
@@ -203,12 +203,12 @@ const UserDashboard = () => {
                 <BookOpen className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <h3 className="font-semibold text-main">Practice Interview Questions</h3>
-                <p className="text-sm text-sub">Prepare for upcoming interviews</p>
+                <h3 className="font-semibold text-pathwise-text">Practice Interview Questions</h3>
+                <p className="text-sm text-pathwise-text-secondary">Prepare for upcoming interviews</p>
                 <Badge className="mt-1 bg-primary text-primary-foreground">PRO</Badge>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-sub" />
+            <ChevronRight className="h-5 w-5 text-pathwise-text-secondary" />
           </button>
         </CardContent>
       </Card>
@@ -216,7 +216,7 @@ const UserDashboard = () => {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center text-main">
+          <CardTitle className="flex items-center text-pathwise-text">
             <Award className="mr-2 h-5 w-5 text-secondary" />
             Recent Activity
           </CardTitle>
@@ -226,14 +226,14 @@ const UserDashboard = () => {
             activities.map((activity) => (
               <div key={activity.id} className="flex items-center space-x-3 text-sm">
                 <div className="w-2 h-2 bg-primary rounded-full"></div>
-                <span className="text-sub">{activity.activity_description}</span>
-                <span className="text-sub/60 ml-auto">
+                <span className="text-pathwise-text-secondary">{activity.activity_description}</span>
+                <span className="text-pathwise-text-secondary/60 ml-auto">
                   {new Date(activity.created_at).toLocaleDateString()}
                 </span>
               </div>
             ))
           ) : (
-            <div className="text-sm text-sub text-center py-4">
+            <div className="text-sm text-pathwise-text-secondary text-center py-4">
               No recent activity. Start by completing your skills assessment!
             </div>
           )}

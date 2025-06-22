@@ -100,12 +100,12 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-main">Complete Your Profile</h1>
-        <p className="text-sub mt-2">Help us personalize your experience</p>
+        <h1 className="text-3xl font-bold text-pathwise-text">Complete Your Profile</h1>
+        <p className="text-pathwise-text-muted mt-2">Help us personalize your experience</p>
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between text-sm text-sub">
+        <div className="flex justify-between text-sm text-pathwise-text-secondary">
           <span>Step {currentStep} of {TOTAL_STEPS}</span>
           <span>{Math.round(progress)}% Complete</span>
         </div>

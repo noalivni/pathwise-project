@@ -19,15 +19,15 @@ const JobCard = ({ role, onBookmark, skillFitTags = [] }: JobCardProps) => {
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <CardTitle className="text-xl text-main">{role.job_title}</CardTitle>
+              <CardTitle className="text-xl text-pathwise-text">{role.job_title}</CardTitle>
               <Badge className={`${getMatchColor(role.match_percentage || 0)} text-white`}>
                 {role.match_percentage || 0}% Match
               </Badge>
             </div>
-            <CardDescription className="text-lg font-medium text-main mb-2">
+            <CardDescription className="text-lg font-medium text-pathwise-text-muted mb-2">
               {role.category}
             </CardDescription>
-            <p className="text-sm text-sub">
+            <p className="text-sm text-pathwise-text-secondary">
               {getMatchDescription(role.match_percentage || 0)}
             </p>
           </div>
@@ -37,15 +37,15 @@ const JobCard = ({ role, onBookmark, skillFitTags = [] }: JobCardProps) => {
             onClick={() => onBookmark(role.id)}
             className="flex items-center gap-1 hover:bg-standard-hover"
           >
-            <Bookmark className={`h-4 w-4 ${role.is_bookmarked ? 'fill-current text-teal-600' : 'text-sub'}`} />
+            <Bookmark className={`h-4 w-4 ${role.is_bookmarked ? 'fill-current text-teal-600' : 'text-pathwise-text-muted'}`} />
           </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sub">{role.job_description}</p>
+        <p className="text-pathwise-text-secondary">{role.job_description}</p>
         
         <div>
-          <h4 className="text-sm font-semibold text-main mb-2">Required Skills:</h4>
+          <h4 className="text-sm font-semibold text-pathwise-text mb-2">Required Skills:</h4>
           <div className="flex flex-wrap gap-2">
             {role.required_skills.map((skill, index) => {
               const isSkillFit = skillFitTags.includes(skill.toLowerCase());
@@ -78,7 +78,7 @@ const JobCard = ({ role, onBookmark, skillFitTags = [] }: JobCardProps) => {
         )}
         
         <div className="flex justify-between items-center pt-4 border-t border-border">
-          <div className="flex items-center gap-4 text-sm text-sub">
+          <div className="flex items-center gap-4 text-sm text-pathwise-text-secondary">
             <div className="flex items-center gap-1">
               <Target className="h-4 w-4" />
               Career Path

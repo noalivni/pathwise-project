@@ -1,4 +1,3 @@
-
 import {
   Sidebar,
   SidebarContent,
@@ -65,24 +64,24 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
   const menuItems = userRole === 'admin' ? adminMenuItems : userMenuItems;
 
   return (
-    <Sidebar variant="inset" className="pathwise-sidebar">
-      <SidebarHeader className="border-b border-border p-4">
+    <Sidebar variant="inset" className="border-r border-pathwise-purple bg-pathwise-dark-blue">
+      <SidebarHeader className="border-b border-pathwise-purple p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary/80 rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">P</span>
+            <div className="w-8 h-8 bg-gradient-to-r from-pathwise-purple to-pathwise-light-purple rounded-lg flex items-center justify-center">
+              <span className="text-pathwise-text font-bold text-sm">P</span>
             </div>
-            <span className="text-lg font-bold text-main">Pathwise</span>
+            <span className="text-lg font-bold text-pathwise-text">Pathwise</span>
           </div>
           <ThemeToggle />
         </div>
         
         {profile && userRole === 'user' && (
-          <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+          <div className="mt-4 p-3 bg-pathwise-medium-blue/50 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-sub">Welcome back,</p>
-                <p className="font-semibold text-main">{profile.full_name || 'User'}</p>
+                <p className="text-sm text-pathwise-text">Welcome back,</p>
+                <p className="font-semibold text-pathwise-text">{profile.full_name || 'User'}</p>
               </div>
               <Badge 
                 variant={profile.subscription_status === 'premium' ? 'default' : 'secondary'}
@@ -98,7 +97,7 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sub">Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-pathwise-text-muted">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -106,10 +105,10 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
                   <SidebarMenuButton
                     onClick={() => onViewChange(item.key)}
                     isActive={activeView === item.key}
-                    className={`nav-link text-main hover:text-main ${
+                    className={`nav-link text-pathwise-text hover:text-pathwise-text ${
                       activeView === item.key 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-muted'
+                        ? 'bg-pathwise-purple text-pathwise-text' 
+                        : 'hover:bg-pathwise-purple/20'
                     } transition-colors duration-200`}
                   >
                     <item.icon className="mr-2 h-4 w-4" />
@@ -125,11 +124,11 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border p-4">
+      <SidebarFooter className="border-t border-pathwise-purple p-4">
         <div className="space-y-2">
           <SidebarMenuButton 
             onClick={onLogout}
-            className="nav-link text-main hover:text-main hover:bg-muted transition-colors duration-200"
+            className="nav-link text-pathwise-text hover:text-pathwise-text hover:bg-pathwise-purple/20 transition-colors duration-200"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Logout

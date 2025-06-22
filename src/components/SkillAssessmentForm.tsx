@@ -32,14 +32,14 @@ const SkillAssessmentForm = ({
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-main">Soft Skills Assessment</h1>
-        <p className="text-sub mt-2">Rate your interpersonal and personal effectiveness skills</p>
+        <h1 className="text-3xl font-bold text-pathwise-text">Soft Skills Assessment</h1>
+        <p className="text-pathwise-text-muted mt-2">Rate your interpersonal and personal effectiveness skills</p>
       </div>
 
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle className="flex items-center text-main">
+            <CardTitle className="flex items-center text-pathwise-text">
               <Heart className="mr-2 h-5 w-5 text-pink-600" />
               Skill {currentSkill + 1} of {softSkills.length}
             </CardTitle>
@@ -49,8 +49,8 @@ const SkillAssessmentForm = ({
         <CardContent className="space-y-6">
           <div className="text-center">
             <div className="text-4xl mb-3">{currentSkillData.icon}</div>
-            <h3 className="text-2xl font-semibold mb-2 text-main">{currentSkillData.name}</h3>
-            <p className="text-sub mb-6">{currentSkillData.description}</p>
+            <h3 className="text-2xl font-semibold mb-2 text-pathwise-text">{currentSkillData.name}</h3>
+            <p className="text-pathwise-text-muted mb-6">{currentSkillData.description}</p>
             
             <div className="space-y-4">
               <Slider
@@ -62,7 +62,7 @@ const SkillAssessmentForm = ({
                 className="w-full"
               />
               
-              <div className="flex justify-between text-sm text-sub">
+              <div className="flex justify-between text-sm text-pathwise-text-secondary">
                 <span>Not Me</span>
                 <span>Somewhat</span>
                 <span>Moderately</span>

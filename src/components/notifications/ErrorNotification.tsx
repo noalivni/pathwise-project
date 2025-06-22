@@ -31,7 +31,7 @@ const ErrorNotification = ({
             </div>
           </DialogHeader>
           <div className="mt-4">
-            <p className="text-sub">{message}</p>
+            <p className="text-slate-600">{message}</p>
           </div>
           <div className="flex justify-end mt-6">
             <Button onClick={onClose} variant="outline">

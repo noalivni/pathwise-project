@@ -36,7 +36,7 @@ const SuccessToast = ({
           <CheckCircle className="h-5 w-5 text-green-600" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium text-main">{message}</p>
+          <p className="text-sm font-medium text-green-800">{message}</p>
         </div>
         <button
           onClick={onClose}

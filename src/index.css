@@ -4,8 +4,209 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import organized CSS modules */
-@import './styles/variables.css';
-@import './styles/base.css';
-@import './styles/animations.css';
-@import './styles/components.css';
+/* Dark mode design system with custom Pathwise palette */
+
+@layer base {
+  :root {
+    /* Light mode color palette */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Light mode hover states */
+    --primary-hover: 222.2 47.4% 20%;
+    --secondary-hover: 210 40% 90%;
+    --standard-hover: 210 40% 90%;
+    
+    /* Global text colors for light mode */
+    --main-text: 222.2 84% 4.9%;
+    --sub-text: 215.4 16.3% 46.9%;
+  }
+
+  .dark {
+    /* Dark mode color palette */
+    --background: 218 68% 18%; /* #0C134F */
+    --foreground: 0 0% 94%; /* #F0F0F0 */
+
+    --card: 227 58% 28%; /* #1D267D */
+    --card-foreground: 0 0% 94%;
+
+    --popover: 227 58% 28%;
+    --popover-foreground: 0 0% 94%;
+
+    --primary: 267 87% 84%; /* #D4ADFC */
+    --primary-foreground: 218 68% 18%;
+
+    --secondary: 256 38% 46%; /* #5C469C */
+    --secondary-foreground: 0 0% 94%;
+
+    --muted: 227 58% 28%;
+    --muted-foreground: 0 0% 75%;
+
+    --accent: 267 87% 84%;
+    --accent-foreground: 218 68% 18%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 256 38% 46%;
+    --input: 227 58% 28%;
+    --ring: 267 87% 84%;
+
+    --sidebar-background: 218 68% 18%;
+    --sidebar-foreground: 0 0% 94%;
+    --sidebar-primary: 267 87% 84%;
+    --sidebar-primary-foreground: 218 68% 18%;
+    --sidebar-accent: 227 58% 28%;
+    --sidebar-accent-foreground: 0 0% 94%;
+    --sidebar-border: 256 38% 46%;
+    --sidebar-ring: 267 87% 84%;
+
+    /* Custom hover states - using #5C469C as requested */
+    --primary-hover: 267 78% 78%; /* #B889F5 */
+    --secondary-hover: 256 38% 46%; /* #5C469C */
+    --standard-hover: 256 38% 46%; /* #5C469C for general hover states */
+    
+    /* Global text colors for dark mode */
+    --main-text: 0 0% 94%; /* #F0F0F0 */
+    --sub-text: 0 0% 82%; /* #D0D0D0 */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+
+  /* Global text styling */
+  .text-main {
+    color: hsl(var(--main-text));
+  }
+  
+  .text-sub {
+    color: hsl(var(--sub-text));
+  }
+
+  /* Custom animations for dark mode */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  /* Enhanced button states for dark mode */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground active:scale-95 transition-all duration-200;
+  }
+
+  .btn-primary:hover {
+    background-color: hsl(var(--primary-hover));
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground active:scale-95 transition-all duration-200;
+  }
+
+  .btn-secondary:hover {
+    background-color: hsl(var(--secondary-hover));
+  }
+
+  /* Enhanced input states for dark mode */
+  .input-dark {
+    @apply bg-input border-border text-foreground placeholder:text-muted-foreground;
+    @apply focus:border-primary focus:ring-2 focus:ring-primary/20;
+    @apply transition-all duration-200;
+  }
+
+  .input-error {
+    @apply border-destructive focus:border-destructive focus:ring-destructive/20;
+  }
+
+  .input-valid {
+    @apply border-green-500 focus:border-green-500 focus:ring-green-500/20;
+  }
+
+  /* Global hover states for interactive elements - using #5C469C */
+  .hover-pathwise {
+    @apply transition-colors duration-200;
+  }
+
+  .hover-pathwise:hover {
+    background-color: hsl(var(--standard-hover));
+  }
+
+  /* Card hover states */
+  .card-hover {
+    @apply transition-all duration-200 cursor-pointer;
+  }
+
+  .card-hover:hover {
+    background-color: hsl(var(--standard-hover));
+    transform: translateY(-2px);
+    @apply shadow-lg;
+  }
+
+  /* Navigation link hover states */
+  .nav-link {
+    @apply transition-colors duration-200;
+  }
+
+  .nav-link:hover {
+    background-color: hsl(var(--standard-hover));
+    color: hsl(var(--foreground));
+  }
+
+  /* Button hover states - ensuring consistent #5C469C hover */
+  .btn-hover:hover {
+    background-color: #5C469C !important;
+  }
+}

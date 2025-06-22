@@ -23,7 +23,7 @@ const TemplateSelector = ({ selectedTemplate, onTemplateChange }: TemplateSelect
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center text-main">
-          <FileText className="mr-2 h-5 w-5 text-primary" />
+          <FileText className="mr-2 h-5 w-5 text-teal-600" />
           Resume Templates
         </CardTitle>
         <CardDescription className="text-sub">Choose your resume design</CardDescription>
@@ -35,8 +35,8 @@ const TemplateSelector = ({ selectedTemplate, onTemplateChange }: TemplateSelect
               key={template.id}
               className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
                 selectedTemplate === template.id 
-                  ? 'border-primary shadow-md bg-primary/10' 
-                  : 'border-border hover:border-primary/50 hover:shadow-sm hover:bg-muted/50'
+                  ? 'border-teal-500 shadow-md bg-[#5C469C]' 
+                  : 'border-gray-200 hover:border-gray-300 hover:shadow-sm hover:bg-[#5C469C]'
               }`}
               onClick={() => handleTemplateChange(template.id)}
             >
@@ -46,7 +46,7 @@ const TemplateSelector = ({ selectedTemplate, onTemplateChange }: TemplateSelect
                   <p className="text-sm text-sub">{template.description}</p>
                 </div>
                 {selectedTemplate === template.id && (
-                  <Badge className="bg-primary text-primary-foreground">Active</Badge>
+                  <Badge className="bg-teal-500">Active</Badge>
                 )}
               </div>
               <p className="text-xs text-sub mt-2 italic">{template.preview}</p>

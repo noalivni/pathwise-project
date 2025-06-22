@@ -35,10 +35,10 @@ const ConfirmationModal = ({
               </div>
             )}
             <div>
-              <DialogTitle className={variant === 'destructive' ? 'text-red-800' : 'text-main'}>
+              <DialogTitle className={variant === 'destructive' ? 'text-red-800' : 'text-slate-800'}>
                 {title}
               </DialogTitle>
-              <DialogDescription className="mt-2 text-sub">
+              <DialogDescription className="mt-2">
                 {description}
               </DialogDescription>
             </div>

@@ -26,8 +26,8 @@ const AssessmentResults = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-main">Hard Skills Assessment Results</h1>
-        <p className="text-sub mt-2">
+        <h1 className="text-3xl font-bold text-slate-800">Hard Skills Assessment Results</h1>
+        <p className="text-slate-600 mt-2">
           Your technical skill proficiency for {fieldOfInterest || 'General'}
         </p>
       </div>
@@ -42,8 +42,8 @@ const AssessmentResults = ({
               <CardHeader>
                 <CardTitle className="flex items-center justify-between text-lg">
                   <div>
-                    <span className="text-main">{skill.name}</span>
-                    <p className="text-sm text-sub font-normal">{skill.category}</p>
+                    <span>{skill.name}</span>
+                    <p className="text-sm text-slate-500 font-normal">{skill.category}</p>
                   </div>
                   <Badge className={`${skillInfo.color} text-white`}>
                     {skillInfo.level}
@@ -52,7 +52,7 @@ const AssessmentResults = ({
               </CardHeader>
               <CardContent>
                 <Progress value={(rating / 5) * 100} className="mb-2" />
-                <p className="text-sm text-sub">Rating: {rating}/5</p>
+                <p className="text-sm text-slate-600">Rating: {rating}/5</p>
               </CardContent>
             </Card>
           );
@@ -61,7 +61,7 @@ const AssessmentResults = ({
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center text-main">
+          <CardTitle className="flex items-center">
             <Target className="mr-2 h-5 w-5 text-teal-600" />
             Recommendations
           </CardTitle>

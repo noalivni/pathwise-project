@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -95,7 +96,7 @@ const EditableProfile = () => {
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-main mb-4">Loading Profile...</h1>
+          <h1 className="text-2xl font-bold text-pathwise-text mb-4">Loading Profile...</h1>
         </div>
       </div>
     );
@@ -104,7 +105,7 @@ const EditableProfile = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-main">Your Profile</h1>
+        <h1 className="text-3xl font-bold text-pathwise-text">Your Profile</h1>
         <div className="flex gap-2">
           {isEditing ? (
             <>
@@ -129,7 +130,7 @@ const EditableProfile = () => {
       {/* Personal Information */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center text-main">
+          <CardTitle className="flex items-center text-pathwise-text">
             <User className="mr-2 h-5 w-5 text-teal-600" />
             Personal Information
           </CardTitle>
@@ -137,24 +138,24 @@ const EditableProfile = () => {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="full_name" className="text-sub">Full Name</Label>
+              <Label htmlFor="full_name" className="text-gray-400">Full Name</Label>
               {isEditing ? (
                 <Input
                   id="full_name"
                   value={formData.full_name}
                   onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  className="text-main"
+                  className="text-pathwise-text-muted"
                 />
               ) : (
-                <p className="text-main mt-1">{profile.full_name || 'Not provided'}</p>
+                <p className="text-pathwise-text-muted mt-1">{profile.full_name || 'Not provided'}</p>
               )}
             </div>
             <div>
-              <Label className="text-sub">Email</Label>
-              <p className="text-main mt-1">{profile.email || 'Not provided'}</p>
+              <Label className="text-gray-400">Email</Label>
+              <p className="text-pathwise-text-muted mt-1">{profile.email || 'Not provided'}</p>
             </div>
             <div>
-              <Label htmlFor="location" className="flex items-center text-sub">
+              <Label htmlFor="location" className="flex items-center text-gray-400">
                 <MapPin className="w-4 h-4 mr-1" />
                 Location
               </Label>
@@ -163,10 +164,10 @@ const EditableProfile = () => {
                   id="location"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="text-main"
+                  className="text-pathwise-text-muted"
                 />
               ) : (
-                <p className="text-main mt-1">{profile.location || 'Not provided'}</p>
+                <p className="text-pathwise-text-muted mt-1">{profile.location || 'Not provided'}</p>
               )}
             </div>
           </div>
@@ -176,7 +177,7 @@ const EditableProfile = () => {
       {/* Educational Background */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center text-main">
+          <CardTitle className="flex items-center text-pathwise-text">
             <GraduationCap className="mr-2 h-5 w-5 text-blue-600" />
             Educational Background
           </CardTitle>
@@ -184,10 +185,10 @@ const EditableProfile = () => {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="degree_certification" className="text-sub">Education Level</Label>
+              <Label htmlFor="degree_certification" className="text-gray-400">Education Level</Label>
               {isEditing ? (
                 <Select value={formData.degree_certification} onValueChange={(value) => setFormData({ ...formData, degree_certification: value })}>
-                  <SelectTrigger className="text-main">
+                  <SelectTrigger className="text-pathwise-text-muted">
                     <SelectValue placeholder="Select education level" />
                   </SelectTrigger>
                   <SelectContent>
@@ -197,14 +198,14 @@ const EditableProfile = () => {
                   </SelectContent>
                 </Select>
               ) : (
-                <p className="text-main mt-1">{profile.degree_certification || 'Not provided'}</p>
+                <p className="text-pathwise-text-muted mt-1">{profile.degree_certification || 'Not provided'}</p>
               )}
             </div>
             <div>
-              <Label htmlFor="fields_of_study" className="text-sub">Field of Study</Label>
+              <Label htmlFor="fields_of_study" className="text-gray-400">Field of Study</Label>
               {isEditing ? (
                 <Select value={formData.fields_of_study} onValueChange={(value) => setFormData({ ...formData, fields_of_study: value })}>
-                  <SelectTrigger className="text-main">
+                  <SelectTrigger className="text-pathwise-text-muted">
                     <SelectValue placeholder="Select field of study" />
                   </SelectTrigger>
                   <SelectContent>
@@ -214,14 +215,14 @@ const EditableProfile = () => {
                   </SelectContent>
                 </Select>
               ) : (
-                <p className="text-main mt-1">{profile.fields_of_study || 'Not provided'}</p>
+                <p className="text-pathwise-text-muted mt-1">{profile.fields_of_study || 'Not provided'}</p>
               )}
             </div>
             <div>
-              <Label htmlFor="graduation_year" className="text-sub">Graduation Year</Label>
+              <Label htmlFor="graduation_year" className="text-gray-400">Graduation Year</Label>
               {isEditing ? (
                 <Select value={formData.graduation_year} onValueChange={(value) => setFormData({ ...formData, graduation_year: value })}>
-                  <SelectTrigger className="text-main">
+                  <SelectTrigger className="text-pathwise-text-muted">
                     <SelectValue placeholder="Select graduation year" />
                   </SelectTrigger>
                   <SelectContent>
@@ -231,7 +232,7 @@ const EditableProfile = () => {
                   </SelectContent>
                 </Select>
               ) : (
-                <p className="text-main mt-1">{profile.graduation_year || 'Not provided'}</p>
+                <p className="text-pathwise-text-muted mt-1">{profile.graduation_year || 'Not provided'}</p>
               )}
             </div>
           </div>
@@ -241,21 +242,21 @@ const EditableProfile = () => {
       {/* Skills & Experience */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center text-main">
+          <CardTitle className="flex items-center text-pathwise-text">
             <Award className="mr-2 h-5 w-5 text-green-600" />
             Skills & Experience
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="hard_skills" className="text-sub">Technical Skills</Label>
+            <Label htmlFor="hard_skills" className="text-gray-400">Technical Skills</Label>
             {isEditing ? (
               <Textarea
                 id="hard_skills"
                 placeholder="Enter skills separated by commas"
                 value={formData.hard_skills.join(', ')}
                 onChange={(e) => handleSkillsChange(e.target.value)}
-                className="text-main"
+                className="text-pathwise-text-muted"
               />
             ) : (
               <div className="flex flex-wrap gap-2 mt-2">
@@ -266,13 +267,13 @@ const EditableProfile = () => {
                     </Badge>
                   ))
                 ) : (
-                  <p className="text-sub">No skills added yet</p>
+                  <p className="text-pathwise-text-secondary">No skills added yet</p>
                 )}
               </div>
             )}
           </div>
           <div>
-            <Label htmlFor="career_history" className="flex items-center text-sub">
+            <Label htmlFor="career_history" className="flex items-center text-gray-400">
               <Briefcase className="w-4 h-4 mr-1" />
               Career History
             </Label>
@@ -281,10 +282,10 @@ const EditableProfile = () => {
                 id="career_history"
                 value={formData.career_history}
                 onChange={(e) => setFormData({ ...formData, career_history: e.target.value })}
-                className="text-main"
+                className="text-pathwise-text-muted"
               />
             ) : (
-              <p className="text-main mt-1">{profile.career_history || 'Not provided'}</p>
+              <p className="text-pathwise-text-muted mt-1">{profile.career_history || 'Not provided'}</p>
             )}
           </div>
         </CardContent>
