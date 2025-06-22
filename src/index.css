@@ -10,25 +10,25 @@
   :root {
     /* Light mode color palette */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 210 69% 18%; /* Dark navy blue #0e264d */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 210 69% 18%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 210 69% 18%;
 
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary-foreground: 210 69% 18%;
 
     --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 210 16% 48%; /* Medium gray-blue #66778d */
 
     --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --accent-foreground: 210 69% 18%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
@@ -40,7 +40,7 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-foreground: 210 69% 18%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 95.9%;
@@ -54,8 +54,8 @@
     --standard-hover: 210 40% 90%;
     
     /* Global text colors for light mode */
-    --main-text: 222.2 84% 4.9%;
-    --sub-text: 215.4 16.3% 46.9%;
+    --main-text: 210 69% 18%; /* Dark navy blue #0e264d */
+    --sub-text: 210 16% 48%; /* Medium gray-blue #66778d */
   }
 
   .dark {

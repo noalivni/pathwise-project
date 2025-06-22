@@ -69,17 +69,6 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom Pathwise brand colors
-				pathwise: {
-					'dark-blue': '#0C134F',
-					'medium-blue': '#1D267D',
-					'purple': '#5C469C',
-					'light-purple': '#D4ADFC',
-					'purple-hover': '#B889F5',
-					'text': '#F0F0F0',
-					'text-muted': '#D0D0D0',
-					'text-secondary': '#BBBBBB'
-				},
 				// Standard hover color
 				'standard-hover': 'hsl(var(--standard-hover))'
 			},
