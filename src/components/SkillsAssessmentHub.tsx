@@ -91,12 +91,13 @@ const SkillsAssessmentHub = ({ onSelectAssessment }: SkillsAssessmentHubProps) =
           <div className="space-y-4 mt-4">
             <div className="grid gap-3">
               {skillEntries.map(([skill, rating], index) => {
-                const skillInfo = getSkillLevel(rating as number);
+                const numericRating = typeof rating === 'number' ? rating : 0;
+                const skillInfo = getSkillLevel(numericRating);
                 return (
                   <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                     <div>
                       <span className="font-medium">{skill}</span>
-                      <p className="text-sm text-slate-600">Rating: {rating}/5</p>
+                      <p className="text-sm text-slate-600">Rating: {numericRating}/5</p>
                     </div>
                     <Badge className={`${skillInfo.color} text-white`}>
                       {skillInfo.level}
@@ -151,12 +152,13 @@ const SkillsAssessmentHub = ({ onSelectAssessment }: SkillsAssessmentHubProps) =
             
             <div className="grid gap-3">
               {Object.entries(softSkillsData).map(([skill, rating], index) => {
-                const skillInfo = getSkillLevel(rating as number);
+                const numericRating = typeof rating === 'number' ? rating : 0;
+                const skillInfo = getSkillLevel(numericRating);
                 return (
                   <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                     <div>
                       <span className="font-medium">{skill}</span>
-                      <Progress value={((rating as number) / 5) * 100} className="w-32 mt-1" />
+                      <Progress value={(numericRating / 5) * 100} className="w-32 mt-1" />
                     </div>
                     <Badge className={`${skillInfo.color} text-white`}>
                       {skillInfo.level}
