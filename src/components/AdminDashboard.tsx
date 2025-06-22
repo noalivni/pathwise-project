@@ -154,7 +154,7 @@ const AdminDashboard = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">Admin Dashboard</h1>
+            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
             <p className="text-slate-600 mt-1">Loading platform analytics...</p>
           </div>
         </div>
@@ -175,7 +175,7 @@ const AdminDashboard = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
           <p className="text-slate-600 mt-1">Platform analytics and insights</p>
         </div>
       </div>
