@@ -12,6 +12,7 @@ import LearningResources from "@/components/LearningResources";
 import ResumeBuilder from "@/components/ResumeBuilder";
 import EditableProfile from "@/components/EditableProfile";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface DashboardProps {
   userRole: 'user' | 'admin';
@@ -20,8 +21,10 @@ interface DashboardProps {
 
 const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
   const { profile, signOut } = useAuth();
+  const { showWelcome, showUpgrade } = useNotifications();
   const [activeView, setActiveView] = useState('dashboard');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [hasShownWelcome, setHasShownWelcome] = useState(false);
 
   useEffect(() => {
     // Check if user needs onboarding
@@ -30,13 +33,33 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
     } else {
       setShowOnboarding(false);
     }
-  }, [profile, userRole]);
+
+    // Show welcome modal for new users (only once per session)
+    if (profile && !profile.onboarding_completed && userRole === 'user' && !hasShownWelcome) {
+      setTimeout(() => {
+        showWelcome(
+          () => setShowOnboarding(true),
+          profile.full_name || 'there'
+        );
+        setHasShownWelcome(true);
+      }, 1000);
+    }
+  }, [profile, userRole, hasShownWelcome, showWelcome]);
 
   useEffect(() => {
     // Listen for navigation events from dashboard buttons
     const handleNavigateToAssessment = () => setActiveView('assessment');
     const handleNavigateToJobs = () => setActiveView('jobs');
-    const handleNavigateToInterview = () => setActiveView('interview');
+    const handleNavigateToInterview = () => {
+      if (profile?.subscription_status !== 'premium') {
+        showUpgrade('Interview Practice', () => {
+          // Handle upgrade logic here
+          console.log('Upgrade to premium');
+        });
+        return;
+      }
+      setActiveView('interview');
+    };
 
     window.addEventListener('navigate-to-assessment', handleNavigateToAssessment);
     window.addEventListener('navigate-to-jobs', handleNavigateToJobs);
@@ -47,7 +70,7 @@ const Dashboard = ({ userRole, onLogout }: DashboardProps) => {
       window.removeEventListener('navigate-to-jobs', handleNavigateToJobs);
       window.removeEventListener('navigate-to-interview', handleNavigateToInterview);
     };
-  }, []);
+  }, [profile, showUpgrade]);
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);

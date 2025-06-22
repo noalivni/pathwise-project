@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "@/hooks/use-toast";
+import { useNotifications } from "@/hooks/useNotifications";
 import { TOTAL_STEPS } from "@/data/onboardingData";
 import type { OnboardingFormData } from "@/types/onboarding";
 import PersonalInfoStep from "@/components/onboarding/PersonalInfoStep";
@@ -18,7 +18,9 @@ interface OnboardingQuestionnairProps {
 
 const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) => {
   const { updateProfile } = useAuth();
+  const { showSuccess, showError } = useNotifications();
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<OnboardingFormData>({
     full_name: "",
     location: "",
@@ -52,6 +54,7 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
   };
 
   const handleSubmit = async () => {
+    setLoading(true);
     try {
       const skillsArray = formData.hard_skills.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
       
@@ -68,18 +71,12 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
         onboarding_completed: true
       });
 
-      toast({
-        title: "Profile Created!",
-        description: "Your profile has been set up successfully.",
-      });
-
+      showSuccess("Your profile has been created successfully! Welcome to Pathwise.");
       onComplete();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save profile. Please try again.",
-        variant: "destructive",
-      });
+      showError("Failed to save profile. Please try again.", "modal");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -121,15 +118,17 @@ const OnboardingQuestionnaire = ({ onComplete }: OnboardingQuestionnairProps) =>
         <Button
           variant="outline"
           onClick={handleBack}
-          disabled={currentStep === 1}
+          disabled={currentStep === 1 || loading}
+          className="hover:bg-slate-50 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Previous
         </Button>
         <Button
           onClick={handleNext}
-          className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+          disabled={loading}
+          className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {currentStep === TOTAL_STEPS ? 'Complete Profile' : 'Next'}
+          {loading ? 'Saving...' : (currentStep === TOTAL_STEPS ? 'Complete Profile' : 'Next')}
         </Button>
       </div>
     </div>
