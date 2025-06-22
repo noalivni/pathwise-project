@@ -157,7 +157,8 @@ const ResumeBuilder = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Top Section: Template Selection and Edit Form */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Template Selection */}
         <Card>
           <CardHeader>
@@ -265,84 +266,84 @@ const ResumeBuilder = () => {
             </CardContent>
           </Card>
         )}
+      </div>
 
-        {/* Resume Preview */}
-        <Card className={`lg:col-span-${isEditing ? '1' : '2'}`}>
-          <CardHeader>
-            <CardTitle className="text-main">Resume Preview</CardTitle>
-            <CardDescription className="text-sub">
-              Template: {templates.find(t => t.id === selectedTemplate)?.name}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className={`p-8 rounded-lg ${styles.container}`} style={{ minHeight: '700px' }}>
-              {/* Header */}
-              <div className={styles.header}>
-                <h1 className="text-3xl font-bold mb-2">{resumeData.fullName || 'Your Name'}</h1>
-                <div className="space-y-1 text-sm opacity-90">
-                  <p>{resumeData.email}</p>
-                  <p>{resumeData.location}</p>
-                  {resumeData.careerGoal && (
-                    <p className="font-semibold">Goal: {resumeData.careerGoal}</p>
-                  )}
+      {/* Bottom Section: Full-Width Resume Preview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-main">Resume Preview</CardTitle>
+          <CardDescription className="text-sub">
+            Template: {templates.find(t => t.id === selectedTemplate)?.name}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className={`p-8 rounded-lg ${styles.container}`} style={{ minHeight: '700px' }}>
+            {/* Header */}
+            <div className={styles.header}>
+              <h1 className="text-3xl font-bold mb-2">{resumeData.fullName || 'Your Name'}</h1>
+              <div className="space-y-1 text-sm opacity-90">
+                <p>{resumeData.email}</p>
+                <p>{resumeData.location}</p>
+                {resumeData.careerGoal && (
+                  <p className="font-semibold">Goal: {resumeData.careerGoal}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Professional Summary */}
+            {resumeData.summary && (
+              <div className={styles.section}>
+                <h2 className={styles.title}>Professional Summary</h2>
+                <p className={styles.text}>{resumeData.summary}</p>
+              </div>
+            )}
+
+            {/* Education */}
+            {(resumeData.education.degree || resumeData.education.field) && (
+              <div className={styles.section}>
+                <h2 className={styles.title}>Education</h2>
+                <div className={styles.text}>
+                  <p className="font-semibold">
+                    {resumeData.education.degree} {resumeData.education.field && `in ${resumeData.education.field}`}
+                  </p>
+                  {resumeData.education.year && <p className="text-sm opacity-75">{resumeData.education.year}</p>}
+                  {resumeData.education.institution && <p className="text-sm opacity-75">{resumeData.education.institution}</p>}
                 </div>
               </div>
+            )}
 
-              {/* Professional Summary */}
-              {resumeData.summary && (
-                <div className={styles.section}>
-                  <h2 className={styles.title}>Professional Summary</h2>
-                  <p className={styles.text}>{resumeData.summary}</p>
+            {/* Skills */}
+            {resumeData.skills.length > 0 && (
+              <div className={styles.section}>
+                <h2 className={styles.title}>Technical Skills</h2>
+                <div className="flex flex-wrap gap-2">
+                  {resumeData.skills.map((skill, index) => (
+                    <Badge key={index} variant="outline" className="text-xs text-black bg-white border-gray-300">
+                      {skill}
+                    </Badge>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Education */}
-              {(resumeData.education.degree || resumeData.education.field) && (
-                <div className={styles.section}>
-                  <h2 className={styles.title}>Education</h2>
-                  <div className={styles.text}>
-                    <p className="font-semibold">
-                      {resumeData.education.degree} {resumeData.education.field && `in ${resumeData.education.field}`}
-                    </p>
-                    {resumeData.education.year && <p className="text-sm opacity-75">{resumeData.education.year}</p>}
-                    {resumeData.education.institution && <p className="text-sm opacity-75">{resumeData.education.institution}</p>}
-                  </div>
-                </div>
-              )}
+            {/* Experience */}
+            {resumeData.experience && (
+              <div className={styles.section}>
+                <h2 className={styles.title}>Experience</h2>
+                <p className={styles.text}>{resumeData.experience}</p>
+              </div>
+            )}
 
-              {/* Skills */}
-              {resumeData.skills.length > 0 && (
-                <div className={styles.section}>
-                  <h2 className={styles.title}>Technical Skills</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {resumeData.skills.map((skill, index) => (
-                      <Badge key={index} variant="outline" className="text-xs text-black bg-white border-gray-300">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Experience */}
-              {resumeData.experience && (
-                <div className={styles.section}>
-                  <h2 className={styles.title}>Experience</h2>
-                  <p className={styles.text}>{resumeData.experience}</p>
-                </div>
-              )}
-
-              {/* Additional Information */}
-              {resumeData.additionalInfo && (
-                <div className={styles.section}>
-                  <h2 className={styles.title}>Additional Information</h2>
-                  <p className={styles.text}>{resumeData.additionalInfo}</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            {/* Additional Information */}
+            {resumeData.additionalInfo && (
+              <div className={styles.section}>
+                <h2 className={styles.title}>Additional Information</h2>
+                <p className={styles.text}>{resumeData.additionalInfo}</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
