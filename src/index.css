@@ -47,6 +47,10 @@
     --sidebar-accent-foreground: 0 0% 94%;
     --sidebar-border: 256 38% 46%;
     --sidebar-ring: 267 87% 84%;
+
+    /* Custom hover states */
+    --primary-hover: 267 78% 78%; /* #B889F5 */
+    --secondary-hover: 256 45% 55%; /* Lighter version of secondary */
   }
 
   .dark {
@@ -78,6 +82,8 @@
     --sidebar-accent-foreground: 0 0% 94%;
     --sidebar-border: 256 38% 46%;
     --sidebar-ring: 267 87% 84%;
+    --primary-hover: 267 78% 78%;
+    --secondary-hover: 256 45% 55%;
   }
 }
 
@@ -109,11 +115,19 @@
 
   /* Enhanced button states for dark mode */
   .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all duration-200;
+    @apply bg-primary text-primary-foreground active:scale-95 transition-all duration-200;
+  }
+
+  .btn-primary:hover {
+    background-color: hsl(var(--primary-hover));
   }
 
   .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 active:scale-95 transition-all duration-200;
+    @apply bg-secondary text-secondary-foreground active:scale-95 transition-all duration-200;
+  }
+
+  .btn-secondary:hover {
+    background-color: hsl(var(--secondary-hover));
   }
 
   /* Enhanced input states for dark mode */

@@ -31,11 +31,13 @@ export default {
 				foreground: 'hsl(var(--foreground))',
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
-					foreground: 'hsl(var(--primary-foreground))'
+					foreground: 'hsl(var(--primary-foreground))',
+					hover: 'hsl(var(--primary-hover))'
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
-					foreground: 'hsl(var(--secondary-foreground))'
+					foreground: 'hsl(var(--secondary-foreground))',
+					hover: 'hsl(var(--secondary-hover))'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
@@ -73,7 +75,9 @@ export default {
 					'medium-blue': '#1D267D',
 					'purple': '#5C469C',
 					'light-purple': '#D4ADFC',
-					'text': '#F0F0F0'
+					'purple-hover': '#B889F5',
+					'text': '#F0F0F0',
+					'text-muted': '#BBBBBB'
 				}
 			},
 			borderRadius: {

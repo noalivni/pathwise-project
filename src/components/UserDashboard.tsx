@@ -95,14 +95,14 @@ const UserDashboard = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">
+          <h1 className="text-3xl font-bold text-pathwise-text">
             Welcome back, {profile?.full_name || 'there'}!
           </h1>
-          <p className="text-slate-600 mt-1">Continue your career journey</p>
+          <p className="text-pathwise-text-muted mt-1">Continue your career journey</p>
         </div>
         <Button 
           onClick={handleNavigateToAssessment}
-          className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+          className="bg-primary text-primary-foreground hover:bg-primary-hover"
         >
           <Brain className="w-4 h-4 mr-2" />
           Take Assessment
@@ -114,7 +114,7 @@ const UserDashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Profile Completion</CardTitle>
-            <Target className="h-4 w-4 text-teal-600" />
+            <Target className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{profileCompletion}%</div>
@@ -128,7 +128,7 @@ const UserDashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Job Matches</CardTitle>
-            <Users className="h-4 w-4 text-blue-600" />
+            <Users className="h-4 w-4 text-secondary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{jobMatches}</div>
@@ -141,7 +141,7 @@ const UserDashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Assessments</CardTitle>
-            <BookOpen className="h-4 w-4 text-teal-600" />
+            <BookOpen className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{completedAssessments}</div>
@@ -156,7 +156,7 @@ const UserDashboard = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <TrendingUp className="mr-2 h-5 w-5 text-teal-600" />
+            <TrendingUp className="mr-2 h-5 w-5 text-primary" />
             Recommended Next Steps
           </CardTitle>
           <CardDescription>Personalized actions to advance your career</CardDescription>
@@ -164,51 +164,51 @@ const UserDashboard = () => {
         <CardContent className="space-y-4">
           <button 
             onClick={handleNavigateToAssessment}
-            className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors w-full text-left"
+            className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted transition-colors w-full text-left"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                <Target className="w-5 h-5 text-teal-600" />
+              <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
+                <Target className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <h3 className="font-semibold">Complete Skills Assessment</h3>
-                <p className="text-sm text-slate-600">Get personalized job recommendations</p>
+                <p className="text-sm text-muted-foreground">Get personalized job recommendations</p>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-slate-400" />
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </button>
 
           <button 
             onClick={handleNavigateToJobs}
-            className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors w-full text-left"
+            className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted transition-colors w-full text-left"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 bg-secondary/20 rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5 text-secondary" />
               </div>
               <div>
                 <h3 className="font-semibold">View Job Recommendations</h3>
-                <p className="text-sm text-slate-600">Explore matching career opportunities</p>
+                <p className="text-sm text-muted-foreground">Explore matching career opportunities</p>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-slate-400" />
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </button>
 
           <button 
             onClick={handleNavigateToInterview}
-            className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors w-full text-left"
+            className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted transition-colors w-full text-left"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-green-600" />
+              <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-green-500" />
               </div>
               <div>
                 <h3 className="font-semibold">Practice Interview Questions</h3>
-                <p className="text-sm text-slate-600">Prepare for upcoming interviews</p>
-                <Badge className="mt-1 bg-gradient-to-r from-teal-500 to-blue-600 text-white">PRO</Badge>
+                <p className="text-sm text-muted-foreground">Prepare for upcoming interviews</p>
+                <Badge className="mt-1 bg-primary text-primary-foreground">PRO</Badge>
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-slate-400" />
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </button>
         </CardContent>
       </Card>
@@ -217,7 +217,7 @@ const UserDashboard = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <Award className="mr-2 h-5 w-5 text-blue-600" />
+            <Award className="mr-2 h-5 w-5 text-secondary" />
             Recent Activity
           </CardTitle>
         </CardHeader>
@@ -225,15 +225,15 @@ const UserDashboard = () => {
           {activities.length > 0 ? (
             activities.map((activity) => (
               <div key={activity.id} className="flex items-center space-x-3 text-sm">
-                <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
-                <span className="text-slate-600">{activity.activity_description}</span>
-                <span className="text-slate-400 ml-auto">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-muted-foreground">{activity.activity_description}</span>
+                <span className="text-muted-foreground/60 ml-auto">
                   {new Date(activity.created_at).toLocaleDateString()}
                 </span>
               </div>
             ))
           ) : (
-            <div className="text-sm text-slate-500 text-center py-4">
+            <div className="text-sm text-muted-foreground text-center py-4">
               No recent activity. Start by completing your skills assessment!
             </div>
           )}
