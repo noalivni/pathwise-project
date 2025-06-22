@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,7 +6,11 @@ import { skillsByField, defaultSkills } from "@/data/hardSkillsData";
 import SkillQuestion from "@/components/hardSkills/SkillQuestion";
 import AssessmentResults from "@/components/hardSkills/AssessmentResults";
 
-const HardSkillsAssessment = () => {
+interface HardSkillsAssessmentProps {
+  onReturnToHub?: () => void;
+}
+
+const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
   const { user, profile } = useAuth();
   const [currentSkill, setCurrentSkill] = useState(0);
   const [skillRatings, setSkillRatings] = useState<{ [key: string]: number }>({});
@@ -90,6 +93,12 @@ const HardSkillsAssessment = () => {
     window.dispatchEvent(new CustomEvent('navigate-to-jobs'));
   };
 
+  const handleReturnToHub = () => {
+    if (onReturnToHub) {
+      onReturnToHub();
+    }
+  };
+
   if (relevantSkills.length === 0) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
@@ -109,6 +118,7 @@ const HardSkillsAssessment = () => {
         fieldOfInterest={profile?.field_of_interest || 'General'}
         onRetake={handleRetake}
         onViewJobs={handleViewJobs}
+        onReturnToHub={handleReturnToHub}
       />
     );
   }

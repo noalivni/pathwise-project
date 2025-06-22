@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Target, ArrowRight } from "lucide-react";
-import { getSkillLevel, getRecommendations } from "@/utils/hardSkillsUtils";
+import { Target, ArrowRight, Home, RotateCcw } from "lucide-react";
+import { getSkillLevel, getRecommendations, getActionableInsights } from "@/utils/hardSkillsUtils";
 
 interface AssessmentResultsProps {
   skillRatings: { [key: string]: number };
@@ -12,6 +12,7 @@ interface AssessmentResultsProps {
   fieldOfInterest: string;
   onRetake: () => void;
   onViewJobs: () => void;
+  onReturnToHub: () => void;
 }
 
 const AssessmentResults = ({
@@ -19,9 +20,11 @@ const AssessmentResults = ({
   relevantSkills,
   fieldOfInterest,
   onRetake,
-  onViewJobs
+  onViewJobs,
+  onReturnToHub
 }: AssessmentResultsProps) => {
   const recommendations = getRecommendations(skillRatings);
+  const actionableInsights = getActionableInsights(skillRatings, fieldOfInterest);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -63,41 +66,64 @@ const AssessmentResults = ({
         <CardHeader>
           <CardTitle className="flex items-center">
             <Target className="mr-2 h-5 w-5 text-teal-600" />
-            Recommendations
+            Personalized Career Insights
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {recommendations.strengths.length > 0 && (
             <div className="p-4 bg-green-50 rounded-lg">
-              <h3 className="font-semibold text-green-800 mb-2">Your Strengths</h3>
-              <div className="flex flex-wrap gap-2">
+              <h3 className="font-semibold text-green-800 mb-2">Your Technical Strengths</h3>
+              <div className="flex flex-wrap gap-2 mb-3">
                 {recommendations.strengths.map((skill, index) => (
                   <Badge key={index} className="bg-green-100 text-green-800">
                     {skill}
                   </Badge>
                 ))}
               </div>
+              <p className="text-sm text-green-700">
+                These skills make you competitive for senior-level positions and specialized roles.
+              </p>
             </div>
           )}
           
           {recommendations.improvements.length > 0 && (
             <div className="p-4 bg-blue-50 rounded-lg">
               <h3 className="font-semibold text-blue-800 mb-2">Skills to Develop</h3>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mb-3">
                 {recommendations.improvements.map((skill, index) => (
                   <Badge key={index} className="bg-blue-100 text-blue-800">
                     {skill}
                   </Badge>
                 ))}
               </div>
+              <p className="text-sm text-blue-700">
+                Improving these skills will unlock new career opportunities and higher-level positions.
+              </p>
             </div>
           )}
+
+          <div className="p-4 bg-yellow-50 rounded-lg">
+            <h3 className="font-semibold text-yellow-800 mb-2">Actionable Next Steps</h3>
+            <ul className="text-sm text-yellow-700 space-y-1">
+              {actionableInsights.map((insight, index) => (
+                <li key={index} className="flex items-start">
+                  <span className="text-yellow-600 mr-2">•</span>
+                  {insight}
+                </li>
+              ))}
+            </ul>
+          </div>
         </CardContent>
       </Card>
 
-      <div className="text-center space-x-4">
-        <Button onClick={onRetake} variant="outline">
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <Button onClick={onRetake} variant="outline" className="flex items-center">
+          <RotateCcw className="mr-2 h-4 w-4" />
           Retake Assessment
+        </Button>
+        <Button onClick={onReturnToHub} variant="outline" className="flex items-center">
+          <Home className="mr-2 h-4 w-4" />
+          Skills Assessment Home
         </Button>
         <Button 
           onClick={onViewJobs}

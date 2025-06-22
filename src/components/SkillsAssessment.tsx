@@ -11,12 +11,16 @@ const SkillsAssessment = () => {
     setSelectedAssessment(type);
   };
 
+  const handleReturnToHub = () => {
+    setSelectedAssessment('hub');
+  };
+
   if (selectedAssessment === 'hard') {
-    return <HardSkillsAssessment />;
+    return <HardSkillsAssessment onReturnToHub={handleReturnToHub} />;
   }
 
   if (selectedAssessment === 'soft') {
-    return <SoftSkillsAssessment />;
+    return <SoftSkillsAssessment onReturnToHub={handleReturnToHub} />;
   }
 
   return <SkillsAssessmentHub onSelectAssessment={handleSelectAssessment} />;

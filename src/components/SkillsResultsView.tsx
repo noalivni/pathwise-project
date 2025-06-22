@@ -1,9 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Heart, Target, ArrowRight, Users, Brain, Lightbulb } from "lucide-react";
+import { Heart, Target, ArrowRight, Users, Brain, Lightbulb, Home, RotateCcw } from "lucide-react";
 import { SoftSkill, SkillRatings, PersonalityProfile } from "@/types/softSkills";
 import { getSkillLevel } from "@/utils/skillLevelUtils";
 
@@ -14,6 +13,7 @@ interface SkillsResultsViewProps {
   detailedFeedback: string[];
   onRetake: () => void;
   onViewJobs: () => void;
+  onReturnToHub?: () => void;
 }
 
 const SkillsResultsView = ({
@@ -22,7 +22,8 @@ const SkillsResultsView = ({
   personalityProfile,
   detailedFeedback,
   onRetake,
-  onViewJobs
+  onViewJobs,
+  onReturnToHub
 }: SkillsResultsViewProps) => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -126,10 +127,17 @@ const SkillsResultsView = ({
         })}
       </div>
 
-      <div className="text-center space-x-4">
-        <Button onClick={onRetake} variant="outline">
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <Button onClick={onRetake} variant="outline" className="flex items-center">
+          <RotateCcw className="mr-2 h-4 w-4" />
           Retake Assessment
         </Button>
+        {onReturnToHub && (
+          <Button onClick={onReturnToHub} variant="outline" className="flex items-center">
+            <Home className="mr-2 h-4 w-4" />
+            Skills Assessment Home
+          </Button>
+        )}
         <Button 
           onClick={onViewJobs}
           className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"

@@ -8,7 +8,11 @@ import { generatePersonalityProfile, generateDetailedFeedback } from "@/utils/pe
 import SkillAssessmentForm from "@/components/SkillAssessmentForm";
 import SkillsResultsView from "@/components/SkillsResultsView";
 
-const SoftSkillsAssessment = () => {
+interface SoftSkillsAssessmentProps {
+  onReturnToHub?: () => void;
+}
+
+const SoftSkillsAssessment = ({ onReturnToHub }: SoftSkillsAssessmentProps) => {
   const { user } = useAuth();
   const [currentSkill, setCurrentSkill] = useState(0);
   const [skillRatings, setSkillRatings] = useState<SkillRatings>({});
@@ -85,6 +89,12 @@ const SoftSkillsAssessment = () => {
     window.dispatchEvent(new CustomEvent('navigate-to-jobs'));
   };
 
+  const handleReturnToHub = () => {
+    if (onReturnToHub) {
+      onReturnToHub();
+    }
+  };
+
   if (showResults) {
     const personalityProfile = generatePersonalityProfile(skillRatings);
     const detailedFeedback = generateDetailedFeedback(skillRatings);
@@ -97,6 +107,7 @@ const SoftSkillsAssessment = () => {
         detailedFeedback={detailedFeedback}
         onRetake={handleRetake}
         onViewJobs={handleViewJobs}
+        onReturnToHub={handleReturnToHub}
       />
     );
   }
