@@ -42,7 +42,7 @@ const LearningResources = () => {
           match_percentage,
           job_roles (
             job_title,
-            required_skills
+            Skills_required
           )
         `)
         .eq('user_id', user.id)
@@ -57,8 +57,8 @@ const LearningResources = () => {
       if (error) throw error;
 
       // Sort resources by relevance to user's top job matches
-      const topJobTitles = jobMatches?.map(match => match.job_roles.job_title) || [];
-      const topSkills = jobMatches?.flatMap(match => match.job_roles.required_skills || []) || [];
+      const topJobTitles = jobMatches?.map(match => match.job_roles?.job_title) || [];
+      const topSkills = jobMatches?.flatMap(match => match.job_roles?.Skills_required ? match.job_roles.Skills_required.split(',').map(s => s.trim()) : []) || [];
 
       const sortedResources = allResources?.sort((a, b) => {
         const aRelevance = calculateRelevance(a, topJobTitles, topSkills);

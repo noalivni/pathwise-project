@@ -5,7 +5,8 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CareerRole } from "@/types/jobRecommendations";
-import { calculatePersonalizedCareerMatch, parseSkillsFromText } from "@/utils/careerMatching";
+import { calculatePersonalizedCareerMatch } from "@/utils/personalizedCareerMatching";
+import { parseSkillsFromText } from "@/utils/skillsParsing";
 import JobSearchInput from "@/components/JobSearchInput";
 import JobCard from "@/components/JobCard";
 

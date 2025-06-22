@@ -5,9 +5,18 @@ import { Badge } from "@/components/ui/badge";
 import { Bookmark, Target, TrendingUp, CheckCircle } from "lucide-react";
 import { CareerRole } from "@/types/jobRecommendations";
 import { getMatchColor, getMatchDescription } from "@/utils/careerMatching";
+import { parseSkillsFromText } from "@/utils/skillsParsing";
 
 interface JobCardProps {
-  role: CareerRole;
+  role: {
+    id: string;
+    job_title: string;
+    job_description: string;
+    category: string;
+    required_skills: string[];
+    match_percentage?: number;
+    is_bookmarked?: boolean;
+  };
   onBookmark: (roleId: string) => void;
   skillFitTags?: string[];
 }
