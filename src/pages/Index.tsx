@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import AuthModal from "@/components/AuthModal";
@@ -25,12 +26,15 @@ const LandingPage = () => {
       {/* Header */}
       <header className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-3">
             <img 
               src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
               alt="Pathwise Logo" 
-              className="w-16 h-16"
+              className="w-12 h-12"
             />
+            <span className="text-3xl font-bold text-foreground">
+              Pathwise
+            </span>
           </div>
           <div className="flex gap-3">
             <Button 
@@ -56,7 +60,7 @@ const LandingPage = () => {
           <img 
             src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
             alt="Pathwise Logo" 
-            className="w-24 h-24 mx-auto mb-6 opacity-90"
+            className="w-20 h-20 mx-auto mb-6 opacity-90"
           />
         </div>
         <h1 className="text-5xl font-bold text-foreground mb-6">
