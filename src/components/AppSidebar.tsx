@@ -1,3 +1,4 @@
+
 import {
   Sidebar,
   SidebarContent,
@@ -25,10 +26,17 @@ interface AppSidebarProps {
   onLogout: () => void;
 }
 
+interface MenuItem {
+  key: string;
+  label: string;
+  icon: React.ComponentType<any>;
+  isPremium?: boolean;
+}
+
 const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebarProps) => {
   const { profile } = useAuth();
 
-  const userMenuItems = [
+  const userMenuItems: MenuItem[] = [
     { key: 'dashboard', label: 'Dashboard', icon: Home },
     { key: 'assessment', label: 'Skills Assessment', icon: Target },
     { key: 'jobs', label: 'Job Recommendations', icon: BookOpen },
@@ -43,7 +51,7 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
     { key: 'profile', label: 'Profile', icon: User },
   ];
 
-  const adminMenuItems = [
+  const adminMenuItems: MenuItem[] = [
     { key: 'dashboard', label: 'Admin Dashboard', icon: BarChart3 },
     { key: 'users', label: 'User Management', icon: Users },
     { key: 'data', label: 'Data Analytics', icon: Database },
