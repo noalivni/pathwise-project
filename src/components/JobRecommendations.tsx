@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -179,8 +180,8 @@ const JobRecommendations = () => {
 
       {filteredRoles.length === 0 && (
         <div className="text-center py-12">
-          <Search className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-sub mb-2">No matching roles found</h3>
+          <Search className="h-12 w-12 text-sub mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-main mb-2">No matching roles found</h3>
           <p className="text-sub">
             {!profile?.field_of_interest 
               ? "Complete your profile and skills assessment for personalized recommendations"
