@@ -12,9 +12,9 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Check localStorage first, then default to dark
+    // Check localStorage first, then default to light
     const stored = localStorage.getItem('pathwise-theme') as Theme;
-    return stored || 'dark';
+    return stored || 'light';
   });
 
   useEffect(() => {

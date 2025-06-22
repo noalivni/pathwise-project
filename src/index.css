@@ -4,62 +4,62 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Dark mode design system with custom Pathwise palette */
+/* Light/Dark mode design system with cohesive Pathwise palette */
 
 @layer base {
   :root {
-    /* Light mode color palette */
-    --background: 0 0% 100%;
-    --foreground: 210 69% 18%; /* Dark navy blue #0e264d */
+    /* Light mode color palette - cohesive with dark mode brand colors */
+    --background: 210 40% 98%; /* #F8F9FC - soft light base */
+    --foreground: 218 68% 18%; /* #0C134F - main text color */
 
-    --card: 0 0% 100%;
-    --card-foreground: 210 69% 18%;
+    --card: 0 0% 100%; /* Pure white for cards */
+    --card-foreground: 218 68% 18%; /* #0C134F */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 69% 18%;
+    --popover-foreground: 218 68% 18%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 267 87% 84%; /* #D4ADFC - keep brand purple for CTAs */
+    --primary-foreground: 218 68% 18%; /* Dark text on purple */
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 210 69% 18%;
+    --secondary: 244 45% 94%; /* #E5E7FA - light tint of #1D267D */
+    --secondary-foreground: 227 58% 28%; /* #1D267D */
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 210 16% 48%; /* Medium gray-blue #66778d */
+    --muted: 258 25% 96%; /* #EDE9F8 - light tint of #5C469C */
+    --muted-foreground: 227 58% 28%; /* #1D267D for muted text */
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 210 69% 18%;
+    --accent: 244 45% 94%; /* #E5E7FA */
+    --accent-foreground: 227 58% 28%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 244 30% 88%; /* Light purple-tinted border */
+    --input: 244 30% 92%; /* Light input background */
+    --ring: 267 87% 84%; /* Purple focus ring */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 210 69% 18%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 258 25% 96%; /* #EDE9F8 - subtle purple tint */
+    --sidebar-foreground: 218 68% 18%;
+    --sidebar-primary: 267 87% 84%; /* #D4ADFC */
+    --sidebar-primary-foreground: 218 68% 18%;
+    --sidebar-accent: 244 45% 94%; /* #E5E7FA */
+    --sidebar-accent-foreground: 227 58% 28%;
+    --sidebar-border: 244 30% 88%;
+    --sidebar-ring: 267 87% 84%;
 
-    /* Light mode hover states */
-    --primary-hover: 222.2 47.4% 20%;
-    --secondary-hover: 210 40% 90%;
-    --standard-hover: 210 40% 90%;
+    /* Light mode hover states - purple tones */
+    --primary-hover: 267 78% 78%; /* #B889F5 */
+    --secondary-hover: 244 35% 88%; /* Darker tint of secondary */
+    --standard-hover: 267 70% 90%; /* #CBB6F6 - light purple hover */
     
     /* Global text colors for light mode */
-    --main-text: 210 69% 18%; /* Dark navy blue #0e264d */
-    --sub-text: 210 16% 48%; /* Medium gray-blue #66778d */
+    --main-text: 218 68% 18%; /* #0C134F - main text */
+    --sub-text: 227 58% 28%; /* #1D267D - secondary text */
   }
 
   .dark {
-    /* Dark mode color palette */
+    /* Dark mode color palette - existing brand colors */
     --background: 218 68% 18%; /* #0C134F */
     --foreground: 0 0% 94%; /* #F0F0F0 */
 
@@ -97,7 +97,7 @@
     --sidebar-border: 256 38% 46%;
     --sidebar-ring: 267 87% 84%;
 
-    /* Custom hover states - using #5C469C as requested */
+    /* Dark mode hover states */
     --primary-hover: 267 78% 78%; /* #B889F5 */
     --secondary-hover: 256 38% 46%; /* #5C469C */
     --standard-hover: 256 38% 46%; /* #5C469C for general hover states */
@@ -127,7 +127,7 @@
     color: hsl(var(--sub-text));
   }
 
-  /* Custom animations for dark mode */
+  /* Custom animations */
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -143,7 +143,7 @@
     animation: fade-in 0.3s ease-out;
   }
 
-  /* Enhanced button states for dark mode */
+  /* Enhanced button states */
   .btn-primary {
     @apply bg-primary text-primary-foreground active:scale-95 transition-all duration-200;
   }
@@ -160,8 +160,8 @@
     background-color: hsl(var(--secondary-hover));
   }
 
-  /* Enhanced input states for dark mode */
-  .input-dark {
+  /* Enhanced input states */
+  .input-enhanced {
     @apply bg-input border-border text-foreground placeholder:text-muted-foreground;
     @apply focus:border-primary focus:ring-2 focus:ring-primary/20;
     @apply transition-all duration-200;
@@ -175,7 +175,7 @@
     @apply border-green-500 focus:border-green-500 focus:ring-green-500/20;
   }
 
-  /* Global hover states for interactive elements - using #5C469C */
+  /* Global hover states for interactive elements */
   .hover-pathwise {
     @apply transition-colors duration-200;
   }
@@ -205,8 +205,8 @@
     color: hsl(var(--foreground));
   }
 
-  /* Button hover states - ensuring consistent #5C469C hover */
+  /* Button hover states - consistent purple hover */
   .btn-hover:hover {
-    background-color: #5C469C !important;
+    background-color: hsl(var(--standard-hover)) !important;
   }
 }
