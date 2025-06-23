@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,19 +10,33 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { softSkillsQuestions } from "@/data/softSkillsData";
 import { getSkillLevelDescription, getSkillLevelWithCount } from "@/utils/softSkillsLabels";
+import { softSkillsByField, defaultSoftSkills } from "@/data/fieldSpecificSoftSkills";
 
 interface SoftSkillsAssessmentProps {
   onReturnToHub?: () => void;
+  selectedField?: string;
 }
 
-const SoftSkillsAssessment = ({ onReturnToHub }: SoftSkillsAssessmentProps) => {
+const SoftSkillsAssessment = ({ onReturnToHub, selectedField = 'General' }: SoftSkillsAssessmentProps) => {
   const { user, profile } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<{ [key: string]: number }>({});
   const [showResults, setShowResults] = useState(false);
+  const [relevantQuestions, setRelevantQuestions] = useState(defaultSoftSkills);
+
+  useEffect(() => {
+    if (selectedField && selectedField !== 'General' && softSkillsByField[selectedField]) {
+      setRelevantQuestions(softSkillsByField[selectedField]);
+    } else {
+      setRelevantQuestions(defaultSoftSkills);
+    }
+    // Reset current question when field changes
+    setCurrentQuestion(0);
+    setResponses({});
+  }, [selectedField]);
 
   const handleSliderChange = (value: number[]) => {
-    const questionKey = softSkillsQuestions[currentQuestion].key;
+    const questionKey = relevantQuestions[currentQuestion].key;
     setResponses(prev => ({
       ...prev,
       [questionKey]: value[0]
@@ -31,7 +44,7 @@ const SoftSkillsAssessment = ({ onReturnToHub }: SoftSkillsAssessmentProps) => {
   };
 
   const handleNext = () => {
-    if (currentQuestion < softSkillsQuestions.length - 1) {
+    if (currentQuestion < relevantQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       saveAssessmentResults();
@@ -45,7 +58,7 @@ const SoftSkillsAssessment = ({ onReturnToHub }: SoftSkillsAssessmentProps) => {
   };
 
   const handleSkip = () => {
-    const questionKey = softSkillsQuestions[currentQuestion].key;
+    const questionKey = relevantQuestions[currentQuestion].key;
     setResponses(prev => ({
       ...prev,
       [questionKey]: 0
@@ -188,16 +201,16 @@ const SoftSkillsAssessment = ({ onReturnToHub }: SoftSkillsAssessmentProps) => {
     );
   }
 
-  const currentQuestionData = softSkillsQuestions[currentQuestion];
+  const currentQuestionData = relevantQuestions[currentQuestion];
   const currentResponse = responses[currentQuestionData.key] || 0;
-  const progress = ((currentQuestion + 1) / softSkillsQuestions.length) * 100;
+  const progress = ((currentQuestion + 1) / relevantQuestions.length) * 100;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-pathwise-text">Soft Skills Assessment</h1>
         <p className="text-pathwise-text-muted mt-2">
-          Evaluate your interpersonal and workplace communication skills
+          Evaluate your interpersonal and workplace communication skills for {selectedField === 'General' ? 'general roles' : selectedField}
         </p>
       </div>
 
@@ -205,7 +218,7 @@ const SoftSkillsAssessment = ({ onReturnToHub }: SoftSkillsAssessmentProps) => {
         <CardHeader>
           <div className="flex justify-between items-center">
             <Badge variant="secondary">
-              Question {currentQuestion + 1} of {softSkillsQuestions.length}
+              Question {currentQuestion + 1} of {relevantQuestions.length}
             </Badge>
             <span className="text-sm text-pathwise-text-muted">
               {Math.round(progress)}% Complete
@@ -275,7 +288,7 @@ const SoftSkillsAssessment = ({ onReturnToHub }: SoftSkillsAssessmentProps) => {
                 onClick={handleNext}
                 className="bg-primary text-primary-foreground hover:bg-primary-hover"
               >
-                {currentQuestion === softSkillsQuestions.length - 1 ? 'Complete' : 'Next'}
+                {currentQuestion === relevantQuestions.length - 1 ? 'Complete' : 'Next'}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
