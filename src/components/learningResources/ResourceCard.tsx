@@ -132,20 +132,6 @@ const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
             ))}
           </div>
         )}
-        
-        {/* Job roles tags */}
-        {resource.related_job_roles.length > 0 && (
-          <div>
-            <p className="text-xs text-slate-500 mb-1">Relevant for:</p>
-            <div className="flex flex-wrap gap-1">
-              {resource.related_job_roles.map((role, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {role}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
