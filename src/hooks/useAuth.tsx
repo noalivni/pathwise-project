@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,9 +54,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Track authentication events
         if (event === 'SIGNED_IN' && session?.user) {
           trackUserLogin(session.user.id);
-        }
-        if (event === 'SIGNED_UP' && session?.user) {
-          trackUserRegistration();
+          // Check if this is a new registration by looking at user metadata
+          if (session.user.email_confirmed_at === session.user.created_at) {
+            trackUserRegistration();
+          }
         }
         
         setSession(session);
