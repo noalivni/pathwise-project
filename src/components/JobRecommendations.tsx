@@ -5,8 +5,8 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CareerRole } from "@/types/jobRecommendations";
-import { calculatePersonalizedCareerMatch } from "@/utils/personalizedCareerMatching";
 import { parseSkillsFromText } from "@/utils/skillsParsing";
+import { fetchAndCalculateJobMatches } from "@/utils/sharedJobMatching";
 import JobSearchInput from "@/components/JobSearchInput";
 import JobCard from "@/components/JobCard";
 
@@ -26,117 +26,8 @@ const JobRecommendations = () => {
     if (!user || !profile) return;
 
     try {
-      // Get user's latest skills assessments
-      const { data: softSkillsAssessment } = await supabase
-        .from('skills_assessments')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('assessment_type', 'soft_skills')
-        .order('completed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      const { data: hardSkillsAssessment } = await supabase
-        .from('skills_assessments')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('assessment_type', 'hard_skills')
-        .order('completed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      // Get all job roles first
-      const { data: allJobRoles, error } = await supabase
-        .from('job_roles')
-        .select('*');
-
-      if (error) throw error;
-
-      if (!allJobRoles || allJobRoles.length === 0) {
-        console.log('No job roles found in database');
-        setCareerRoles([]);
-        return;
-      }
-
-      console.log('All job roles:', allJobRoles.length);
-      console.log('User field of interest:', profile.field_of_interest);
-
-      // Filter by field of interest with more flexible matching
-      let filteredRoles = allJobRoles;
-      
-      if (profile.field_of_interest) {
-        const fieldLower = profile.field_of_interest.toLowerCase();
-        
-        // Primary filter: exact or partial matches
-        const primaryMatches = allJobRoles.filter(role => {
-          const categoryLower = role.Industry?.toLowerCase() || '';
-          const titleLower = role.job_title?.toLowerCase() || '';
-          
-          return categoryLower.includes(fieldLower) || 
-                 fieldLower.includes(categoryLower) ||
-                 titleLower.includes(fieldLower) ||
-                 fieldLower.includes(titleLower);
-        });
-        
-        console.log('Primary matches:', primaryMatches.length);
-        
-        // If we have enough primary matches, use them
-        if (primaryMatches.length >= 4) {
-          filteredRoles = primaryMatches;
-        } else {
-          // Fallback: include broader matches and general roles
-          const secondaryMatches = allJobRoles.filter(role => {
-            const categoryLower = role.Industry?.toLowerCase() || '';
-            const titleLower = role.job_title?.toLowerCase() || '';
-            const descriptionLower = role.Short_description?.toLowerCase() || '';
-            
-            // Check for keyword overlap or general business roles
-            const fieldWords = fieldLower.split(' ');
-            return fieldWords.some(word => 
-              categoryLower.includes(word) || 
-              titleLower.includes(word) ||
-              descriptionLower.includes(word)
-            ) || 
-            categoryLower.includes('business') ||
-            categoryLower.includes('general') ||
-            titleLower.includes('analyst') ||
-            titleLower.includes('coordinator');
-          });
-          
-          // Combine primary and secondary matches, remove duplicates
-          const combinedMatches = [...primaryMatches];
-          secondaryMatches.forEach(role => {
-            if (!combinedMatches.find(existing => existing.ID_num === role.ID_num)) {
-              combinedMatches.push(role);
-            }
-          });
-          
-          filteredRoles = combinedMatches.length >= 4 ? combinedMatches : allJobRoles;
-        }
-      }
-
-      console.log('Filtered roles:', filteredRoles.length);
-
-      // Calculate personalized matches for all filtered roles
-      let rolesWithMatches = filteredRoles.map(role => {
-        const matchPercentage = calculatePersonalizedCareerMatch({
-          role,
-          profile,
-          softSkillsAssessment,
-          hardSkillsAssessment
-        });
-        return {
-          ...role,
-          match_percentage: matchPercentage
-        };
-      });
-
-      // Sort by match percentage and take top 4
-      rolesWithMatches = rolesWithMatches
-        .sort((a, b) => (b.match_percentage || 0) - (a.match_percentage || 0))
-        .slice(0, 4);
-
-      console.log('Final roles with matches:', rolesWithMatches.length);
+      // Use the shared job matching logic
+      const rolesWithMatches = await fetchAndCalculateJobMatches(user, profile, 4);
 
       // Check for bookmarked roles
       const { data: bookmarkedRoles } = await supabase

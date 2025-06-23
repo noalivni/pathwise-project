@@ -6,6 +6,7 @@ import SearchAndFilters from "@/components/learningResources/SearchAndFilters";
 import ResourceCard from "@/components/learningResources/ResourceCard";
 import EmptyState from "@/components/learningResources/EmptyState";
 import ProUpgradeNotice from "@/components/learningResources/ProUpgradeNotice";
+import { fetchAndCalculateJobMatches } from "@/utils/sharedJobMatching";
 
 interface SkillResource {
   id: string;
@@ -117,30 +118,17 @@ const LearningResources = () => {
   };
 
   const fetchJobBasedResources = async () => {
-    if (!user) return;
+    if (!user || !profile) return;
 
     try {
-      // Get user's top 4 job recommendations
-      const { data: jobMatches } = await supabase
-        .from('user_job_matches')
-        .select(`
-          job_role_id,
-          match_percentage,
-          job_roles (
-            job_title,
-            Short_description,
-            Industry
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('match_percentage', { ascending: false })
-        .limit(4);
+      // Use the shared job matching logic
+      const jobMatches = await fetchAndCalculateJobMatches(user, profile, 4);
 
-      if (jobMatches) {
+      if (jobMatches.length > 0) {
         const jobsWithDetails = jobMatches.map(match => ({
-          job_title: match.job_roles?.job_title || '',
-          Short_description: match.job_roles?.Short_description || '',
-          Industry: match.job_roles?.Industry || '',
+          job_title: match.job_title || '',
+          Short_description: match.Short_description || '',
+          Industry: match.Industry || '',
           match_percentage: match.match_percentage || 0
         }));
 
