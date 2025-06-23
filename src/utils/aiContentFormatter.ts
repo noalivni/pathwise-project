@@ -48,20 +48,48 @@ export const formatAIContent = (content: string): string => {
     const meaningfulTexts = extractMeaningfulText(parsed);
     
     if (meaningfulTexts.length > 0) {
-      return meaningfulTexts.join('\n\n').trim();
+      // Join texts with single line break and clean up formatting
+      let formattedText = meaningfulTexts.join(' ').trim();
+      
+      // Remove redundant skill/job names that appear at the start
+      // This regex removes patterns like "JavaScript is..." when JavaScript is already the title
+      formattedText = formattedText.replace(/^[A-Z][a-zA-Z\s]+(?:is|are)\s+/, '');
+      
+      // Ensure proper sentence flow by fixing common issues
+      formattedText = formattedText
+        .replace(/\.\s+/g, '. ') // Normalize spaces after periods
+        .replace(/\s+/g, ' ') // Remove multiple spaces
+        .replace(/\.\s*\./g, '.') // Remove double periods
+        .trim();
+      
+      // Break into paragraphs at logical points for better readability
+      formattedText = formattedText
+        .replace(/(\.)(\s+)(In the|For|By|Having|Professionally)/g, '$1\n\n$3')
+        .replace(/(\.)(\s+)(This|It|The skill)/g, '$1\n\n$3');
+      
+      return formattedText;
     }
     
   } catch {
     // If it's not JSON, clean up any formatting and return
-    return content
+    let cleanedContent = content
       .replace(/```json\s*/g, '')
       .replace(/```\s*/g, '')
       .replace(/^\s*{\s*/g, '')
       .replace(/\s*}\s*$/g, '')
       .replace(/"[^"]+"\s*:\s*/g, '') // Remove field names like "skill": 
       .replace(/[{}"\[\]]/g, '') // Remove JSON syntax
-      .replace(/,\s*/g, '\n\n') // Convert commas to line breaks
+      .replace(/,\s+/g, ' ') // Convert commas to spaces instead of line breaks
       .trim();
+    
+    // Remove redundant skill/job names and improve formatting
+    cleanedContent = cleanedContent
+      .replace(/^[A-Z][a-zA-Z\s]+(?:is|are)\s+/, '')
+      .replace(/\s+/g, ' ')
+      .replace(/(\.)(\s+)(In the|For|By|Having|Professionally)/g, '$1\n\n$3')
+      .replace(/(\.)(\s+)(This|It|The skill)/g, '$1\n\n$3');
+    
+    return cleanedContent;
   }
   
   // If JSON parsing succeeded but no content found, return cleaned version
