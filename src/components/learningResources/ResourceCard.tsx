@@ -86,22 +86,27 @@ const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
 
         {/* Multiple Learning Resources */}
         {hasMultipleResources ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h4 className="text-sm font-medium text-pathwise-text">Learning Resources:</h4>
             {resource.resources!.map((res, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                size="sm"
-                className="w-full justify-start text-left h-auto p-3"
-                onClick={() => handleResourceClick(res.url, res.title)}
-              >
-                <ExternalLink className="w-3 h-3 mr-2 flex-shrink-0" />
-                <div className="text-left">
-                  <div className="font-medium text-sm line-clamp-1">{res.title}</div>
-                  <div className="text-xs text-muted-foreground line-clamp-2">{res.description}</div>
+              <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 space-y-2">
+                <div>
+                  <h5 className="font-medium text-sm text-pathwise-text line-clamp-2 leading-tight">
+                    {res.title}
+                  </h5>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+                    {res.description}
+                  </p>
                 </div>
-              </Button>
+                <Button
+                  size="sm"
+                  className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+                  onClick={() => handleResourceClick(res.url, res.title)}
+                >
+                  <ExternalLink className="w-3 h-3 mr-2" />
+                  Access Resource
+                </Button>
+              </div>
             ))}
           </div>
         ) : (
