@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -26,66 +27,136 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    
+    // Set up real-time subscriptions
+    const profilesChannel = supabase
+      .channel('profiles-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          console.log('Profiles updated, refreshing dashboard data');
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    const interviewsChannel = supabase
+      .channel('interviews-changes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'interview_sessions' },
+        () => {
+          console.log('Interview sessions updated, refreshing dashboard data');
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    const jobMatchesChannel = supabase
+      .channel('job-matches-changes')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'user_job_matches' },
+        () => {
+          console.log('Job matches updated, refreshing dashboard data');
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(profilesChannel);
+      supabase.removeChannel(interviewsChannel);
+      supabase.removeChannel(jobMatchesChannel);
+    };
   }, []);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      console.log('Fetching dashboard data...');
 
       // Fetch total users count
-      const { count: usersCount } = await supabase
+      const { count: usersCount, error: usersError } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
 
-      setTotalUsers(usersCount || 0);
+      if (usersError) {
+        console.error('Error fetching users count:', usersError);
+      } else {
+        console.log('Users count:', usersCount);
+        setTotalUsers(usersCount || 0);
+      }
 
-      // Fetch total interview sessions
-      const { count: interviewCount } = await supabase
+      // Fetch total interview sessions (using completed_at instead of created_at)
+      const { count: interviewCount, error: interviewError } = await supabase
         .from('interview_sessions')
         .select('*', { count: 'exact', head: true });
 
-      setTotalInterviews(interviewCount || 0);
+      if (interviewError) {
+        console.error('Error fetching interview count:', interviewError);
+      } else {
+        console.log('Interview count:', interviewCount);
+        setTotalInterviews(interviewCount || 0);
+      }
 
       // Fetch total job matches
-      const { count: jobMatchesCount } = await supabase
+      const { count: jobMatchesCount, error: jobMatchesError } = await supabase
         .from('user_job_matches')
         .select('*', { count: 'exact', head: true });
 
-      setTotalJobMatches(jobMatchesCount || 0);
+      if (jobMatchesError) {
+        console.error('Error fetching job matches count:', jobMatchesError);
+      } else {
+        console.log('Job matches count:', jobMatchesCount);
+        setTotalJobMatches(jobMatchesCount || 0);
+      }
 
-      // Fetch monthly user registration data (last 6 months)
-      const { data: profilesData } = await supabase
+      // Fetch monthly user registration data (last 6 months) using created_at
+      const { data: profilesData, error: profilesDataError } = await supabase
         .from('profiles')
         .select('created_at')
         .gte('created_at', new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString())
         .order('created_at', { ascending: true });
+
+      if (profilesDataError) {
+        console.error('Error fetching profiles data:', profilesDataError);
+      }
 
       // Process monthly user data
       const monthlyUserData = processMonthlyData(profilesData || [], 'created_at');
 
-      // Fetch monthly interview data
-      const { data: interviewData } = await supabase
+      // Fetch monthly interview data (using completed_at since created_at doesn't exist)
+      const { data: interviewData, error: interviewDataError } = await supabase
         .from('interview_sessions')
-        .select('created_at')
-        .gte('created_at', new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: true });
+        .select('completed_at')
+        .not('completed_at', 'is', null)
+        .gte('completed_at', new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString())
+        .order('completed_at', { ascending: true });
 
-      const monthlyInterviewData = processMonthlyData(interviewData || [], 'created_at');
+      if (interviewDataError) {
+        console.error('Error fetching interview data:', interviewDataError);
+      }
+
+      const monthlyInterviewData = processMonthlyData(interviewData || [], 'completed_at');
 
       // Combine monthly data
       const combinedMonthlyData = combineMonthlyData(monthlyUserData, monthlyInterviewData);
       setMonthlyData(combinedMonthlyData);
 
-      // Fetch popular job roles data with updated join
-      const { data: jobMatchData } = await supabase
+      // Fetch popular job roles data
+      const { data: jobMatchData, error: jobMatchError } = await supabase
         .from('user_job_matches')
         .select(`
           job_role_id,
           job_roles!inner(job_title)
         `);
 
-      const jobRoleStats = processJobRoleData(jobMatchData || []);
-      setPopularJobs(jobRoleStats);
+      if (jobMatchError) {
+        console.error('Error fetching job match data:', jobMatchError);
+      } else {
+        console.log('Job match data:', jobMatchData);
+        const jobRoleStats = processJobRoleData(jobMatchData || []);
+        setPopularJobs(jobRoleStats);
+      }
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -108,10 +179,12 @@ const AdminDashboard = () => {
 
     // Count items by month
     data.forEach(item => {
-      const date = new Date(item[dateField]);
-      const monthKey = months[date.getMonth()];
-      if (monthlyCount.hasOwnProperty(monthKey)) {
-        monthlyCount[monthKey]++;
+      if (item[dateField]) {
+        const date = new Date(item[dateField]);
+        const monthKey = months[date.getMonth()];
+        if (monthlyCount.hasOwnProperty(monthKey)) {
+          monthlyCount[monthKey]++;
+        }
       }
     });
 
@@ -128,6 +201,13 @@ const AdminDashboard = () => {
   };
 
   const processJobRoleData = (data: any[]): JobRoleData[] => {
+    console.log('Processing job role data:', data);
+    
+    if (!data || data.length === 0) {
+      console.log('No job role data to process');
+      return [];
+    }
+
     const jobCounts: { [key: string]: number } = {};
     
     data.forEach(match => {
@@ -135,17 +215,22 @@ const AdminDashboard = () => {
       jobCounts[jobTitle] = (jobCounts[jobTitle] || 0) + 1;
     });
 
+    console.log('Job counts:', jobCounts);
+
     const sortedJobs = Object.entries(jobCounts)
       .sort(([,a], [,b]) => b - a)
       .slice(0, 5);
 
     const colors = ['#14B8A6', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444'];
     
-    return sortedJobs.map(([name, count], index) => ({
+    const result = sortedJobs.map(([name, count], index) => ({
       name,
       value: count,
       color: colors[index] || '#6B7280',
     }));
+
+    console.log('Processed job role data:', result);
+    return result;
   };
 
   if (loading) {
@@ -285,26 +370,26 @@ const AdminDashboard = () => {
           <CardDescription>Job roles with the most matches</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col lg:flex-row items-center justify-between">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={popularJobs}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={120}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {popularJobs.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-            {popularJobs.length > 0 && (
+          {popularJobs.length > 0 ? (
+            <div className="flex flex-col lg:flex-row items-center justify-between">
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={popularJobs}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={120}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {popularJobs.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
               <div className="flex flex-col space-y-2 lg:ml-8">
                 {popularJobs.map((item, index) => (
                   <div key={index} className="flex items-center space-x-2">
@@ -317,8 +402,13 @@ const AdminDashboard = () => {
                   </div>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No job role data available yet</p>
+              <p className="text-sm text-gray-400 mt-2">Data will appear as users get job matches</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
