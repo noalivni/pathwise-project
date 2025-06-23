@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -110,8 +109,8 @@ const InterviewPractice = () => {
         id: session.id,
         job_role: session.job_role || 'Unknown Role',
         completed_at: session.completed_at || new Date().toISOString(),
-        questions: JSON.parse(session.questions || '[]'),
-        responses: JSON.parse(session.responses || '[]')
+        questions: JSON.parse(String(session.questions || '[]')),
+        responses: JSON.parse(String(session.responses || '[]'))
       })) || [];
 
       setPastInterviews(formattedInterviews);
