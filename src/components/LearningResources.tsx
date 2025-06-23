@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Crown } from "lucide-react";
@@ -14,6 +15,10 @@ import EnhancedLearningResources from "@/components/EnhancedLearningResources";
 const LearningResources = () => {
   const { user, profile } = useAuth();
   const [showEnhanced, setShowEnhanced] = useState(false);
+  const [resources, setResources] = useState<LearningResource[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
 
   const isPro = profile?.subscription_status === 'premium';
 
@@ -40,16 +45,6 @@ const LearningResources = () => {
     checkForAssessments();
   }, [user, isPro]);
 
-  // If user has assessments and is pro, show enhanced version
-  if (showEnhanced && isPro) {
-    return <EnhancedLearningResources />;
-  }
-
-  const [resources, setResources] = useState<LearningResource[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedType, setSelectedType] = useState<string>("all");
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     if (user) {
       if (isPro) {
@@ -59,6 +54,16 @@ const LearningResources = () => {
       }
     }
   }, [user, isPro]);
+
+  // If user has assessments and is pro, show enhanced version
+  if (showEnhanced && isPro) {
+    return <EnhancedLearningResources />;
+  }
+
+  // If not pro, show upgrade notice
+  if (!isPro) {
+    return <ProUpgradeNotice />;
+  }
 
   const fetchLearningResources = async () => {
     if (!user) return;
@@ -126,10 +131,6 @@ const LearningResources = () => {
 
   const filteredResources = filterResources(resources, searchTerm, selectedType);
   const resourceTypes = ['all', ...Array.from(new Set(resources.map(r => r.resource_type)))];
-
-  if (!isPro) {
-    return <ProUpgradeNotice />;
-  }
 
   if (loading) {
     return (
