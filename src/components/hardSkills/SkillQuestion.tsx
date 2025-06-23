@@ -31,14 +31,14 @@ const SkillQuestion = ({
   const progress = ((currentSkill + 1) / totalSkills) * 100;
 
   return (
-    <Card>
+    <Card className="bg-card border-border">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center">
-            <Wrench className="mr-2 h-5 w-5 text-teal-600" />
+          <CardTitle className="flex items-center text-foreground">
+            <Wrench className="mr-2 h-5 w-5 text-primary" />
             Skill {currentSkill + 1} of {totalSkills}
           </CardTitle>
-          <Badge variant="outline">
+          <Badge variant="outline" className="border-border text-muted-foreground">
             {skillData.category}
           </Badge>
         </div>
@@ -46,8 +46,8 @@ const SkillQuestion = ({
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="text-center">
-          <h3 className="text-2xl font-semibold mb-2">{skillData.name}</h3>
-          <p className="text-slate-600 mb-6">How would you rate your skill level?</p>
+          <h3 className="text-2xl font-semibold mb-2 text-foreground">{skillData.name}</h3>
+          <p className="text-muted-foreground mb-6">How would you rate your skill level?</p>
           
           <div className="space-y-4">
             <Slider
@@ -59,7 +59,7 @@ const SkillQuestion = ({
               className="w-full"
             />
             
-            <div className="flex justify-between text-sm text-slate-500">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>No Experience</span>
               <span>Beginner</span>
               <span>Basic</span>
@@ -77,12 +77,12 @@ const SkillQuestion = ({
         </div>
 
         <div className="flex gap-3 justify-center">
-          <Button variant="outline" onClick={onSkip}>
+          <Button variant="outline" onClick={onSkip} className="border-border text-foreground hover:bg-accent">
             Skip This Skill
           </Button>
           <Button 
             onClick={onNext}
-            className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {isLastSkill ? 'Complete Assessment' : 'Next Skill'}
             <ArrowRight className="ml-2 h-4 w-4" />

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,6 @@ import { Target, TrendingUp, BookOpen, Users, Award, ChevronRight, Brain } from 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { trackSkillsAssessment, trackJobEvent, trackInterviewPractice } from "@/utils/analytics";
-import { toast } from "@/hooks/use-toast";
 
 interface Activity {
   id: string;
@@ -21,25 +19,12 @@ const UserDashboard = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [jobMatches, setJobMatches] = useState(0);
   const [completedAssessments, setCompletedAssessments] = useState(0);
-  const [hasShownFirstActivityMessage, setHasShownFirstActivityMessage] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchUserData();
     }
   }, [user]);
-
-  useEffect(() => {
-    // Show first activity completion message
-    if (activities.length === 1 && !hasShownFirstActivityMessage) {
-      toast({
-        title: "🎉 Congratulations!",
-        description: "You've completed your first activity! Keep going to unlock more career opportunities.",
-        duration: 5000,
-      });
-      setHasShownFirstActivityMessage(true);
-    }
-  }, [activities.length, hasShownFirstActivityMessage]);
 
   const fetchUserData = async () => {
     if (!user) return;

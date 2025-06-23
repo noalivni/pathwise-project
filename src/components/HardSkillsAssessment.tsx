@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -5,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { skillsByField, defaultSkills } from "@/data/hardSkillsData";
 import SkillQuestion from "@/components/hardSkills/SkillQuestion";
 import AssessmentResults from "@/components/hardSkills/AssessmentResults";
+import FirstActivityCelebration from "@/components/FirstActivityCelebration";
 
 interface HardSkillsAssessmentProps {
   onReturnToHub?: () => void;
@@ -16,6 +18,7 @@ const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
   const [skillRatings, setSkillRatings] = useState<{ [key: string]: number }>({});
   const [showResults, setShowResults] = useState(false);
   const [relevantSkills, setRelevantSkills] = useState<Array<{ name: string; category: string }>>([]);
+  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
 
   useEffect(() => {
     if (profile?.field_of_interest && skillsByField[profile.field_of_interest as keyof typeof skillsByField]) {
@@ -69,6 +72,7 @@ const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
       if (error) throw error;
 
       setShowResults(true);
+      setAssessmentCompleted(true);
       toast({
         title: "Assessment Complete!",
         description: "Your hard skills have been evaluated successfully.",
@@ -87,6 +91,7 @@ const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
     setShowResults(false);
     setCurrentSkill(0);
     setSkillRatings({});
+    setAssessmentCompleted(false);
   };
 
   const handleViewJobs = () => {
@@ -103,8 +108,8 @@ const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-pathwise-text">Loading Assessment...</h1>
-          <p className="text-pathwise-text-muted mt-2">Preparing your personalized skills assessment</p>
+          <h1 className="text-3xl font-bold text-foreground">Loading Assessment...</h1>
+          <p className="text-muted-foreground mt-2">Preparing your personalized skills assessment</p>
         </div>
       </div>
     );
@@ -112,14 +117,22 @@ const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
 
   if (showResults) {
     return (
-      <AssessmentResults
-        skillRatings={skillRatings}
-        relevantSkills={relevantSkills}
-        fieldOfInterest={profile?.field_of_interest || 'General'}
-        onRetake={handleRetake}
-        onViewJobs={handleViewJobs}
-        onReturnToHub={handleReturnToHub}
-      />
+      <>
+        {assessmentCompleted && (
+          <FirstActivityCelebration 
+            activityType="skills_assessment" 
+            activityName="Hard Skills Assessment" 
+          />
+        )}
+        <AssessmentResults
+          skillRatings={skillRatings}
+          relevantSkills={relevantSkills}
+          fieldOfInterest={profile?.field_of_interest || 'General'}
+          onRetake={handleRetake}
+          onViewJobs={handleViewJobs}
+          onReturnToHub={handleReturnToHub}
+        />
+      </>
     );
   }
 
@@ -129,8 +142,8 @@ const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-pathwise-text">Hard Skills Assessment</h1>
-        <p className="text-pathwise-text-muted mt-2">
+        <h1 className="text-3xl font-bold text-foreground">Hard Skills Assessment</h1>
+        <p className="text-muted-foreground mt-2">
           Rate your proficiency with {profile?.field_of_interest || 'technical'} tools and skills
         </p>
       </div>
