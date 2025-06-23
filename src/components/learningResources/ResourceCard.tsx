@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Target, Briefcase, Brain } from "lucide-react";
 import { getResourceIcon, getResourceColor } from "@/utils/learningResourcesUtils.tsx";
+import { formatAIContent } from "@/utils/aiContentFormatter";
 
 interface ResourceCardProps {
   resource: {
@@ -21,36 +22,6 @@ interface ResourceCardProps {
   };
   onResourceClick: (resource: any) => void;
 }
-
-const formatAIContent = (content: string) => {
-  // Check if content is JSON-like and extract meaningful text
-  try {
-    const parsed = JSON.parse(content);
-    if (parsed.summary) {
-      const summary = parsed.summary;
-      let formattedText = "";
-      
-      if (summary.role_description) {
-        formattedText += summary.role_description + "\n\n";
-      }
-      if (summary.daily_tasks) {
-        formattedText += summary.daily_tasks + "\n\n";
-      }
-      if (summary.career_opportunity) {
-        formattedText += summary.career_opportunity + "\n\n";
-      }
-      if (summary.appeal_for_field) {
-        formattedText += summary.appeal_for_field;
-      }
-      
-      return formattedText.trim();
-    }
-  } catch {
-    // If it's not JSON, return as-is
-  }
-  
-  return content;
-};
 
 const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
   const isSkillResource = resource.resource_type === 'skill_development';

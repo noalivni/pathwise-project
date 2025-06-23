@@ -6,6 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ExternalLink, Briefcase, Brain, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { formatAIContent } from "@/utils/aiContentFormatter";
 
 interface JobRecommendation {
   job_title: string;
@@ -25,36 +26,6 @@ interface JobWithResources extends JobRecommendation {
   aiExplanation?: string;
   resources?: JobResource[];
 }
-
-const formatAIContent = (content: string) => {
-  // Check if content is JSON-like and extract meaningful text
-  try {
-    const parsed = JSON.parse(content);
-    if (parsed.summary) {
-      const summary = parsed.summary;
-      let formattedText = "";
-      
-      if (summary.role_description) {
-        formattedText += summary.role_description + "\n\n";
-      }
-      if (summary.daily_tasks) {
-        formattedText += summary.daily_tasks + "\n\n";
-      }
-      if (summary.career_opportunity) {
-        formattedText += summary.career_opportunity + "\n\n";
-      }
-      if (summary.appeal_for_field) {
-        formattedText += summary.appeal_for_field;
-      }
-      
-      return formattedText.trim();
-    }
-  } catch {
-    // If it's not JSON, return as-is
-  }
-  
-  return content;
-};
 
 const JobRecommendationsTab = () => {
   const { user } = useAuth();
