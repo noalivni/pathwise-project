@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Crown } from "lucide-react";
@@ -10,15 +9,46 @@ import ProUpgradeNotice from "@/components/learningResources/ProUpgradeNotice";
 import SearchAndFilters from "@/components/learningResources/SearchAndFilters";
 import ResourceCard from "@/components/learningResources/ResourceCard";
 import EmptyState from "@/components/learningResources/EmptyState";
+import EnhancedLearningResources from "@/components/EnhancedLearningResources";
 
 const LearningResources = () => {
   const { user, profile } = useAuth();
+  const [showEnhanced, setShowEnhanced] = useState(false);
+
+  const isPro = profile?.subscription_status === 'premium';
+
+  useEffect(() => {
+    // Show enhanced version if user has completed assessments
+    const checkForAssessments = async () => {
+      if (!user || !isPro) return;
+
+      try {
+        const { data: assessments } = await supabase
+          .from('skills_assessments')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+        if (assessments && assessments.length > 0) {
+          setShowEnhanced(true);
+        }
+      } catch (error) {
+        console.error('Error checking assessments:', error);
+      }
+    };
+
+    checkForAssessments();
+  }, [user, isPro]);
+
+  // If user has assessments and is pro, show enhanced version
+  if (showEnhanced && isPro) {
+    return <EnhancedLearningResources />;
+  }
+
   const [resources, setResources] = useState<LearningResource[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [loading, setLoading] = useState(true);
-
-  const isPro = profile?.subscription_status === 'premium';
 
   useEffect(() => {
     if (user) {
