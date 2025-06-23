@@ -19,6 +19,11 @@ interface ResourceCardProps {
     aiExplanation?: string;
     jobTitle?: string;
     aiSummary?: string;
+    resources?: Array<{
+      title: string;
+      description: string;
+      url: string;
+    }>;
   };
   onResourceClick: (resource: any) => void;
 }
@@ -26,9 +31,14 @@ interface ResourceCardProps {
 const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
   const isSkillResource = resource.resource_type === 'skill_development';
   const isJobResource = resource.resource_type === 'career_exploration';
+  const hasMultipleResources = resource.resources && resource.resources.length > 0;
+
+  const handleResourceClick = (url: string, title: string) => {
+    onResourceClick({ ...resource, url, title });
+  };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+    <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
@@ -74,6 +84,39 @@ const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
           </div>
         )}
 
+        {/* Multiple Learning Resources */}
+        {hasMultipleResources ? (
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-pathwise-text">Learning Resources:</h4>
+            {resource.resources!.map((res, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                className="w-full justify-start text-left h-auto p-3"
+                onClick={() => handleResourceClick(res.url, res.title)}
+              >
+                <ExternalLink className="w-3 h-3 mr-2 flex-shrink-0" />
+                <div className="text-left">
+                  <div className="font-medium text-sm line-clamp-1">{res.title}</div>
+                  <div className="text-xs text-muted-foreground line-clamp-2">{res.description}</div>
+                </div>
+              </Button>
+            ))}
+          </div>
+        ) : (
+          /* Single Resource Button */
+          resource.url && (
+            <Button
+              onClick={() => onResourceClick(resource)}
+              className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Access Resource
+            </Button>
+          )
+        )}
+
         {/* Skills tags */}
         {resource.related_skills.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -98,14 +141,6 @@ const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
             </div>
           </div>
         )}
-        
-        <Button
-          onClick={() => onResourceClick(resource)}
-          className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-        >
-          <ExternalLink className="w-4 h-4 mr-2" />
-          Access Resource
-        </Button>
       </CardContent>
     </Card>
   );

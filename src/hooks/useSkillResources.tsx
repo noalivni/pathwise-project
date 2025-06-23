@@ -13,6 +13,11 @@ interface SkillResource {
   related_job_roles: string[];
   skillName?: string;
   aiExplanation?: string;
+  resources?: Array<{
+    title: string;
+    description: string;
+    url: string;
+  }>;
 }
 
 export const useSkillResources = () => {
@@ -51,17 +56,22 @@ export const useSkillResources = () => {
               fetchSkillResources(skill)
             ]);
 
-            return resources.map(resource => ({
-              ...resource,
-              id: `skill-${skill}-${resource.url}`,
+            return {
+              id: `skill-${skill}`,
+              title: `${skill} Learning Resources`,
+              description: `Curated resources to improve your ${skill} skills`,
+              url: '',
               skillName: skill,
               aiExplanation,
-              resource_type: 'skill_development'
-            }));
+              resource_type: 'skill_development',
+              related_skills: [skill],
+              related_job_roles: [],
+              resources: resources
+            };
           })
         );
 
-        setSkillResources(enhancedSkills.flat());
+        setSkillResources(enhancedSkills);
       }
     } catch (error) {
       console.error('Error fetching skill-based resources:', error);
@@ -95,7 +105,7 @@ export const useSkillResources = () => {
         body: {
           jobTitles: [],
           skills: [skill],
-          maxResults: 3
+          maxResults: 5
         }
       });
 
@@ -103,9 +113,7 @@ export const useSkillResources = () => {
         return response.data.resources.map((resource: any) => ({
           title: resource.title,
           description: resource.description,
-          url: resource.url,
-          related_skills: [skill],
-          related_job_roles: []
+          url: resource.url
         }));
       }
     } catch (error) {

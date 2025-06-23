@@ -14,6 +14,11 @@ interface JobResource {
   related_job_roles: string[];
   jobTitle?: string;
   aiSummary?: string;
+  resources?: Array<{
+    title: string;
+    description: string;
+    url: string;
+  }>;
 }
 
 export const useJobResources = () => {
@@ -43,17 +48,22 @@ export const useJobResources = () => {
               fetchJobResources(job.job_title)
             ]);
 
-            return resources.map(resource => ({
-              ...resource,
-              id: `job-${job.job_title}-${resource.url}`,
+            return {
+              id: `job-${job.job_title}`,
+              title: `${job.job_title} Career Resources`,
+              description: `Explore resources and opportunities in ${job.job_title}`,
+              url: '',
               jobTitle: job.job_title,
               aiSummary,
-              resource_type: 'career_exploration'
-            }));
+              resource_type: 'career_exploration',
+              related_skills: [],
+              related_job_roles: [job.job_title],
+              resources: resources
+            };
           })
         );
 
-        setJobResources(enhancedJobs.flat());
+        setJobResources(enhancedJobs);
       }
     } catch (error) {
       console.error('Error fetching job-based resources:', error);
@@ -86,7 +96,7 @@ export const useJobResources = () => {
         body: {
           jobTitles: [jobTitle],
           skills: [],
-          maxResults: 3
+          maxResults: 5
         }
       });
 
@@ -94,9 +104,7 @@ export const useJobResources = () => {
         return response.data.resources.map((resource: any) => ({
           title: resource.title,
           description: resource.description,
-          url: resource.url,
-          related_skills: [],
-          related_job_roles: [jobTitle]
+          url: resource.url
         }));
       }
     } catch (error) {
