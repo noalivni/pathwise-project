@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,9 +9,10 @@ import FirstActivityCelebration from "@/components/FirstActivityCelebration";
 
 interface HardSkillsAssessmentProps {
   onReturnToHub?: () => void;
+  selectedField?: string;
 }
 
-const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
+const HardSkillsAssessment = ({ onReturnToHub, selectedField }: HardSkillsAssessmentProps) => {
   const { user, profile } = useAuth();
   const [currentSkill, setCurrentSkill] = useState(0);
   const [skillRatings, setSkillRatings] = useState<{ [key: string]: number }>({});
@@ -21,12 +21,15 @@ const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
   const [assessmentCompleted, setAssessmentCompleted] = useState(false);
 
   useEffect(() => {
-    if (profile?.field_of_interest && skillsByField[profile.field_of_interest as keyof typeof skillsByField]) {
-      setRelevantSkills(skillsByField[profile.field_of_interest as keyof typeof skillsByField]);
+    // Use selectedField first, then profile field, then default
+    const fieldToUse = selectedField || profile?.field_of_interest || 'General';
+    
+    if (fieldToUse !== 'General' && skillsByField[fieldToUse as keyof typeof skillsByField]) {
+      setRelevantSkills(skillsByField[fieldToUse as keyof typeof skillsByField]);
     } else {
       setRelevantSkills(defaultSkills);
     }
-  }, [profile]);
+  }, [selectedField, profile]);
 
   const handleRatingChange = (value: number[]) => {
     const skillName = relevantSkills[currentSkill].name;
@@ -127,7 +130,7 @@ const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
         <AssessmentResults
           skillRatings={skillRatings}
           relevantSkills={relevantSkills}
-          fieldOfInterest={profile?.field_of_interest || 'General'}
+          fieldOfInterest={selectedField || profile?.field_of_interest || 'General'}
           onRetake={handleRetake}
           onViewJobs={handleViewJobs}
           onReturnToHub={handleReturnToHub}
@@ -138,13 +141,14 @@ const HardSkillsAssessment = ({ onReturnToHub }: HardSkillsAssessmentProps) => {
 
   const currentSkillData = relevantSkills[currentSkill];
   const currentRating = skillRatings[currentSkillData.name] || 0;
+  const fieldToDisplay = selectedField || profile?.field_of_interest || 'General';
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Hard Skills Assessment</h1>
         <p className="text-muted-foreground mt-2">
-          Rate your proficiency with {profile?.field_of_interest || 'technical'} tools and skills
+          Rate your proficiency with {fieldToDisplay === 'General' ? 'technical' : fieldToDisplay} tools and skills
         </p>
       </div>
 

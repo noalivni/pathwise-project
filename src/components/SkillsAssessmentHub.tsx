@@ -1,347 +1,93 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Wrench, Heart, Target, ArrowRight, Clock, Eye } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { getSkillLevel } from "@/utils/skillLevelUtils";
-import { generatePersonalityProfile, generateDetailedFeedback } from "@/utils/personalityProfileGenerator";
-import { softSkills } from "@/data/softSkillsData";
+import { Brain, Users, Target } from "lucide-react";
+import FieldSelector from "@/components/FieldSelector";
 
 interface SkillsAssessmentHubProps {
-  onSelectAssessment: (type: 'hard' | 'soft') => void;
+  onSelectAssessment: (type: 'hard' | 'soft', field: string) => void;
 }
 
 const SkillsAssessmentHub = ({ onSelectAssessment }: SkillsAssessmentHubProps) => {
-  const { user } = useAuth();
-  const [pastAssessments, setPastAssessments] = useState<{
-    hardSkills: any | null;
-    softSkills: any | null;
-  }>({ hardSkills: null, softSkills: null });
-  const [selectedAssessment, setSelectedAssessment] = useState<any>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [selectedField, setSelectedField] = useState("General");
 
-  useEffect(() => {
-    if (user) {
-      fetchPastAssessments();
-    }
-  }, [user]);
-
-  const fetchPastAssessments = async () => {
-    if (!user) return;
-
-    try {
-      const { data: hardSkillsData } = await supabase
-        .from('skills_assessments')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('assessment_type', 'hard_skills')
-        .order('completed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      const { data: softSkillsData } = await supabase
-        .from('skills_assessments')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('assessment_type', 'soft_skills')
-        .order('completed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      setPastAssessments({
-        hardSkills: hardSkillsData,
-        softSkills: softSkillsData
-      });
-    } catch (error) {
-      console.error('Error fetching past assessments:', error);
-    }
-  };
-
-  const handleViewPastAssessment = (assessment: any, type: 'hard' | 'soft') => {
-    setSelectedAssessment({ ...assessment, type });
-    setShowModal(true);
-  };
-
-  const renderPastAssessmentModal = () => {
-    if (!selectedAssessment) return null;
-
-    const isHardSkills = selectedAssessment.type === 'hard';
-    const completedDate = new Date(selectedAssessment.completed_at).toLocaleDateString();
-
-    if (isHardSkills) {
-      const technicalSkills = selectedAssessment.technical_skills || {};
-      const skillEntries = Object.entries(technicalSkills);
-
-      return (
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="flex items-center text-foreground">
-              <Wrench className="mr-2 h-5 w-5 text-teal-600" />
-              Hard Skills Assessment Results
-            </DialogTitle>
-            <p className="text-sm text-muted-foreground flex items-center">
-              <Clock className="mr-1 h-4 w-4" />
-              Completed on {completedDate}
-            </p>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <div className="grid gap-3">
-              {skillEntries.map(([skill, rating], index) => {
-                const numericRating = typeof rating === 'number' ? rating : 0;
-                const skillInfo = getSkillLevel(numericRating);
-                return (
-                  <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div>
-                      <span className="font-medium text-foreground">{skill}</span>
-                      <p className="text-sm text-muted-foreground">Rating: {numericRating}/5</p>
-                    </div>
-                    <Badge className={`${skillInfo.color} text-white`}>
-                      {skillInfo.level}
-                    </Badge>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="pt-4 border-t border-border">
-              <Button 
-                onClick={() => {
-                  setShowModal(false);
-                  onSelectAssessment('hard');
-                }}
-                className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-              >
-                Retake Hard Skills Assessment
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      );
-    } else {
-      const softSkillsData = selectedAssessment.soft_skills || {};
-      const personalityProfile = generatePersonalityProfile(softSkillsData);
-      const detailedFeedback = generateDetailedFeedback(softSkillsData);
-
-      return (
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="flex items-center text-foreground">
-              <Heart className="mr-2 h-5 w-5 text-pink-600" />
-              Soft Skills Assessment Results
-            </DialogTitle>
-            <p className="text-sm text-muted-foreground flex items-center">
-              <Clock className="mr-1 h-4 w-4" />
-              Completed on {completedDate}
-            </p>
-          </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <div className="p-4 bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-lg border border-pink-200 dark:border-pink-800">
-              <h4 className="font-semibold text-pink-800 dark:text-pink-200 mb-2">Your Profile: {personalityProfile.type}</h4>
-              <p className="text-pink-700 dark:text-pink-300 text-sm mb-3">{personalityProfile.environment}</p>
-              <div className="flex flex-wrap gap-2">
-                {personalityProfile.topStrengths.map((strength, index) => (
-                  <Badge key={index} className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700">
-                    {strength}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            
-            <div className="grid gap-3">
-              {Object.entries(softSkillsData).map(([skill, rating], index) => {
-                const numericRating = typeof rating === 'number' ? rating : 0;
-                const skillInfo = getSkillLevel(numericRating);
-                return (
-                  <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div>
-                      <span className="font-medium text-foreground">{skill}</span>
-                      <Progress value={(numericRating / 5) * 100} className="w-32 mt-1" />
-                    </div>
-                    <Badge className={`${skillInfo.color} text-white`}>
-                      {skillInfo.level}
-                    </Badge>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="font-semibold text-foreground">Career Insights:</h4>
-              {detailedFeedback.slice(0, 2).map((insight, index) => (
-                <p key={index} className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-2 rounded border border-blue-200 dark:border-blue-800">
-                  {insight}
-                </p>
-              ))}
-            </div>
-
-            <div className="pt-4 border-t border-border">
-              <Button 
-                onClick={() => {
-                  setShowModal(false);
-                  onSelectAssessment('soft');
-                }}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-              >
-                Retake Soft Skills Assessment
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      );
-    }
+  const handleAssessmentSelect = (type: 'hard' | 'soft') => {
+    onSelectAssessment(type, selectedField);
   };
 
   return (
-    <>
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground">Choose Your Assessment</h1>
-          <p className="text-muted-foreground mt-2">Select the type of skills you'd like to evaluate</p>
-        </div>
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-foreground">Skills Assessment Hub</h1>
+        <p className="text-muted-foreground mt-2">Evaluate your professional capabilities</p>
+      </div>
 
-        {/* Past Assessments Section - Fixed styling for dark mode */}
-        {(pastAssessments.hardSkills || pastAssessments.softSkills) && (
-          <div className="bg-muted p-6 rounded-lg border border-border">
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
-              <Clock className="mr-2 h-5 w-5" />
-              Your Past Assessments
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {pastAssessments.hardSkills && (
-                <Button
-                  variant="outline"
-                  onClick={() => handleViewPastAssessment(pastAssessments.hardSkills, 'hard')}
-                  className="flex items-center justify-between p-4 h-auto bg-card hover:bg-accent border-border text-foreground"
-                >
-                  <div className="flex items-center">
-                    <Wrench className="mr-2 h-4 w-4 text-teal-600" />
-                    <span>View Past Hard Skills Assessment</span>
-                  </div>
-                  <Eye className="h-4 w-4" />
-                </Button>
-              )}
-              {pastAssessments.softSkills && (
-                <Button
-                  variant="outline"
-                  onClick={() => handleViewPastAssessment(pastAssessments.softSkills, 'soft')}
-                  className="flex items-center justify-between p-4 h-auto bg-card hover:bg-accent border-border text-foreground"
-                >
-                  <div className="flex items-center">
-                    <Heart className="mr-2 h-4 w-4 text-pink-600" />
-                    <span>View Past Soft Skills Assessment</span>
-                  </div>
-                  <Eye className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
+      <FieldSelector 
+        selectedField={selectedField}
+        onFieldChange={setSelectedField}
+      />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-teal-200 dark:hover:border-teal-800">
-            <CardHeader className="text-center">
-              <div className="w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Wrench className="w-8 h-8 text-teal-600" />
-              </div>
-              <CardTitle className="text-2xl text-foreground">Hard Skills Assessment</CardTitle>
-              <CardDescription className="text-lg text-muted-foreground">
-                Evaluate your proficiency with technical tools and software
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <h4 className="font-semibold text-foreground">What you'll assess:</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Technical tools (Excel, SQL, Python, etc.)</li>
-                  <li>• Software proficiency levels (0-5 scale)</li>
-                  <li>• Domain-specific skills</li>
-                  <li>• Professional certifications</li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-semibold text-foreground">You'll receive:</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Skill level breakdown</li>
-                  <li>• Areas of expertise</li>
-                  <li>• Learning recommendations</li>
-                  <li>• Tool suggestions</li>
-                </ul>
-              </div>
-              <Button 
-                onClick={() => onSelectAssessment('hard')}
-                className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-              >
-                Start Hard Skills Assessment
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-pink-200 dark:hover:border-pink-800">
-            <CardHeader className="text-center">
-              <div className="w-16 h-16 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Heart className="w-8 h-8 text-pink-600" />
-              </div>
-              <CardTitle className="text-2xl text-foreground">Soft Skills Assessment</CardTitle>
-              <CardDescription className="text-lg text-muted-foreground">
-                Discover your personality type and work style preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <h4 className="font-semibold text-foreground">What you'll assess:</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Communication style</li>
-                  <li>• Leadership tendencies</li>
-                  <li>• Problem-solving approach</li>
-                  <li>• Collaboration preferences</li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-semibold text-foreground">You'll receive:</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Personality type profile</li>
-                  <li>• Work environment preferences</li>
-                  <li>• Career path suggestions</li>
-                  <li>• Team role insights</li>
-                </ul>
-              </div>
-              <Button 
-                onClick={() => onSelectAssessment('soft')}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-              >
-                Start Soft Skills Assessment
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="hover:shadow-md transition-shadow cursor-pointer bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center text-blue-800 dark:text-blue-200">
-              <Target className="mr-2 h-5 w-5" />
-              Pro Tip
+            <CardTitle className="flex items-center text-foreground">
+              <Brain className="mr-2 h-6 w-6 text-primary" />
+              Hard Skills Assessment
             </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Evaluate your technical abilities and professional tools knowledge
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-blue-700 dark:text-blue-300">
-              For the most comprehensive career guidance, we recommend taking both assessments. 
-              Each provides unique insights that complement each other to give you a complete 
-              picture of your professional strengths and potential career paths.
-            </p>
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                <p>• Field-specific technical skills</p>
+                <p>• Software and tools proficiency</p>
+                <p>• Industry-relevant capabilities</p>
+              </div>
+              <Button 
+                onClick={() => handleAssessmentSelect('hard')}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Start Hard Skills Assessment
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md transition-shadow cursor-pointer bg-card border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center text-foreground">
+              <Users className="mr-2 h-6 w-6 text-primary" />
+              Soft Skills Assessment
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Assess your interpersonal and workplace communication abilities
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground">
+                <p>• Communication and collaboration</p>
+                <p>• Leadership and teamwork</p>
+                <p>• Problem-solving and adaptability</p>
+              </div>
+              <Button 
+                onClick={() => handleAssessmentSelect('soft')}
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Start Soft Skills Assessment
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        {renderPastAssessmentModal()}
-      </Dialog>
-    </>
+      <div className="text-center text-sm text-muted-foreground">
+        <p>Both assessments are tailored to your selected field: <strong>{selectedField}</strong></p>
+      </div>
+    </div>
   );
 };
 
