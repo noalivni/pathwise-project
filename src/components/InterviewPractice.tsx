@@ -1,19 +1,34 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Mic, MicOff, Volume2, VolumeX, Play, Pause, Crown, Lock } from "lucide-react";
+import { MessageCircle, Mic, MicOff, Volume2, VolumeX, Play, Pause, Crown, Lock, History, Eye } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import InterviewHistory from "@/components/interview/InterviewHistory";
+import InterviewFeedback from "@/components/interview/InterviewFeedback";
 
 interface InterviewQuestion {
   id: number;
   question: string;
   category: string;
   difficulty: string;
+}
+
+interface InterviewSession {
+  id: string;
+  job_role: string;
+  completed_at: string;
+  questions: InterviewQuestion[];
+  responses: Array<{
+    question: string;
+    response: string;
+    feedback?: string;
+  }>;
 }
 
 const InterviewPractice = () => {
@@ -26,6 +41,14 @@ const InterviewPractice = () => {
   const [sessionQuestions, setSessionQuestions] = useState<InterviewQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [sessionStarted, setSessionStarted] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [pastInterviews, setPastInterviews] = useState<InterviewSession[]>([]);
+  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
+  const [sessionResponses, setSessionResponses] = useState<Array<{
+    question: string;
+    response: string;
+    feedback?: string;
+  }>>([]);
 
   const isPro = profile?.subscription_status === 'premium';
 
@@ -42,18 +65,12 @@ const InterviewPractice = () => {
     { id: 10, question: "Tell me about a time you failed and how you handled it.", category: "Behavioral", difficulty: "Hard" }
   ];
 
-  const jobRoles = [
-    "Frontend Developer",
-    "Backend Developer",
-    "Data Analyst",
-    "UX Designer",
-    "Product Manager",
-    "Marketing Specialist"
-  ];
-
   useEffect(() => {
     checkPremiumAccess();
-  }, [user]);
+    if (isPro) {
+      fetchPastInterviews();
+    }
+  }, [user, isPro]);
 
   const checkPremiumAccess = async () => {
     if (!user) return;
@@ -77,6 +94,32 @@ const InterviewPractice = () => {
     }
   };
 
+  const fetchPastInterviews = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('interview_sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('completed_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedInterviews: InterviewSession[] = data?.map(session => ({
+        id: session.id,
+        job_role: session.job_role || 'Unknown Role',
+        completed_at: session.completed_at || new Date().toISOString(),
+        questions: JSON.parse(session.questions || '[]'),
+        responses: JSON.parse(session.responses || '[]')
+      })) || [];
+
+      setPastInterviews(formattedInterviews);
+    } catch (error) {
+      console.error('Error fetching past interviews:', error);
+    }
+  };
+
   const startInterviewSession = () => {
     if (!selectedRole) {
       toast({
@@ -96,11 +139,23 @@ const InterviewPractice = () => {
     setSessionStarted(true);
     setUserResponse("");
     setFeedback("");
+    setSessionResponses([]);
 
     speakText(selected[0].question);
   };
 
   const nextQuestion = () => {
+    // Save current response
+    if (currentQuestion && userResponse.trim()) {
+      const updatedResponses = [...sessionResponses];
+      updatedResponses[currentQuestionIndex] = {
+        question: currentQuestion.question,
+        response: userResponse,
+        feedback: feedback
+      };
+      setSessionResponses(updatedResponses);
+    }
+
     if (currentQuestionIndex < sessionQuestions.length - 1) {
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
@@ -117,12 +172,18 @@ const InterviewPractice = () => {
     if (!user) return;
 
     try {
-      // Convert questions and responses to JSON format
+      // Save final response if exists
+      let finalResponses = [...sessionResponses];
+      if (currentQuestion && userResponse.trim()) {
+        finalResponses[currentQuestionIndex] = {
+          question: currentQuestion.question,
+          response: userResponse,
+          feedback: feedback
+        };
+      }
+
       const questionsJson = JSON.stringify(sessionQuestions);
-      const responsesJson = JSON.stringify(sessionQuestions.map((q, index) => ({
-        question: q.question,
-        response: index <= currentQuestionIndex ? userResponse : ""
-      })));
+      const responsesJson = JSON.stringify(finalResponses);
 
       await supabase
         .from('interview_sessions')
@@ -145,6 +206,8 @@ const InterviewPractice = () => {
         title: "Session Complete",
         description: "Your interview practice session has been saved.",
       });
+
+      fetchPastInterviews();
     } catch (error) {
       console.error('Error saving interview session:', error);
     }
@@ -153,6 +216,7 @@ const InterviewPractice = () => {
     setCurrentQuestion(null);
     setSessionQuestions([]);
     setCurrentQuestionIndex(0);
+    setSessionResponses([]);
   };
 
   const generateFeedback = async () => {
@@ -165,17 +229,41 @@ const InterviewPractice = () => {
       return;
     }
 
-    const feedbackPoints = [
-      "Good structure in your response.",
-      "Consider providing more specific examples.",
-      "Your answer shows good self-awareness.",
-      "Try to be more concise in your explanation.",
-      "Great use of the STAR method (Situation, Task, Action, Result)."
-    ];
+    setIsGeneratingFeedback(true);
 
-    const randomFeedback = feedbackPoints[Math.floor(Math.random() * feedbackPoints.length)];
-    setFeedback(randomFeedback);
-    speakText(randomFeedback);
+    try {
+      const response = await supabase.functions.invoke('generate-interview-feedback', {
+        body: {
+          question: currentQuestion?.question,
+          answer: userResponse,
+          jobRole: selectedRole,
+          questionCategory: currentQuestion?.category,
+          questionDifficulty: currentQuestion?.difficulty
+        }
+      });
+
+      if (response.data?.feedback) {
+        setFeedback(response.data.feedback);
+        speakText("I've generated detailed feedback for your response.");
+      } else {
+        throw new Error('No feedback generated');
+      }
+    } catch (error) {
+      console.error('Error generating feedback:', error);
+      // Fallback to simple feedback
+      const feedbackPoints = [
+        "Good structure in your response.",
+        "Consider providing more specific examples.",
+        "Your answer shows good self-awareness.",
+        "Try to be more concise in your explanation.",
+        "Great use of the STAR method (Situation, Task, Action, Result)."
+      ];
+      const randomFeedback = feedbackPoints[Math.floor(Math.random() * feedbackPoints.length)];
+      setFeedback(randomFeedback);
+      speakText(randomFeedback);
+    } finally {
+      setIsGeneratingFeedback(false);
+    }
   };
 
   const speakText = (text: string) => {
@@ -231,6 +319,15 @@ const InterviewPractice = () => {
     );
   }
 
+  if (showHistory) {
+    return (
+      <InterviewHistory 
+        interviews={pastInterviews}
+        onBack={() => setShowHistory(false)}
+      />
+    );
+  }
+
   if (!sessionStarted) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
@@ -244,6 +341,30 @@ const InterviewPractice = () => {
             Pro Feature
           </Badge>
         </div>
+
+        {pastInterviews.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5" />
+                Past Interviews
+              </CardTitle>
+              <CardDescription>
+                You have {pastInterviews.length} completed interview{pastInterviews.length !== 1 ? 's' : ''}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => setShowHistory(true)}
+                variant="outline"
+                className="w-full"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                View Interview History
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
@@ -276,7 +397,8 @@ const InterviewPractice = () => {
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• 5 randomized interview questions</li>
                 <li>• Text-to-speech for questions</li>
-                <li>• AI-powered feedback on your responses</li>
+                <li>• AI-powered detailed feedback on your responses</li>
+                <li>• Save and review past interview sessions</li>
               </ul>
             </div>
 
@@ -350,17 +472,19 @@ const InterviewPractice = () => {
             />
             
             <div className="flex gap-2">
-              <Button onClick={generateFeedback} variant="outline" size="sm">
-                Get Feedback
+              <Button 
+                onClick={generateFeedback} 
+                variant="outline" 
+                size="sm"
+                disabled={isGeneratingFeedback || !userResponse.trim()}
+              >
+                {isGeneratingFeedback ? "Generating..." : "Get Feedback"}
               </Button>
             </div>
           </div>
 
           {feedback && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h3 className="font-medium text-green-800 mb-2">AI Feedback</h3>
-              <p className="text-green-700">{feedback}</p>
-            </div>
+            <InterviewFeedback feedback={feedback} />
           )}
 
           <div className="flex justify-between">
