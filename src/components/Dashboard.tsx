@@ -47,8 +47,6 @@ const Dashboard = () => {
 
     const handleNavigateToAssessment = () => setActiveView('assessment');
     const handleNavigateToJobs = () => setActiveView('jobs');
-    const handleNavigateToProfile = () => setActiveView('profile');
-    const handleNavigateToLearning = () => setActiveView('learning');
     const handleNavigateToInterview = () => {
       if (profile?.subscription_status !== 'premium') {
         showUpgrade('Interview Practice', () => {
@@ -61,15 +59,11 @@ const Dashboard = () => {
 
     window.addEventListener('navigate-to-assessment', handleNavigateToAssessment);
     window.addEventListener('navigate-to-jobs', handleNavigateToJobs);
-    window.addEventListener('navigate-to-profile', handleNavigateToProfile);
-    window.addEventListener('navigate-to-learning', handleNavigateToLearning);
     window.addEventListener('navigate-to-interview', handleNavigateToInterview);
 
     return () => {
       window.removeEventListener('navigate-to-assessment', handleNavigateToAssessment);
       window.removeEventListener('navigate-to-jobs', handleNavigateToJobs);
-      window.removeEventListener('navigate-to-profile', handleNavigateToProfile);
-      window.removeEventListener('navigate-to-learning', handleNavigateToLearning);
       window.removeEventListener('navigate-to-interview', handleNavigateToInterview);
     };
   }, [profile, showUpgrade, userRole]);
