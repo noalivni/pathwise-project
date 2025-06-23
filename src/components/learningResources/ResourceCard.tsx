@@ -121,17 +121,6 @@ const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
             </Button>
           )
         )}
-
-        {/* Skills tags */}
-        {resource.related_skills.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {resource.related_skills.map((skill, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {skill}
-              </Badge>
-            ))}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
