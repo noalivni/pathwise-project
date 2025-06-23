@@ -22,6 +22,14 @@ const LandingPage = () => {
     setShowAuthModal(true);
   };
 
+  const handleLearnMore = () => {
+    // Navigate to Learning Resources after sign up
+    setIsSignUp(true);
+    setShowAuthModal(true);
+    // Store intent to navigate to learning resources
+    localStorage.setItem('navigateToLearning', 'true');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -116,9 +124,17 @@ const LandingPage = () => {
               <BookOpen className="w-8 h-8 text-green-400" />
             </div>
             <h3 className="text-xl font-semibold mb-2 text-foreground">Learning Resources</h3>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Access curated learning materials to develop the skills you need.
             </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleLearnMore}
+              className="mt-2"
+            >
+              Learn More
+            </Button>
           </div>
           <div className="text-center p-6 rounded-lg bg-card border border-border hover:border-primary/50 transition-all duration-200">
             <div className="w-16 h-16 bg-purple-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -147,6 +163,16 @@ const LandingPage = () => {
 
 const AppContent = () => {
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    // Check if user should navigate to learning resources after login
+    if (user && localStorage.getItem('navigateToLearning')) {
+      localStorage.removeItem('navigateToLearning');
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('navigate-to-learning'));
+      }, 1000);
+    }
+  }, [user]);
 
   if (loading) {
     return (

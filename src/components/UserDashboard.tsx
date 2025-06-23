@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { Target, TrendingUp, BookOpen, Users, Award, ChevronRight, Brain } from 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { trackSkillsAssessment, trackJobEvent, trackInterviewPractice } from "@/utils/analytics";
+import { toast } from "@/hooks/use-toast";
 
 interface Activity {
   id: string;
@@ -19,12 +21,25 @@ const UserDashboard = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [jobMatches, setJobMatches] = useState(0);
   const [completedAssessments, setCompletedAssessments] = useState(0);
+  const [hasShownFirstActivityMessage, setHasShownFirstActivityMessage] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchUserData();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Show first activity completion message
+    if (activities.length === 1 && !hasShownFirstActivityMessage) {
+      toast({
+        title: "🎉 Congratulations!",
+        description: "You've completed your first activity! Keep going to unlock more career opportunities.",
+        duration: 5000,
+      });
+      setHasShownFirstActivityMessage(true);
+    }
+  }, [activities.length, hasShownFirstActivityMessage]);
 
   const fetchUserData = async () => {
     if (!user) return;
@@ -91,6 +106,14 @@ const UserDashboard = () => {
     window.dispatchEvent(new CustomEvent('navigate-to-interview'));
   };
 
+  const handleNavigateToProfile = () => {
+    window.dispatchEvent(new CustomEvent('navigate-to-profile'));
+  };
+
+  const handleNavigateToLearning = () => {
+    window.dispatchEvent(new CustomEvent('navigate-to-learning'));
+  };
+
   const profileCompletion = getProfileCompletion();
 
   return (
@@ -113,7 +136,7 @@ const UserDashboard = () => {
 
       {/* Progress Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="card-hover">
+        <Card className="card-hover cursor-pointer" onClick={handleNavigateToProfile}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-pathwise-text">Profile Completion</CardTitle>
             <Target className="h-4 w-4 text-primary" />
@@ -127,7 +150,7 @@ const UserDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="card-hover">
+        <Card className="card-hover cursor-pointer" onClick={handleNavigateToJobs}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-pathwise-text">Job Matches</CardTitle>
             <Users className="h-4 w-4 text-secondary" />
@@ -140,7 +163,7 @@ const UserDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="card-hover">
+        <Card className="card-hover cursor-pointer" onClick={handleNavigateToAssessment}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-pathwise-text">Assessments</CardTitle>
             <BookOpen className="h-4 w-4 text-primary" />
@@ -208,6 +231,22 @@ const UserDashboard = () => {
                 <h3 className="font-semibold text-pathwise-text">Practice Interview Questions</h3>
                 <p className="text-sm text-pathwise-text-secondary">Prepare for upcoming interviews</p>
                 <Badge className="mt-1 bg-primary text-primary-foreground">PRO</Badge>
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 text-pathwise-text-secondary" />
+          </button>
+
+          <button 
+            onClick={handleNavigateToLearning}
+            className="flex items-center justify-between p-4 border border-border rounded-lg hover-pathwise transition-all duration-200 w-full text-left"
+          >
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-purple-500" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-pathwise-text">Learning Resources</h3>
+                <p className="text-sm text-pathwise-text-secondary">Access curated content for skill development</p>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 text-pathwise-text-secondary" />
