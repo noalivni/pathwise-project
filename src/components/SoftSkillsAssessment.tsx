@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,33 +9,18 @@ import { ArrowLeft, ArrowRight, RotateCcw, Eye } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { softSkillsByField, defaultSoftSkills } from "@/data/fieldSpecificSoftSkills";
+import { softSkillsQuestions } from "@/data/softSkillsData";
 import { getSkillLevelDescription, getSkillLevelWithCount } from "@/utils/softSkillsLabels";
-import FirstActivityCelebration from "@/components/FirstActivityCelebration";
 
 interface SoftSkillsAssessmentProps {
   onReturnToHub?: () => void;
-  selectedField?: string;
 }
 
-const SoftSkillsAssessment = ({ onReturnToHub, selectedField }: SoftSkillsAssessmentProps) => {
+const SoftSkillsAssessment = ({ onReturnToHub }: SoftSkillsAssessmentProps) => {
   const { user, profile } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<{ [key: string]: number }>({});
   const [showResults, setShowResults] = useState(false);
-  const [softSkillsQuestions, setSoftSkillsQuestions] = useState(defaultSoftSkills);
-  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
-
-  useEffect(() => {
-    // Use selectedField first, then profile field, then default
-    const fieldToUse = selectedField || profile?.field_of_interest || 'General';
-    
-    if (fieldToUse !== 'General' && softSkillsByField[fieldToUse]) {
-      setSoftSkillsQuestions(softSkillsByField[fieldToUse]);
-    } else {
-      setSoftSkillsQuestions(defaultSoftSkills);
-    }
-  }, [selectedField, profile]);
 
   const handleSliderChange = (value: number[]) => {
     const questionKey = softSkillsQuestions[currentQuestion].key;
@@ -91,7 +77,6 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField }: SoftSkillsAssess
         });
 
       setShowResults(true);
-      setAssessmentCompleted(true);
       toast({
         title: "Assessment Complete!",
         description: "Your soft skills have been evaluated successfully.",
@@ -140,34 +125,27 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField }: SoftSkillsAssess
     
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        {assessmentCompleted && (
-          <FirstActivityCelebration 
-            activityType="skills_assessment" 
-            activityName="Soft Skills Assessment" 
-          />
-        )}
-        
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground">Soft Skills Assessment Results</h1>
-          <p className="text-muted-foreground mt-2">Your personality and interpersonal skills profile</p>
+          <h1 className="text-3xl font-bold text-pathwise-text">Soft Skills Assessment Results</h1>
+          <p className="text-pathwise-text-muted mt-2">Your personality and interpersonal skills profile</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {Object.entries(results).map(([category, score]) => (
             <Card key={category}>
               <CardHeader>
-                <CardTitle className="capitalize text-foreground">
+                <CardTitle className="capitalize text-pathwise-text">
                   {category.replace(/([A-Z])/g, ' $1').trim()}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Score</span>
-                    <span className="font-medium text-foreground">{score}%</span>
+                    <span className="text-pathwise-text-muted">Score</span>
+                    <span className="font-medium text-pathwise-text">{score}%</span>
                   </div>
                   <Progress value={score} className="h-2" />
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-pathwise-text-muted">
                     {score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Developing' : 'Needs attention'}
                   </div>
                 </div>
@@ -199,7 +177,7 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField }: SoftSkillsAssess
             <Button 
               onClick={onReturnToHub} 
               variant="ghost"
-              className="text-muted-foreground hover:text-foreground"
+              className="text-pathwise-text-muted hover:text-pathwise-text"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Return to Assessment Hub
@@ -213,14 +191,13 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField }: SoftSkillsAssess
   const currentQuestionData = softSkillsQuestions[currentQuestion];
   const currentResponse = responses[currentQuestionData.key] || 0;
   const progress = ((currentQuestion + 1) / softSkillsQuestions.length) * 100;
-  const fieldToDisplay = selectedField || profile?.field_of_interest || 'General';
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Soft Skills Assessment</h1>
-        <p className="text-muted-foreground mt-2">
-          Evaluate your {fieldToDisplay === 'General' ? 'interpersonal and workplace communication' : `${fieldToDisplay}-focused interpersonal`} skills
+        <h1 className="text-3xl font-bold text-pathwise-text">Soft Skills Assessment</h1>
+        <p className="text-pathwise-text-muted mt-2">
+          Evaluate your interpersonal and workplace communication skills
         </p>
       </div>
 
@@ -230,7 +207,7 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField }: SoftSkillsAssess
             <Badge variant="secondary">
               Question {currentQuestion + 1} of {softSkillsQuestions.length}
             </Badge>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-pathwise-text-muted">
               {Math.round(progress)}% Complete
             </span>
           </div>
@@ -238,11 +215,11 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField }: SoftSkillsAssess
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <CardTitle className="text-xl mb-3 text-foreground">
+            <CardTitle className="text-xl mb-3 text-pathwise-text">
               {currentQuestionData.question}
             </CardTitle>
             {currentQuestionData.description && (
-              <CardDescription className="text-muted-foreground">
+              <CardDescription className="text-pathwise-text-muted">
                 {currentQuestionData.description}
               </CardDescription>
             )}
@@ -253,7 +230,7 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField }: SoftSkillsAssess
               <div className="text-2xl font-bold text-primary mb-2">
                 {getSkillLevelDescription(currentResponse)}
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-pathwise-text-muted">
                 {getSkillLevelWithCount(currentResponse)}
               </div>
             </div>
@@ -267,7 +244,7 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField }: SoftSkillsAssess
               className="w-full"
             />
             
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="flex justify-between text-xs text-pathwise-text-muted">
               <span>Not me</span>
               <span>Somewhat</span>
               <span>Moderately</span>
@@ -290,7 +267,7 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField }: SoftSkillsAssess
               <Button 
                 onClick={handleSkip} 
                 variant="ghost"
-                className="text-muted-foreground hover:text-foreground"
+                className="text-pathwise-text-muted hover:text-pathwise-text"
               >
                 Skip
               </Button>

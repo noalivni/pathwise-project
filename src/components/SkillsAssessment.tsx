@@ -6,10 +6,8 @@ import SoftSkillsAssessment from "@/components/SoftSkillsAssessment";
 
 const SkillsAssessment = () => {
   const [selectedAssessment, setSelectedAssessment] = useState<'hub' | 'hard' | 'soft'>('hub');
-  const [selectedField, setSelectedField] = useState<string>('General');
 
-  const handleSelectAssessment = (type: 'hard' | 'soft', field: string) => {
-    setSelectedField(field);
+  const handleSelectAssessment = (type: 'hard' | 'soft') => {
     setSelectedAssessment(type);
   };
 
@@ -18,11 +16,11 @@ const SkillsAssessment = () => {
   };
 
   if (selectedAssessment === 'hard') {
-    return <HardSkillsAssessment onReturnToHub={handleReturnToHub} selectedField={selectedField} />;
+    return <HardSkillsAssessment onReturnToHub={handleReturnToHub} />;
   }
 
   if (selectedAssessment === 'soft') {
-    return <SoftSkillsAssessment onReturnToHub={handleReturnToHub} selectedField={selectedField} />;
+    return <SoftSkillsAssessment onReturnToHub={handleReturnToHub} />;
   }
 
   return <SkillsAssessmentHub onSelectAssessment={handleSelectAssessment} />;
