@@ -2,41 +2,89 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
-import { LearningResource } from "@/types/learningResources";
+import { ExternalLink, Target, Briefcase, Brain } from "lucide-react";
 import { getResourceIcon, getResourceColor } from "@/utils/learningResourcesUtils.tsx";
 
 interface ResourceCardProps {
-  resource: LearningResource;
-  onResourceClick: (resource: LearningResource) => void;
+  resource: {
+    id: string;
+    title: string;
+    description: string;
+    url: string;
+    resource_type: string;
+    related_skills: string[];
+    related_job_roles: string[];
+    skillName?: string;
+    aiExplanation?: string;
+    jobTitle?: string;
+    aiSummary?: string;
+  };
+  onResourceClick: (resource: any) => void;
 }
 
 const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
+  const isSkillResource = resource.resource_type === 'skill_development';
+  const isJobResource = resource.resource_type === 'career_exploration';
+
   return (
     <Card className="hover:shadow-lg transition-shadow cursor-pointer">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             <div className={`p-2 rounded-lg ${getResourceColor(resource.resource_type)} text-white`}>
-              {getResourceIcon(resource.resource_type)}
+              {isSkillResource ? <Target className="h-5 w-5" /> : 
+               isJobResource ? <Briefcase className="h-5 w-5" /> : 
+               getResourceIcon(resource.resource_type)}
             </div>
             <Badge variant="secondary" className="capitalize">
-              {resource.resource_type}
+              {isSkillResource ? 'Skill Development' : 
+               isJobResource ? 'Career Exploration' : 
+               resource.resource_type.replace('_', ' ')}
             </Badge>
           </div>
         </div>
-        <CardTitle className="text-lg">{resource.title}</CardTitle>
-        <CardDescription>{resource.description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          {resource.related_skills.map((skill, index) => (
-            <Badge key={index} variant="outline" className="text-xs">
-              {skill}
-            </Badge>
-          ))}
-        </div>
         
+        {/* Display skill or job name prominently */}
+        {(resource.skillName || resource.jobTitle) && (
+          <div className="mb-2">
+            <h3 className="text-lg font-semibold text-pathwise-text">
+              {resource.skillName || resource.jobTitle}
+            </h3>
+          </div>
+        )}
+        
+        <CardTitle className="text-base">{resource.title}</CardTitle>
+        <CardDescription className="text-sm">{resource.description}</CardDescription>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        {/* AI-Generated Explanation/Summary */}
+        {(resource.aiExplanation || resource.aiSummary) && (
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-2 mb-2">
+              <Brain className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                AI Insight
+              </span>
+            </div>
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              {resource.aiExplanation || resource.aiSummary}
+            </p>
+          </div>
+        )}
+
+        {/* Skills tags */}
+        {resource.related_skills.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {resource.related_skills.map((skill, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {skill}
+              </Badge>
+            ))}
+          </div>
+        )}
+        
+        {/* Job roles tags */}
         {resource.related_job_roles.length > 0 && (
           <div>
             <p className="text-xs text-slate-500 mb-1">Relevant for:</p>

@@ -17,6 +17,9 @@ interface CareerGuidanceRequest {
   hardSkillsAssessment: Record<string, number>;
   softSkillsAssessment?: Record<string, number>;
   fieldOfInterest: string;
+  generateSkillExplanation?: boolean;
+  generateJobSummary?: boolean;
+  skill?: string;
 }
 
 serve(async (req) => {
@@ -29,7 +32,10 @@ serve(async (req) => {
       topJobRecommendations, 
       hardSkillsAssessment, 
       softSkillsAssessment,
-      fieldOfInterest 
+      fieldOfInterest,
+      generateSkillExplanation,
+      generateJobSummary,
+      skill
     }: CareerGuidanceRequest = await req.json();
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -37,16 +43,51 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    // Generate skill improvement recommendations
-    const skillsToImprove = Object.entries(hardSkillsAssessment)
-      .filter(([_, rating]) => rating < 4)
-      .sort(([_, a], [__, b]) => a - b)
-      .slice(0, 5)
-      .map(([skill, _]) => skill);
+    let prompt = '';
+    let responseStructure = {};
 
-    const topJobTitles = topJobRecommendations.slice(0, 3).map(job => job.job_title);
+    // Handle skill explanation request
+    if (generateSkillExplanation && skill) {
+      prompt = `As a career guidance AI, provide a brief, practical explanation about the skill "${skill}" for someone in the ${fieldOfInterest} field.
 
-    const prompt = `As a career guidance AI, provide personalized advice for someone interested in ${fieldOfInterest}. 
+Explain in 2-3 sentences:
+- What this skill is
+- Why it's valuable for their career
+- How it will benefit them professionally
+
+Keep it concise and actionable.`;
+
+      responseStructure = {
+        "skillExplanation": "string"
+      };
+    }
+    // Handle job summary request
+    else if (generateJobSummary && topJobRecommendations.length > 0) {
+      const job = topJobRecommendations[0];
+      prompt = `As a career guidance AI, provide a brief, engaging summary about the "${job.job_title}" role in the ${job.Industry} industry.
+
+Write 2-3 sentences that explain:
+- What this role involves day-to-day
+- Why it's an exciting career opportunity
+- What makes it appealing for someone interested in ${fieldOfInterest}
+
+Keep it concise and inspiring.`;
+
+      responseStructure = {
+        "jobSummary": "string"
+      };
+    }
+    // Original career guidance request
+    else {
+      const skillsToImprove = Object.entries(hardSkillsAssessment)
+        .filter(([_, rating]) => rating < 4)
+        .sort(([_, a], [__, b]) => a - b)
+        .slice(0, 5)
+        .map(([skill, _]) => skill);
+
+      const topJobTitles = topJobRecommendations.slice(0, 3).map(job => job.job_title);
+
+      prompt = `As a career guidance AI, provide personalized advice for someone interested in ${fieldOfInterest}. 
 
 Their top job matches are: ${topJobTitles.join(', ')}
 
@@ -71,6 +112,19 @@ Format your response as JSON with this structure:
     }
   ]
 }`;
+
+      responseStructure = {
+        "jobExplanation": "string",
+        "skillRecommendations": [
+          {
+            "skill": "string",
+            "description": "string", 
+            "importance": "string",
+            "careerBenefit": "string"
+          }
+        ]
+      };
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -107,16 +161,35 @@ Format your response as JSON with this structure:
     try {
       guidanceData = JSON.parse(content);
     } catch (e) {
-      // Fallback if JSON parsing fails
-      guidanceData = {
-        jobExplanation: content,
-        skillRecommendations: skillsToImprove.map(skill => ({
-          skill,
-          description: `${skill} is a valuable technical skill`,
-          importance: `Essential for ${topJobTitles.join(' and ')} roles`,
-          careerBenefit: 'Will increase your competitiveness in the job market'
-        }))
-      };
+      // Fallback for different request types
+      if (generateSkillExplanation) {
+        guidanceData = {
+          skillExplanation: content || `${skill} is a valuable technical skill that will enhance your professional capabilities.`
+        };
+      } else if (generateJobSummary) {
+        guidanceData = {
+          jobSummary: content || `This role offers exciting opportunities in the ${fieldOfInterest} field.`
+        };
+      } else {
+        // Original fallback
+        const skillsToImprove = Object.entries(hardSkillsAssessment)
+          .filter(([_, rating]) => rating < 4)
+          .sort(([_, a], [__, b]) => a - b)
+          .slice(0, 5)
+          .map(([skill, _]) => skill);
+
+        const topJobTitles = topJobRecommendations.slice(0, 3).map(job => job.job_title);
+
+        guidanceData = {
+          jobExplanation: content,
+          skillRecommendations: skillsToImprove.map(skill => ({
+            skill,
+            description: `${skill} is a valuable technical skill`,
+            importance: `Essential for ${topJobTitles.join(' and ')} roles`,
+            careerBenefit: 'Will increase your competitiveness in the job market'
+          }))
+        };
+      }
     }
 
     return new Response(JSON.stringify(guidanceData), {

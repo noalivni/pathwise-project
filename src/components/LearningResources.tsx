@@ -1,59 +1,302 @@
 
 import { useState, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Crown } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import SearchAndFilters from "@/components/learningResources/SearchAndFilters";
+import ResourceCard from "@/components/learningResources/ResourceCard";
+import EmptyState from "@/components/learningResources/EmptyState";
 import ProUpgradeNotice from "@/components/learningResources/ProUpgradeNotice";
-import JobRecommendationsTab from "@/components/learningResources/JobRecommendationsTab";
-import SkillsDevelopmentTab from "@/components/learningResources/SkillsDevelopmentTab";
-import EnhancedLearningResources from "@/components/EnhancedLearningResources";
+
+interface SkillResource {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  resource_type: string;
+  related_skills: string[];
+  related_job_roles: string[];
+  skillName?: string;
+  aiExplanation?: string;
+}
+
+interface JobResource {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  resource_type: string;
+  related_skills: string[];
+  related_job_roles: string[];
+  jobTitle?: string;
+  aiSummary?: string;
+}
+
+type LearningResource = SkillResource | JobResource;
 
 const LearningResources = () => {
   const { user, profile } = useAuth();
-  const [showEnhanced, setShowEnhanced] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState<string>("all");
+  const [skillResources, setSkillResources] = useState<SkillResource[]>([]);
+  const [jobResources, setJobResources] = useState<JobResource[]>([]);
   const [loading, setLoading] = useState(true);
 
   const isPro = profile?.subscription_status === 'premium';
+  const resourceTypes = ['all', 'improve your skills', 'explore careers'];
 
   useEffect(() => {
-    // Show enhanced version if user has completed assessments
-    const checkForAssessments = async () => {
-      if (!user || !isPro) return;
-
-      try {
-        const { data: assessments } = await supabase
-          .from('skills_assessments')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
-
-        if (assessments && assessments.length > 0) {
-          setShowEnhanced(true);
-        }
-      } catch (error) {
-        console.error('Error checking assessments:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user) {
-      if (isPro) {
-        checkForAssessments();
-      } else {
-        setLoading(false);
-      }
+    if (user && isPro) {
+      fetchResourcesData();
+    } else {
+      setLoading(false);
     }
   }, [user, isPro]);
 
-  // If user has assessments and is pro, show enhanced version
-  if (showEnhanced && isPro) {
-    return <EnhancedLearningResources />;
-  }
+  const fetchResourcesData = async () => {
+    if (!user) return;
 
-  // If not pro, show upgrade notice
+    try {
+      await Promise.all([
+        fetchSkillBasedResources(),
+        fetchJobBasedResources()
+      ]);
+    } catch (error) {
+      console.error('Error fetching resources data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSkillBasedResources = async () => {
+    if (!user) return;
+
+    try {
+      // Get user's skills assessment to find skills needing improvement
+      const { data: hardSkillsResult } = await supabase
+        .from('skills_assessments')
+        .select('technical_skills')
+        .eq('user_id', user.id)
+        .eq('assessment_type', 'hard_skills')
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (hardSkillsResult?.technical_skills) {
+        const hardSkills = hardSkillsResult.technical_skills;
+        
+        // Get skills that need improvement (rating < 4)
+        const skillsToImprove = Object.entries(hardSkills)
+          .filter(([_, rating]) => (rating as number) < 4)
+          .sort(([_, a], [__, b]) => (a as number) - (b as number))
+          .slice(0, 6)
+          .map(([skill, _]) => skill);
+
+        // Generate AI explanations and fetch resources for each skill
+        const enhancedSkills = await Promise.all(
+          skillsToImprove.map(async (skill) => {
+            const [aiExplanation, resources] = await Promise.all([
+              generateSkillExplanation(skill),
+              fetchSkillResources(skill)
+            ]);
+
+            return resources.map(resource => ({
+              ...resource,
+              id: `skill-${skill}-${resource.url}`,
+              skillName: skill,
+              aiExplanation,
+              resource_type: 'skill_development'
+            }));
+          })
+        );
+
+        setSkillResources(enhancedSkills.flat());
+      }
+    } catch (error) {
+      console.error('Error fetching skill-based resources:', error);
+    }
+  };
+
+  const fetchJobBasedResources = async () => {
+    if (!user) return;
+
+    try {
+      // Get user's top 4 job recommendations
+      const { data: jobMatches } = await supabase
+        .from('user_job_matches')
+        .select(`
+          job_role_id,
+          match_percentage,
+          job_roles (
+            job_title,
+            Short_description,
+            Industry
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('match_percentage', { ascending: false })
+        .limit(4);
+
+      if (jobMatches) {
+        const jobsWithDetails = jobMatches.map(match => ({
+          job_title: match.job_roles?.job_title || '',
+          Short_description: match.job_roles?.Short_description || '',
+          Industry: match.job_roles?.Industry || '',
+          match_percentage: match.match_percentage || 0
+        }));
+
+        // Generate AI summaries and fetch resources for each job
+        const enhancedJobs = await Promise.all(
+          jobsWithDetails.map(async (job) => {
+            const [aiSummary, resources] = await Promise.all([
+              generateJobSummary(job),
+              fetchJobResources(job.job_title)
+            ]);
+
+            return resources.map(resource => ({
+              ...resource,
+              id: `job-${job.job_title}-${resource.url}`,
+              jobTitle: job.job_title,
+              aiSummary,
+              resource_type: 'career_exploration'
+            }));
+          })
+        );
+
+        setJobResources(enhancedJobs.flat());
+      }
+    } catch (error) {
+      console.error('Error fetching job-based resources:', error);
+    }
+  };
+
+  const generateSkillExplanation = async (skill: string) => {
+    try {
+      const response = await supabase.functions.invoke('generate-career-guidance', {
+        body: {
+          topJobRecommendations: [],
+          hardSkillsAssessment: {},
+          fieldOfInterest: profile?.field_of_interest || 'General',
+          generateSkillExplanation: true,
+          skill: skill
+        }
+      });
+
+      if (response.data?.skillExplanation) {
+        return response.data.skillExplanation;
+      }
+    } catch (error) {
+      console.error('Error generating skill explanation:', error);
+    }
+    return `${skill} is an important technical skill that will enhance your professional capabilities.`;
+  };
+
+  const generateJobSummary = async (job: any) => {
+    try {
+      const response = await supabase.functions.invoke('generate-career-guidance', {
+        body: {
+          topJobRecommendations: [job],
+          hardSkillsAssessment: {},
+          fieldOfInterest: job.Industry,
+          generateJobSummary: true
+        }
+      });
+
+      if (response.data?.jobSummary) {
+        return response.data.jobSummary;
+      }
+    } catch (error) {
+      console.error('Error generating job summary:', error);
+    }
+    return `${job.job_title} is a role in the ${job.Industry} industry. ${job.Short_description}`;
+  };
+
+  const fetchSkillResources = async (skill: string) => {
+    try {
+      const response = await supabase.functions.invoke('fetch-learning-resources', {
+        body: {
+          jobTitles: [],
+          skills: [skill],
+          maxResults: 3
+        }
+      });
+
+      if (response.data?.resources) {
+        return response.data.resources.map((resource: any) => ({
+          title: resource.title,
+          description: resource.description,
+          url: resource.url,
+          related_skills: [skill],
+          related_job_roles: []
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching skill resources:', error);
+    }
+    return [];
+  };
+
+  const fetchJobResources = async (jobTitle: string) => {
+    try {
+      const response = await supabase.functions.invoke('fetch-learning-resources', {
+        body: {
+          jobTitles: [jobTitle],
+          skills: [],
+          maxResults: 3
+        }
+      });
+
+      if (response.data?.resources) {
+        return response.data.resources.map((resource: any) => ({
+          title: resource.title,
+          description: resource.description,
+          url: resource.url,
+          related_skills: [],
+          related_job_roles: [jobTitle]
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching job resources:', error);
+    }
+    return [];
+  };
+
+  const handleResourceClick = async (resource: LearningResource) => {
+    if (!user) return;
+
+    try {
+      // Log the activity
+      await supabase
+        .from('user_activities')
+        .insert({
+          user_id: user.id,
+          activity_type: 'resource_accessed',
+          activity_description: `Accessed learning resource: ${resource.title}`
+        });
+
+      // Open resource in new tab
+      window.open(resource.url, '_blank');
+    } catch (error) {
+      console.error('Error logging resource access:', error);
+    }
+  };
+
+  const filterResources = (resources: LearningResource[], searchTerm: string, selectedType: string) => {
+    return resources.filter(resource => {
+      const matchesSearch = resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           resource.related_skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      let matchesType = true;
+      if (selectedType === "improve your skills") {
+        matchesType = resource.resource_type === 'skill_development';
+      } else if (selectedType === "explore careers") {
+        matchesType = resource.resource_type === 'career_exploration';
+      }
+      
+      return matchesSearch && matchesType;
+    });
+  };
+
   if (!isPro) {
     return <ProUpgradeNotice />;
   }
@@ -69,33 +312,35 @@ const LearningResources = () => {
     );
   }
 
+  const allResources = [...skillResources, ...jobResources];
+  const filteredResources = filterResources(allResources, searchTerm, selectedType);
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-pathwise-text">Learning Resources</h1>
-          <p className="text-pathwise-text-muted mt-2">Personalized learning materials based on your career goals</p>
-        </div>
-        <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white">
-          <Crown className="w-3 h-3 mr-1" />
-          Pro Feature
-        </Badge>
+      <div>
+        <h1 className="text-3xl font-bold text-pathwise-text">Learning Resources</h1>
+        <p className="text-pathwise-text-muted mt-2">Personalized learning content based on your skills and career goals</p>
       </div>
 
-      <Tabs defaultValue="jobs" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="jobs">Job Recommendations</TabsTrigger>
-          <TabsTrigger value="skills">Skills Development</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="jobs" className="space-y-6">
-          <JobRecommendationsTab />
-        </TabsContent>
-        
-        <TabsContent value="skills" className="space-y-6">
-          <SkillsDevelopmentTab />
-        </TabsContent>
-      </Tabs>
+      <SearchAndFilters
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        selectedType={selectedType}
+        onTypeChange={setSelectedType}
+        resourceTypes={resourceTypes}
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredResources.map((resource) => (
+          <ResourceCard
+            key={resource.id}
+            resource={resource}
+            onResourceClick={handleResourceClick}
+          />
+        ))}
+      </div>
+
+      {filteredResources.length === 0 && <EmptyState />}
     </div>
   );
 };
