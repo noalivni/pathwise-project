@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Crown } from "lucide-react";
@@ -21,49 +22,6 @@ const LearningResources = () => {
   const [loading, setLoading] = useState(true);
 
   const isPro = profile?.subscription_status === 'premium';
-
-  useEffect(() => {
-    // Show enhanced version if user has completed assessments
-    const checkForAssessments = async () => {
-      if (!user || !isPro) return;
-
-      try {
-        const { data: assessments } = await supabase
-          .from('skills_assessments')
-          .select('id')
-          .eq('user_id', user.id)
-          .limit(1);
-
-        if (assessments && assessments.length > 0) {
-          setShowEnhanced(true);
-        }
-      } catch (error) {
-        console.error('Error checking assessments:', error);
-      }
-    };
-
-    checkForAssessments();
-  }, [user, isPro]);
-
-  useEffect(() => {
-    if (user) {
-      if (isPro) {
-        fetchLearningResources();
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [user, isPro]);
-
-  // If user has assessments and is pro, show enhanced version
-  if (showEnhanced && isPro) {
-    return <EnhancedLearningResources />;
-  }
-
-  // If not pro, show upgrade notice
-  if (!isPro) {
-    return <ProUpgradeNotice />;
-  }
 
   const fetchLearningResources = async () => {
     if (!user) return;
@@ -108,6 +66,49 @@ const LearningResources = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Show enhanced version if user has completed assessments
+    const checkForAssessments = async () => {
+      if (!user || !isPro) return;
+
+      try {
+        const { data: assessments } = await supabase
+          .from('skills_assessments')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+        if (assessments && assessments.length > 0) {
+          setShowEnhanced(true);
+        }
+      } catch (error) {
+        console.error('Error checking assessments:', error);
+      }
+    };
+
+    checkForAssessments();
+  }, [user, isPro]);
+
+  useEffect(() => {
+    if (user) {
+      if (isPro) {
+        fetchLearningResources();
+      } else {
+        setLoading(false);
+      }
+    }
+  }, [user, isPro]);
+
+  // If user has assessments and is pro, show enhanced version
+  if (showEnhanced && isPro) {
+    return <EnhancedLearningResources />;
+  }
+
+  // If not pro, show upgrade notice
+  if (!isPro) {
+    return <ProUpgradeNotice />;
+  }
 
   const handleResourceClick = async (resource: LearningResource) => {
     if (!user) return;
@@ -180,3 +181,4 @@ const LearningResources = () => {
 };
 
 export default LearningResources;
+
