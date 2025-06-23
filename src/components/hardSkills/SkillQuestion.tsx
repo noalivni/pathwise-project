@@ -50,6 +50,15 @@ const SkillQuestion = ({
           <p className="text-muted-foreground mb-6">How would you rate your skill level?</p>
           
           <div className="space-y-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary mb-2">
+                {getSkillLevel(currentRating).level}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                ({currentRating}/5)
+              </div>
+            </div>
+            
             <Slider
               value={[currentRating]}
               onValueChange={onRatingChange}
@@ -59,19 +68,13 @@ const SkillQuestion = ({
               className="w-full"
             />
             
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>No Experience</span>
-              <span>Beginner</span>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Not assessed</span>
+              <span>Developing</span>
               <span>Basic</span>
-              <span>Intermediate</span>
-              <span>Advanced</span>
+              <span>Competent</span>
+              <span>Proficient</span>
               <span>Expert</span>
-            </div>
-            
-            <div className="text-center">
-              <Badge className={`${getSkillLevel(currentRating).color} text-white text-lg px-4 py-2`}>
-                {getSkillLevel(currentRating).level} ({currentRating}/5)
-              </Badge>
             </div>
           </div>
         </div>
