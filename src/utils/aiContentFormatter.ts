@@ -10,10 +10,12 @@ export const formatAIContent = (content: string): string => {
       const texts: string[] = [];
       
       const traverse = (value: any) => {
-        if (typeof value === 'string' && value.trim().length > 10) {
-          // Only include strings that look like meaningful content (not keys or short values)
-          if (!value.match(/^[a-z_]+$/i) && value.length > 15) {
-            texts.push(value.trim());
+        if (typeof value === 'string' && value.trim().length > 5) {
+          // Include any string that looks like meaningful content
+          // Exclude simple keys or very short values
+          const trimmed = value.trim();
+          if (trimmed.length > 10 && !trimmed.match(/^[a-z_]+$/i)) {
+            texts.push(trimmed);
           }
         } else if (typeof value === 'object' && value !== null) {
           Object.values(value).forEach(traverse);
@@ -44,14 +46,18 @@ export const formatAIContent = (content: string): string => {
     }
     
   } catch {
-    // If it's not JSON, return as-is
+    // If it's not JSON, return as-is but clean up any formatting
+    return content
+      .replace(/```json\s*/g, '')
+      .replace(/```\s*/g, '')
+      .replace(/^\s*{\s*/g, '')
+      .replace(/\s*}\s*$/g, '')
+      .trim();
   }
   
-  // Clean up any remaining JSON-like formatting
+  // If we get here, the JSON didn't contain extractable content
   return content
     .replace(/```json\s*/g, '')
     .replace(/```\s*/g, '')
-    .replace(/^\s*{\s*/g, '')
-    .replace(/\s*}\s*$/g, '')
     .trim();
 };
