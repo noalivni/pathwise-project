@@ -117,7 +117,7 @@ const SoftSkillsAssessment = ({ onReturnToHub }: SoftSkillsAssessmentProps) => {
       categoryScores[category] = Math.round((totalScore / (skills.length * 4)) * 100);
     });
 
-    return categoryScories;
+    return categoryScores;
   };
 
   if (showResults) {
