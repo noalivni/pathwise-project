@@ -10,13 +10,19 @@ const InterviewFeedback = ({ feedback }: InterviewFeedbackProps) => {
   const parseFeedback = (feedbackText: string) => {
     try {
       const parsed = JSON.parse(feedbackText);
-      if (parsed.strengths || parsed.improvements || parsed.suggestions || parsed.relevance) {
-        return parsed;
+      if (parsed && typeof parsed === 'object' && (parsed.strengths || parsed.improvements || parsed.suggestions || parsed.relevance)) {
+        return {
+          strengths: typeof parsed.strengths === 'string' ? parsed.strengths : '',
+          improvements: typeof parsed.improvements === 'string' ? parsed.improvements : '',
+          suggestions: typeof parsed.suggestions === 'string' ? parsed.suggestions : '',
+          relevance: typeof parsed.relevance === 'string' ? parsed.relevance : '',
+          general: null
+        };
       }
     } catch {
       // Not JSON, treat as plain text
     }
-    return { general: feedbackText };
+    return { general: feedbackText, strengths: null, improvements: null, suggestions: null, relevance: null };
   };
 
   const parsedFeedback = parseFeedback(feedback);
