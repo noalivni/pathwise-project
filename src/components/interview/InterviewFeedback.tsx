@@ -9,6 +9,19 @@ const InterviewFeedback = ({ feedback }: InterviewFeedbackProps) => {
   // Parse structured feedback if it's JSON, otherwise display as plain text
   const parseFeedback = (feedbackText: string) => {
     try {
+      // If feedback is already an object (shouldn't happen but let's handle it)
+      if (typeof feedbackText === 'object' && feedbackText !== null) {
+        const obj = feedbackText as any;
+        return {
+          strengths: typeof obj.strengths === 'string' ? obj.strengths : '',
+          improvements: typeof obj.improvements === 'string' ? obj.improvements : '',
+          suggestions: typeof obj.suggestions === 'string' ? obj.suggestions : '',
+          relevance: typeof obj.relevance === 'string' ? obj.relevance : '',
+          general: null
+        };
+      }
+
+      // Try to parse as JSON string
       const parsed = JSON.parse(feedbackText);
       if (parsed && typeof parsed === 'object' && (parsed.strengths || parsed.improvements || parsed.suggestions || parsed.relevance)) {
         return {
@@ -22,7 +35,15 @@ const InterviewFeedback = ({ feedback }: InterviewFeedbackProps) => {
     } catch {
       // Not JSON, treat as plain text
     }
-    return { general: feedbackText, strengths: null, improvements: null, suggestions: null, relevance: null };
+    
+    // Fallback to plain text
+    return { 
+      general: String(feedbackText), 
+      strengths: null, 
+      improvements: null, 
+      suggestions: null, 
+      relevance: null 
+    };
   };
 
   const parsedFeedback = parseFeedback(feedback);

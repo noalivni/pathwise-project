@@ -242,7 +242,12 @@ const InterviewPractice = () => {
       });
 
       if (response.data?.feedback) {
-        setFeedback(response.data.feedback);
+        // Ensure feedback is always a string
+        const feedbackString = typeof response.data.feedback === 'string' 
+          ? response.data.feedback 
+          : JSON.stringify(response.data.feedback);
+        
+        setFeedback(feedbackString);
         speakText("I've generated detailed feedback for your response.");
       } else {
         throw new Error('No feedback generated');
