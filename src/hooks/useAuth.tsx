@@ -1,37 +1,10 @@
+
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-
-interface Profile {
-  id: string;
-  full_name: string | null;
-  email: string | null;
-  location: string | null;
-  degree_certification: string | null;
-  fields_of_study: string | null;
-  graduation_year: string | null;
-  field_of_interest: string | null;
-  hard_skills: string[] | null;
-  career_history: string | null;
-  subscription_status: string;
-  onboarding_completed: boolean;
-}
-
-type UserRole = 'user' | 'admin';
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  profile: Profile | null;
-  userRole: UserRole;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
-  signOut: () => Promise<void>;
-  updateProfile: (updates: Partial<Profile>) => Promise<void>;
-  refreshProfile: () => Promise<void>;
-}
+import { Profile, UserRole, AuthContextType } from '@/types/auth';
+import { useAuthOperations } from '@/hooks/auth/useAuthOperations';
+import { useProfileOperations } from '@/hooks/auth/useProfileOperations';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -42,130 +15,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userRole, setUserRole] = useState<UserRole>('user');
   const [loading, setLoading] = useState(true);
 
-  const fetchUserRole = useCallback(async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .rpc('get_user_role', { user_uuid: userId });
-
-      if (error) {
-        console.error('Error fetching user role:', error);
-        return 'user';
-      }
-
-      return data as UserRole;
-    } catch (error) {
-      console.error('Error fetching user role:', error);
-      return 'user';
-    }
-  }, []);
-
-  const fetchProfile = useCallback(async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error);
-        return;
-      }
-
-      setProfile(data);
-
-      // Fetch user role
-      const role = await fetchUserRole(userId);
-      setUserRole(role);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  }, [fetchUserRole]);
+  const { signIn, signUp, signOut: authSignOut } = useAuthOperations();
+  const { fetchProfile, updateProfile: profileUpdate } = useProfileOperations();
 
   const refreshProfile = useCallback(async () => {
     if (user) {
-      await fetchProfile(user.id);
+      await fetchProfile(user.id, setProfile, setUserRole);
     }
   }, [user, fetchProfile]);
 
   const updateProfile = useCallback(async (updates: Partial<Profile>) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      await refreshProfile();
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  }, [user, refreshProfile]);
-
-  const signIn = useCallback(async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      return { error: null };
-    } catch (error: any) {
-      return { error };
-    }
-  }, []);
-
-  const signUp = useCallback(async (email: string, password: string, fullName: string) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: fullName,
-          },
-        },
-      });
-
-      if (error) throw error;
-
-      return { error: null };
-    } catch (error: any) {
-      return { error };
-    }
-  }, []);
+    await profileUpdate(user, updates, refreshProfile);
+  }, [user, profileUpdate, refreshProfile]);
 
   const signOut = useCallback(async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
+      await authSignOut();
       setUser(null);
       setSession(null);
       setProfile(null);
       setUserRole('user');
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    } catch (error) {
+      // Error already handled in useAuthOperations
     }
-  }, []);
+  }, [authSignOut]);
 
   useEffect(() => {
     let mounted = true;
@@ -184,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Use setTimeout to prevent potential deadlocks
           setTimeout(() => {
             if (mounted) {
-              fetchProfile(session.user.id);
+              fetchProfile(session.user.id, setProfile, setUserRole);
             }
           }, 100);
         } else {
@@ -207,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user && mounted) {
-        fetchProfile(session.user.id);
+        fetchProfile(session.user.id, setProfile, setUserRole);
       }
       
       if (mounted) {
