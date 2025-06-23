@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Briefcase, Brain } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ExternalLink, Briefcase, Brain, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -25,6 +25,36 @@ interface JobWithResources extends JobRecommendation {
   aiExplanation?: string;
   resources?: JobResource[];
 }
+
+const formatAIContent = (content: string) => {
+  // Check if content is JSON-like and extract meaningful text
+  try {
+    const parsed = JSON.parse(content);
+    if (parsed.summary) {
+      const summary = parsed.summary;
+      let formattedText = "";
+      
+      if (summary.role_description) {
+        formattedText += summary.role_description + "\n\n";
+      }
+      if (summary.daily_tasks) {
+        formattedText += summary.daily_tasks + "\n\n";
+      }
+      if (summary.career_opportunity) {
+        formattedText += summary.career_opportunity + "\n\n";
+      }
+      if (summary.appeal_for_field) {
+        formattedText += summary.appeal_for_field;
+      }
+      
+      return formattedText.trim();
+    }
+  } catch {
+    // If it's not JSON, return as-is
+  }
+  
+  return content;
+};
 
 const JobRecommendationsTab = () => {
   const { user } = useAuth();
@@ -185,35 +215,42 @@ const JobRecommendationsTab = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="h-4 w-4 text-blue-600" />
                     <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                      AI Insight
+                      Insight
                     </span>
                   </div>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    {job.aiExplanation}
-                  </p>
+                  <div className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed whitespace-pre-line">
+                    {formatAIContent(job.aiExplanation)}
+                  </div>
                 </div>
               )}
 
-              {/* External Resources */}
+              {/* External Resources with Collapsible Section */}
               {job.resources && job.resources.length > 0 && (
-                <div className="space-y-2">
-                  <h5 className="font-medium text-sm text-pathwise-text">External Resources:</h5>
-                  {job.resources.map((resource, resourceIndex) => (
-                    <Button
-                      key={resourceIndex}
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start text-left h-auto p-3"
-                      onClick={() => window.open(resource.url, '_blank')}
-                    >
-                      <ExternalLink className="w-3 h-3 mr-2 flex-shrink-0" />
-                      <div className="text-left">
-                        <div className="font-medium text-sm line-clamp-1">{resource.title}</div>
-                        <div className="text-xs text-muted-foreground line-clamp-2">{resource.description}</div>
-                      </div>
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      <span className="text-sm font-medium">Learning Resources ({job.resources.length})</span>
+                      <ChevronDown className="h-4 w-4" />
                     </Button>
-                  ))}
-                </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 space-y-2">
+                    {job.resources.map((resource, resourceIndex) => (
+                      <Button
+                        key={resourceIndex}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start text-left h-auto p-3"
+                        onClick={() => window.open(resource.url, '_blank')}
+                      >
+                        <ExternalLink className="w-3 h-3 mr-2 flex-shrink-0" />
+                        <div className="text-left">
+                          <div className="font-medium text-sm line-clamp-1">{resource.title}</div>
+                          <div className="text-xs text-muted-foreground line-clamp-2">{resource.description}</div>
+                        </div>
+                      </Button>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
               )}
 
               {/* Required Skills */}

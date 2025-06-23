@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Target, TrendingUp, Brain } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ExternalLink, Target, TrendingUp, Brain, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -217,7 +217,7 @@ const SkillsDevelopmentTab = () => {
                 <div className="flex items-center gap-2 mb-2">
                   <Brain className="h-4 w-4 text-purple-600" />
                   <span className="text-sm font-medium text-purple-800 dark:text-purple-200">
-                    AI Development Guide
+                    Insight
                   </span>
                 </div>
                 <div className="space-y-2 text-sm">
@@ -233,11 +233,16 @@ const SkillsDevelopmentTab = () => {
                 </div>
               </div>
 
-              {/* Learning Resources */}
+              {/* Learning Resources with Collapsible Section */}
               {skillRec.resources.length > 0 && (
-                <div className="space-y-2">
-                  <h5 className="font-medium text-sm text-pathwise-text">Learning Resources:</h5>
-                  <div className="space-y-2">
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      <span className="text-sm font-medium">Learning Resources ({skillRec.resources.length})</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 space-y-2">
                     {skillRec.resources.map((resource, resourceIndex) => (
                       <Button
                         key={resourceIndex}
@@ -256,8 +261,8 @@ const SkillsDevelopmentTab = () => {
                         </div>
                       </Button>
                     ))}
-                  </div>
-                </div>
+                  </CollapsibleContent>
+                </Collapsible>
               )}
 
               {skillRec.resources.length === 0 && (

@@ -22,6 +22,36 @@ interface ResourceCardProps {
   onResourceClick: (resource: any) => void;
 }
 
+const formatAIContent = (content: string) => {
+  // Check if content is JSON-like and extract meaningful text
+  try {
+    const parsed = JSON.parse(content);
+    if (parsed.summary) {
+      const summary = parsed.summary;
+      let formattedText = "";
+      
+      if (summary.role_description) {
+        formattedText += summary.role_description + "\n\n";
+      }
+      if (summary.daily_tasks) {
+        formattedText += summary.daily_tasks + "\n\n";
+      }
+      if (summary.career_opportunity) {
+        formattedText += summary.career_opportunity + "\n\n";
+      }
+      if (summary.appeal_for_field) {
+        formattedText += summary.appeal_for_field;
+      }
+      
+      return formattedText.trim();
+    }
+  } catch {
+    // If it's not JSON, return as-is
+  }
+  
+  return content;
+};
+
 const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
   const isSkillResource = resource.resource_type === 'skill_development';
   const isJobResource = resource.resource_type === 'career_exploration';
@@ -64,12 +94,12 @@ const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
             <div className="flex items-center gap-2 mb-2">
               <Brain className="h-4 w-4 text-blue-600" />
               <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                AI Insight
+                Insight
               </span>
             </div>
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              {resource.aiExplanation || resource.aiSummary}
-            </p>
+            <div className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed whitespace-pre-line">
+              {formatAIContent(resource.aiExplanation || resource.aiSummary || '')}
+            </div>
           </div>
         )}
 
