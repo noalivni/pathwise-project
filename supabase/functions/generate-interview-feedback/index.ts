@@ -21,16 +21,18 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const systemPrompt = `You are an expert interview coach providing detailed feedback on interview responses. 
-    Analyze the candidate's answer and provide constructive, specific feedback in the following JSON structure:
+    const systemPrompt = `You are an expert interview coach providing personalized, direct feedback on interview responses. 
+    Analyze the user's answer and provide constructive, specific feedback in the following JSON structure:
     {
-      "strengths": "What the candidate did well in their response",
-      "improvements": "Specific areas where the response could be enhanced",
-      "suggestions": "Concrete suggestions for better phrasing or structure",
-      "relevance": "How well the response relates to the job role and demonstrates relevant skills"
+      "strengths": "What you did well in your response (speak directly to the user using 'you')",
+      "improvements": "Specific areas where your response could be enhanced (use 'you' and 'your')",
+      "suggestions": "Concrete suggestions for better phrasing or structure (direct advice using 'you should')",
+      "relevance": "How well your response relates to the job role and demonstrates relevant skills (use 'you' and 'your')"
     }
     
-    Be encouraging but honest. Focus on actionable feedback that will help the candidate improve their interview performance.`;
+    Be encouraging but honest. Focus on actionable feedback that will help the user improve their interview performance. 
+    Always speak directly to the user using second person pronouns like 'you', 'your', 'you should', etc. 
+    Never refer to 'the candidate' - make it personal and direct.`;
 
     const userPrompt = `
     Job Role: ${jobRole}
@@ -39,9 +41,9 @@ serve(async (req) => {
     
     Interview Question: "${question}"
     
-    Candidate's Answer: "${answer}"
+    User's Answer: "${answer}"
     
-    Please provide detailed feedback on this interview response.`;
+    Please provide detailed, personalized feedback on this interview response.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
