@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Target, TrendingUp, BookOpen, Users, Award, ChevronRight, Brain } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { trackSkillsAssessment, trackJobEvent, trackInterviewPractice } from "@/utils/analytics";
 
 interface Activity {
   id: string;
@@ -77,15 +77,17 @@ const UserDashboard = () => {
   };
 
   const handleNavigateToAssessment = () => {
-    // This will be handled by the parent component
+    trackSkillsAssessment('start', 'hard');
     window.dispatchEvent(new CustomEvent('navigate-to-assessment'));
   };
 
   const handleNavigateToJobs = () => {
+    trackJobEvent('view');
     window.dispatchEvent(new CustomEvent('navigate-to-jobs'));
   };
 
   const handleNavigateToInterview = () => {
+    trackInterviewPractice('start');
     window.dispatchEvent(new CustomEvent('navigate-to-interview'));
   };
 

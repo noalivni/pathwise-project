@@ -1,10 +1,10 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, UserRole, AuthContextType } from '@/types/auth';
 import { useAuthOperations } from '@/hooks/auth/useAuthOperations';
 import { useProfileOperations } from '@/hooks/auth/useProfileOperations';
+import { trackUserLogin, trackUserRegistration } from '@/utils/analytics';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -50,6 +50,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         console.log('Auth state change:', event, session?.user?.email);
         
+        // Track authentication events
+        if (event === 'SIGNED_IN' && session?.user) {
+          trackUserLogin(session.user.id);
+        }
+        if (event === 'SIGNED_UP' && session?.user) {
+          trackUserRegistration();
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -81,6 +89,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (session?.user && mounted) {
         fetchProfile(session.user.id, setProfile, setUserRole);
+        // Track existing user login
+        trackUserLogin(session.user.id);
       }
       
       if (mounted) {
