@@ -1,4 +1,3 @@
-
 export const formatAIContent = (content: string): string => {
   if (!content) return '';
 
@@ -51,9 +50,8 @@ export const formatAIContent = (content: string): string => {
       // Join texts with single line break and clean up formatting
       let formattedText = meaningfulTexts.join(' ').trim();
       
-      // Remove redundant skill/job names that appear at the start
-      // This regex removes patterns like "JavaScript is..." when JavaScript is already the title
-      formattedText = formattedText.replace(/^[A-Z][a-zA-Z\s]+(?:is|are)\s+/, '');
+      // Don't remove the introductory line - keep descriptions that start with skill/job names
+      // Only remove redundant field names and JSON artifacts
       
       // Ensure proper sentence flow by fixing common issues
       formattedText = formattedText
@@ -82,9 +80,8 @@ export const formatAIContent = (content: string): string => {
       .replace(/,\s+/g, ' ') // Convert commas to spaces instead of line breaks
       .trim();
     
-    // Remove redundant skill/job names and improve formatting
+    // Don't remove introductory descriptions, just improve formatting
     cleanedContent = cleanedContent
-      .replace(/^[A-Z][a-zA-Z\s]+(?:is|are)\s+/, '')
       .replace(/\s+/g, ' ')
       .replace(/(\.)(\s+)(In the|For|By|Having|Professionally)/g, '$1\n\n$3')
       .replace(/(\.)(\s+)(This|It|The skill)/g, '$1\n\n$3');
