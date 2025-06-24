@@ -1,12 +1,13 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { supabase } from "@/integrations/supabase/client";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 interface AuthModalProps {
   open: boolean;
@@ -15,7 +16,7 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
-  const { showSuccess, showError } = useNotifications();
+  const { signIn, signUp } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,7 +57,11 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
     e.preventDefault();
     
     if (!validateForm()) {
-      showError("Please correct the errors in the form");
+      toast({
+        title: "Validation Error",
+        description: "Please correct the errors in the form",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -64,33 +69,34 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              full_name: fullName,
-            },
-          },
+        const { error } = await signUp(email, password, fullName);
+        if (error) {
+          throw error;
+        }
+        toast({
+          title: "Account Created!",
+          description: "Please check your email to confirm your account."
         });
-
-        if (error) throw error;
-
-        showSuccess("Please check your email to confirm your account.");
+        onClose();
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+        const { error } = await signIn(email, password);
+        if (error) {
+          throw error;
+        }
+        toast({
+          title: "Welcome back!",
+          description: "You have been signed in successfully."
         });
-
-        if (error) throw error;
-
-        showSuccess("Welcome back! You have been signed in successfully.");
         onLogin();
+        onClose();
       }
     } catch (error: any) {
-      showError(error.message, 'modal', 'Authentication Error');
+      console.error('Auth error:', error);
+      toast({
+        title: "Authentication Error",
+        description: error.message || "An error occurred during authentication",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }

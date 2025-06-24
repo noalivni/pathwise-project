@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Target, TrendingUp, BookOpen, Users, Award, ChevronRight, Brain } from "lucide-react";
+import { Target, TrendingUp, BookOpen, Users, Award, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { trackSkillsAssessment, trackJobEvent, trackInterviewPractice } from "@/utils/analytics";
@@ -110,13 +111,6 @@ const UserDashboard = () => {
           </h1>
           <p className="text-pathwise-text-secondary mt-1">Continue your career journey</p>
         </div>
-        <Button 
-          onClick={handleNavigateToAssessment}
-          className="bg-primary text-primary-foreground hover:bg-primary-hover"
-        >
-          <Brain className="w-4 h-4 mr-2" />
-          Take Assessment
-        </Button>
       </div>
 
       {/* Progress Overview */}

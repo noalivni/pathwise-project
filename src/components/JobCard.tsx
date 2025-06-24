@@ -22,6 +22,10 @@ interface JobCardProps {
 }
 
 const JobCard = ({ role, onBookmark, skillFitTags = [] }: JobCardProps) => {
+  const handleLearnMoreClick = () => {
+    window.dispatchEvent(new CustomEvent('navigate-to-learning'));
+  };
+
   return (
     <Card className="card-hover transition-all duration-200">
       <CardHeader>
@@ -97,7 +101,12 @@ const JobCard = ({ role, onBookmark, skillFitTags = [] }: JobCardProps) => {
               {role.match_percentage && role.match_percentage >= 65 ? 'Recommended' : 'Explore Further'}
             </div>
           </div>
-          <Button variant="outline" size="sm" className="hover:bg-accent">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="hover:bg-accent"
+            onClick={handleLearnMoreClick}
+          >
             Learn More
           </Button>
         </div>
