@@ -226,6 +226,7 @@ const UserDashboard = () => {
               <div>
                 <h3 className="font-semibold text-pathwise-text">Learning Resources</h3>
                 <p className="text-sm text-pathwise-text-secondary">Access curated content for skill development</p>
+                <Badge className="mt-1 bg-primary text-primary-foreground">PRO</Badge>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 text-pathwise-text-secondary" />
