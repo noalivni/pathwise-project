@@ -1,13 +1,13 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Target, TrendingUp, BookOpen, Users, Award, ChevronRight, Lock } from "lucide-react";
+import { Target, TrendingUp, BookOpen, Users, Award, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { trackSkillsAssessment, trackJobEvent, trackInterviewPractice } from "@/utils/analytics";
-import UpgradeModal from "@/components/notifications/UpgradeModal";
 
 interface Activity {
   id: string;
@@ -20,10 +20,6 @@ const UserDashboard = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [jobMatches, setJobMatches] = useState(0);
   const [completedAssessments, setCompletedAssessments] = useState(0);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [upgradeFeature, setUpgradeFeature] = useState("");
-
-  const isPro = profile?.subscription_status === 'premium';
 
   useEffect(() => {
     if (user) {
@@ -92,13 +88,8 @@ const UserDashboard = () => {
   };
 
   const handleNavigateToInterview = () => {
-    if (isPro) {
-      trackInterviewPractice('start');
-      window.dispatchEvent(new CustomEvent('navigate-to-interview'));
-    } else {
-      setUpgradeFeature('Interview Practice');
-      setShowUpgradeModal(true);
-    }
+    trackInterviewPractice('start');
+    window.dispatchEvent(new CustomEvent('navigate-to-interview'));
   };
 
   const handleNavigateToProfile = () => {
@@ -106,17 +97,7 @@ const UserDashboard = () => {
   };
 
   const handleNavigateToLearning = () => {
-    if (isPro) {
-      window.dispatchEvent(new CustomEvent('navigate-to-learning'));
-    } else {
-      setUpgradeFeature('Personalized Learning Resources');
-      setShowUpgradeModal(true);
-    }
-  };
-
-  const handleUpgrade = () => {
-    console.log('Upgrade to premium');
-    setShowUpgradeModal(false);
+    window.dispatchEvent(new CustomEvent('navigate-to-learning'));
   };
 
   const profileCompletion = getProfileCompletion();
@@ -219,23 +200,16 @@ const UserDashboard = () => {
 
           <button 
             onClick={handleNavigateToInterview}
-            className="flex items-center justify-between p-4 border border-border rounded-lg hover-pathwise transition-all duration-200 w-full text-left relative"
+            className="flex items-center justify-between p-4 border border-border rounded-lg hover-pathwise transition-all duration-200 w-full text-left"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center relative">
+              <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-green-500" />
-                {!isPro && <Lock className="w-3 h-3 text-gray-400 absolute -top-1 -right-1" />}
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-pathwise-text">Practice Interview Questions</h3>
-                  {!isPro && (
-                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white text-xs">
-                      PRO
-                    </Badge>
-                  )}
-                </div>
+                <h3 className="font-semibold text-pathwise-text">Practice Interview Questions</h3>
                 <p className="text-sm text-pathwise-text-secondary">Prepare for upcoming interviews</p>
+                <Badge className="mt-1 bg-primary text-primary-foreground">PRO</Badge>
               </div>
             </div>
             <ChevronRight className="h-5 w-5 text-pathwise-text-secondary" />
@@ -243,22 +217,14 @@ const UserDashboard = () => {
 
           <button 
             onClick={handleNavigateToLearning}
-            className="flex items-center justify-between p-4 border border-border rounded-lg hover-pathwise transition-all duration-200 w-full text-left relative"
+            className="flex items-center justify-between p-4 border border-border rounded-lg hover-pathwise transition-all duration-200 w-full text-left"
           >
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center relative">
+              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-purple-500" />
-                {!isPro && <Lock className="w-3 h-3 text-gray-400 absolute -top-1 -right-1" />}
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-pathwise-text">Learning Resources</h3>
-                  {!isPro && (
-                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white text-xs">
-                      PRO
-                    </Badge>
-                  )}
-                </div>
+                <h3 className="font-semibold text-pathwise-text">Learning Resources</h3>
                 <p className="text-sm text-pathwise-text-secondary">Access curated content for skill development</p>
               </div>
             </div>
@@ -293,13 +259,6 @@ const UserDashboard = () => {
           )}
         </CardContent>
       </Card>
-
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-        onUpgrade={handleUpgrade}
-        featureName={upgradeFeature}
-      />
     </div>
   );
 };

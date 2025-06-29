@@ -198,6 +198,10 @@ const UserProfile = () => {
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold text-sm text-pathwise-text-muted">Technical Skills</h3>
+              <Button variant="ghost" size="sm">
+                <Edit3 className="w-4 h-4 mr-1" />
+                Edit Skills
+              </Button>
             </div>
             <div className="flex flex-wrap gap-2">
               {profile.hard_skills && profile.hard_skills.length > 0 ? (
@@ -221,16 +225,15 @@ const UserProfile = () => {
                 <p className="text-pathwise-text-secondary">No skills added yet</p>
               )}
             </div>
-            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <p className="text-sm text-blue-700 dark:text-blue-300">
-                💡 Retake your assessment under Skills Assessment to update these ratings.
-              </p>
-            </div>
           </div>
           
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold text-sm text-pathwise-text-muted">Soft Skills</h3>
+              <Button variant="ghost" size="sm">
+                <Edit3 className="w-4 h-4 mr-1" />
+                Edit Skills
+              </Button>
             </div>
             <div className="flex flex-wrap gap-2">
               {Object.keys(softSkillRatings).length > 0 ? (
@@ -247,11 +250,6 @@ const UserProfile = () => {
               ) : (
                 <p className="text-pathwise-text-secondary">No soft skills assessed yet</p>
               )}
-            </div>
-            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-              <p className="text-sm text-blue-700 dark:text-blue-300">
-                💡 Retake your assessment under Skills Assessment to update these ratings.
-              </p>
             </div>
           </div>
           
