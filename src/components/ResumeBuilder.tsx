@@ -10,14 +10,14 @@ import ResumePreview from "@/components/resume/ResumePreview";
 const ResumeBuilder = () => {
   const [selectedTemplate, setSelectedTemplate] = useState("modern");
   const [isEditing, setIsEditing] = useState(false);
-  const { resumeData, setResumeData, handleSkillsChange } = useResumeData();
+  const { resumeData, setResumeData, handleSkillsChange, handleSoftSkillsChange } = useResumeData();
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-main">Smart Resume Builder</h1>
-          <p className="text-sub mt-2">Generate a professional resume using your profile data</p>
+          <p className="text-sub mt-2">Generate a professional resume using your profile data and assessment results</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setIsEditing(!isEditing)} variant="outline" className="btn-hover">
@@ -39,6 +39,7 @@ const ResumeBuilder = () => {
           resumeData={resumeData}
           onResumeDataChange={setResumeData}
           onSkillsChange={handleSkillsChange}
+          onSoftSkillsChange={handleSoftSkillsChange}
         />
       )}
 

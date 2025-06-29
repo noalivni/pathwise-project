@@ -3,8 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Target, ArrowRight, Home, RotateCcw } from "lucide-react";
+import { Target, ArrowRight, Home, RotateCcw, TrendingUp } from "lucide-react";
 import { getSkillLevel, getRecommendations, getActionableInsights } from "@/utils/hardSkillsUtils";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import UpgradeModal from "@/components/notifications/UpgradeModal";
 
 interface AssessmentResultsProps {
   skillRatings: { [key: string]: number };
@@ -23,8 +26,26 @@ const AssessmentResults = ({
   onViewJobs,
   onReturnToHub
 }: AssessmentResultsProps) => {
+  const { profile } = useAuth();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const recommendations = getRecommendations(skillRatings);
   const actionableInsights = getActionableInsights(skillRatings, fieldOfInterest);
+  const isPro = profile?.subscription_status === 'premium';
+
+  const handleImproveSkills = () => {
+    if (isPro) {
+      // Navigate to learning resources
+      window.dispatchEvent(new CustomEvent('navigate-to-learning'));
+    } else {
+      setShowUpgradeModal(true);
+    }
+  };
+
+  const handleUpgrade = () => {
+    // Handle upgrade logic here
+    console.log('Upgrade to premium');
+    setShowUpgradeModal(false);
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -54,8 +75,8 @@ const AssessmentResults = ({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Progress value={(rating / 5) * 100} className="mb-2" />
-                <p className="text-sm text-muted-foreground">Rating: {rating}/5</p>
+                <Progress value={(rating / 4) * 100} className="mb-2" />
+                <p className="text-sm text-muted-foreground">Rating: {rating}/4</p>
               </CardContent>
             </Card>
           );
@@ -126,6 +147,13 @@ const AssessmentResults = ({
           Skills Assessment Home
         </Button>
         <Button 
+          onClick={handleImproveSkills}
+          className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700"
+        >
+          <TrendingUp className="mr-2 h-4 w-4" />
+          Improve These Skills
+        </Button>
+        <Button 
           onClick={onViewJobs}
           className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
         >
@@ -133,6 +161,13 @@ const AssessmentResults = ({
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onUpgrade={handleUpgrade}
+        featureName="Personalized Learning Resources"
+      />
     </div>
   );
 };

@@ -29,6 +29,7 @@ const SkillQuestion = ({
   isLastSkill
 }: SkillQuestionProps) => {
   const progress = ((currentSkill + 1) / totalSkills) * 100;
+  const skillInfo = getSkillLevel(currentRating);
 
   return (
     <Card className="bg-card border-border">
@@ -51,29 +52,28 @@ const SkillQuestion = ({
           
           <div className="space-y-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary mb-2">
-                {getSkillLevel(currentRating).level}
+              <div className="text-3xl font-bold text-primary mb-2">
+                {skillInfo.level}
               </div>
               <div className="text-sm text-muted-foreground">
-                ({currentRating}/5)
+                ({currentRating}/4)
               </div>
             </div>
             
             <Slider
               value={[currentRating]}
               onValueChange={onRatingChange}
-              max={5}
+              max={4}
               min={0}
               step={1}
               className="w-full"
             />
             
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Not assessed</span>
-              <span>Developing</span>
+              <span>Not familiar</span>
               <span>Basic</span>
-              <span>Competent</span>
-              <span>Proficient</span>
+              <span>Intermediate</span>
+              <span>Advanced</span>
               <span>Expert</span>
             </div>
           </div>

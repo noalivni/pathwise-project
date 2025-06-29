@@ -9,9 +9,10 @@ interface ResumeEditFormProps {
   resumeData: ResumeData;
   onResumeDataChange: (data: ResumeData) => void;
   onSkillsChange: (skillsString: string) => void;
+  onSoftSkillsChange: (skillsString: string) => void;
 }
 
-const ResumeEditForm = ({ resumeData, onResumeDataChange, onSkillsChange }: ResumeEditFormProps) => {
+const ResumeEditForm = ({ resumeData, onResumeDataChange, onSkillsChange, onSoftSkillsChange }: ResumeEditFormProps) => {
   return (
     <Card>
       <CardHeader>
@@ -48,13 +49,25 @@ const ResumeEditForm = ({ resumeData, onResumeDataChange, onSkillsChange }: Resu
           />
         </div>
         <div>
-          <Label htmlFor="skills" className="text-sub">Skills (comma separated)</Label>
+          <Label htmlFor="skills" className="text-sub">Technical Skills (comma separated)</Label>
           <Textarea
             id="skills"
             value={resumeData.skills.join(', ')}
             onChange={(e) => onSkillsChange(e.target.value)}
             rows={2}
             className="text-main"
+            placeholder="From your Hard Skills Assessment or add manually"
+          />
+        </div>
+        <div>
+          <Label htmlFor="softSkills" className="text-sub">Soft Skills (comma separated)</Label>
+          <Textarea
+            id="softSkills"
+            value={resumeData.softSkills.join(', ')}
+            onChange={(e) => onSoftSkillsChange(e.target.value)}
+            rows={2}
+            className="text-main"
+            placeholder="From your Soft Skills Assessment or add manually"
           />
         </div>
         <div>

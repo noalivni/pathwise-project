@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface ResumeData {
   fullName: string;
@@ -14,13 +15,14 @@ export interface ResumeData {
     institution: string;
   };
   skills: string[];
+  softSkills: string[];
   experience: string;
   careerGoal: string;
   additionalInfo: string;
 }
 
 export const useResumeData = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [resumeData, setResumeData] = useState<ResumeData>({
     fullName: "",
     email: "",
@@ -33,6 +35,7 @@ export const useResumeData = () => {
       institution: ""
     },
     skills: [],
+    softSkills: [],
     experience: "",
     careerGoal: "",
     additionalInfo: ""
@@ -48,36 +51,87 @@ export const useResumeData = () => {
     return `${education} professional seeking opportunities in ${field.toLowerCase()}. Skilled in ${skills} with a passion for delivering high-quality results and continuous learning.`;
   };
 
-  // Auto-populate from profile data
-  useEffect(() => {
-    if (profile) {
-      setResumeData({
-        fullName: profile.full_name || "",
-        email: profile.email || "",
-        location: profile.location || "",
-        summary: generateSummary(),
-        education: {
-          degree: profile.degree_certification || "",
-          field: profile.fields_of_study || "",
-          year: profile.graduation_year || "",
-          institution: ""
-        },
-        skills: profile.hard_skills || [],
-        experience: profile.career_history || "",
-        careerGoal: profile.field_of_interest || "",
-        additionalInfo: `Seeking opportunities in ${profile.field_of_interest || 'professional development'}`
-      });
+  const fetchSkillsFromAssessments = async () => {
+    if (!user) return { hardSkills: [], softSkills: [] };
+
+    try {
+      const { data: assessments } = await supabase
+        .from('skills_assessments')
+        .select('technical_skills, soft_skills, assessment_type')
+        .eq('user_id', user.id)
+        .order('completed_at', { ascending: false });
+
+      let hardSkills: string[] = [];
+      let softSkills: string[] = [];
+
+      if (assessments && assessments.length > 0) {
+        // Get latest hard skills assessment
+        const hardSkillsAssessment = assessments.find(a => a.assessment_type === 'hard_skills');
+        if (hardSkillsAssessment?.technical_skills) {
+          hardSkills = Object.entries(hardSkillsAssessment.technical_skills)
+            .filter(([_, rating]) => (rating as number) >= 2) // Only include intermediate+ skills
+            .map(([skill, _]) => skill);
+        }
+
+        // Get latest soft skills assessment
+        const softSkillsAssessment = assessments.find(a => a.assessment_type === 'soft_skills');
+        if (softSkillsAssessment?.soft_skills) {
+          softSkills = Object.entries(softSkillsAssessment.soft_skills)
+            .filter(([_, rating]) => (rating as number) >= 2) // Only include moderate+ skills
+            .map(([skill, _]) => skill);
+        }
+      }
+
+      return { hardSkills, softSkills };
+    } catch (error) {
+      console.error('Error fetching skills from assessments:', error);
+      return { hardSkills: [], softSkills: [] };
     }
-  }, [profile]);
+  };
+
+  // Auto-populate from profile data and assessments
+  useEffect(() => {
+    const loadResumeData = async () => {
+      if (profile) {
+        const { hardSkills, softSkills } = await fetchSkillsFromAssessments();
+        
+        setResumeData({
+          fullName: profile.full_name || "",
+          email: profile.email || "",
+          location: profile.location || "",
+          summary: generateSummary(),
+          education: {
+            degree: profile.degree_certification || "",
+            field: profile.fields_of_study || "",
+            year: profile.graduation_year || "",
+            institution: ""
+          },
+          skills: hardSkills.length > 0 ? hardSkills : (profile.hard_skills || []),
+          softSkills: softSkills,
+          experience: profile.career_history || "",
+          careerGoal: profile.field_of_interest || "",
+          additionalInfo: `Seeking opportunities in ${profile.field_of_interest || 'professional development'}`
+        });
+      }
+    };
+
+    loadResumeData();
+  }, [profile, user]);
 
   const handleSkillsChange = (skillsString: string) => {
     const skillsArray = skillsString.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
     setResumeData({ ...resumeData, skills: skillsArray });
   };
 
+  const handleSoftSkillsChange = (skillsString: string) => {
+    const skillsArray = skillsString.split(',').map(skill => skill.trim()).filter(skill => skill.length > 0);
+    setResumeData({ ...resumeData, softSkills: skillsArray });
+  };
+
   return {
     resumeData,
     setResumeData,
-    handleSkillsChange
+    handleSkillsChange,
+    handleSoftSkillsChange
   };
 };

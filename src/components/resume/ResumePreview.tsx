@@ -56,13 +56,27 @@ const ResumePreview = ({ resumeData, selectedTemplate }: ResumePreviewProps) => 
             </div>
           )}
 
-          {/* Skills */}
+          {/* Technical Skills */}
           {resumeData.skills.length > 0 && (
             <div className={styles.section}>
               <h2 className={styles.title}>Technical Skills</h2>
               <div className="flex flex-wrap gap-2">
                 {resumeData.skills.map((skill, index) => (
                   <Badge key={index} variant="outline" className="text-xs text-black bg-white border-gray-300">
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Soft Skills */}
+          {resumeData.softSkills.length > 0 && (
+            <div className={styles.section}>
+              <h2 className={styles.title}>Key Strengths</h2>
+              <div className="flex flex-wrap gap-2">
+                {resumeData.softSkills.map((skill, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
                     {skill}
                   </Badge>
                 ))}

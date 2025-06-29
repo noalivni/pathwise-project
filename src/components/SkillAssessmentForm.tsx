@@ -28,6 +28,7 @@ const SkillAssessmentForm = ({
   const progress = ((currentSkill + 1) / softSkills.length) * 100;
   const currentSkillData = softSkills[currentSkill];
   const currentRating = skillRatings[currentSkillData.name] || 0;
+  const skillInfo = getSkillLevel(currentRating);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -53,27 +54,30 @@ const SkillAssessmentForm = ({
             <p className="text-pathwise-text-muted mb-6">{currentSkillData.description}</p>
             
             <div className="space-y-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">
+                  {skillInfo.level}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  ({currentRating}/4)
+                </div>
+              </div>
+              
               <Slider
                 value={[currentRating]}
                 onValueChange={onRatingChange}
-                max={5}
+                max={4}
                 min={0}
                 step={1}
                 className="w-full"
               />
               
               <div className="flex justify-between text-sm text-pathwise-text-secondary">
-                <span>Not Me</span>
+                <span>Not me</span>
                 <span>Somewhat</span>
                 <span>Moderately</span>
-                <span>Quite Me</span>
-                <span>Very Much Me</span>
-              </div>
-              
-              <div className="text-center">
-                <Badge className={`${getSkillLevel(currentRating).color} text-white text-lg px-4 py-2`}>
-                  {getSkillLevel(currentRating).level} ({currentRating}/5)
-                </Badge>
+                <span>Very much</span>
+                <span>Extremely</span>
               </div>
             </div>
           </div>
