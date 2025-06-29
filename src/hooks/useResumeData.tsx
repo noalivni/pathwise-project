@@ -81,11 +81,11 @@ export const useResumeData = () => {
             .map(([skill, _]) => skill);
         }
 
-        // Get latest soft skills assessment - only include Moderate (2), Very much (3), Extremely (4)
+        // Get latest soft skills assessment - only include ratings 3, 4 (Advanced, Expert)
         const softSkillsAssessment = assessments.find(a => a.assessment_type === 'soft_skills');
         if (softSkillsAssessment?.soft_skills) {
           softSkills = Object.entries(softSkillsAssessment.soft_skills)
-            .filter(([_, rating]) => (rating as number) >= 2) // Only moderate+ skills
+            .filter(([_, rating]) => (rating as number) >= 3) // Only Advanced, Expert
             .map(([skill, _]) => formatSoftSkill(skill));
         }
       }

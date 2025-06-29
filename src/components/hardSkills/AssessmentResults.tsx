@@ -47,6 +47,14 @@ const AssessmentResults = ({
     setShowUpgradeModal(false);
   };
 
+  const formatSkillName = (name: string) => {
+    return name
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="text-center">
@@ -60,13 +68,14 @@ const AssessmentResults = ({
         {relevantSkills.map((skill, index) => {
           const rating = skillRatings[skill.name] || 0;
           const skillInfo = getSkillLevel(rating);
+          const formattedName = formatSkillName(skill.name);
           
           return (
             <Card key={index} className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between text-lg">
                   <div>
-                    <span className="text-foreground">{skill.name}</span>
+                    <span className="text-foreground">{formattedName}</span>
                     <p className="text-sm text-muted-foreground font-normal">{skill.category}</p>
                   </div>
                   <Badge className={`${skillInfo.color} text-white`}>
@@ -75,8 +84,17 @@ const AssessmentResults = ({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Progress value={(rating / 4) * 100} className="mb-2" />
-                <p className="text-sm text-muted-foreground">Rating: {rating}/4</p>
+                <div className="space-y-3">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary mb-2">
+                      {skillInfo.level}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      ({rating}/4)
+                    </div>
+                  </div>
+                  <Progress value={(rating / 4) * 100} className="mb-2" />
+                </div>
               </CardContent>
             </Card>
           );
@@ -97,7 +115,7 @@ const AssessmentResults = ({
               <div className="flex flex-wrap gap-2 mb-3">
                 {recommendations.strengths.map((skill, index) => (
                   <Badge key={index} className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-300 dark:border-green-700">
-                    {skill}
+                    {formatSkillName(skill)}
                   </Badge>
                 ))}
               </div>
@@ -113,7 +131,7 @@ const AssessmentResults = ({
               <div className="flex flex-wrap gap-2 mb-3">
                 {recommendations.improvements.map((skill, index) => (
                   <Badge key={index} className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700">
-                    {skill}
+                    {formatSkillName(skill)}
                   </Badge>
                 ))}
               </div>
