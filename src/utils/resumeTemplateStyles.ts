@@ -12,7 +12,7 @@ export const getTemplateStyles = (selectedTemplate: string): TemplateStyles => {
     case "classic":
       return {
         container: "bg-white border-2 border-gray-400 font-serif shadow-md",
-        header: "text-center border-b-2 border-gray-400 pb-6 mb-6",
+        header: "text-center border-b-2 border-gray-400 pb-6 mb-6 text-black",
         section: "mb-6 border-b border-gray-300 pb-4",
         title: "text-xl font-bold text-gray-900 mb-2 uppercase tracking-widest",
         text: "text-gray-800 leading-relaxed text-sm"
@@ -28,7 +28,7 @@ export const getTemplateStyles = (selectedTemplate: string): TemplateStyles => {
     case "minimal":
       return {
         container: "bg-white border border-gray-100 shadow-sm",
-        header: "mb-10 pb-4 border-b border-gray-100",
+        header: "mb-10 pb-4 border-b border-gray-100 text-black",
         section: "mb-10",
         title: "text-lg font-light text-gray-500 mb-4 uppercase tracking-widest text-sm",
         text: "text-gray-900 leading-loose font-light"

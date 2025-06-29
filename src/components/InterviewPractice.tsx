@@ -337,8 +337,8 @@ const InterviewPractice = () => {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <div className="text-center flex-1">
-            <h1 className="text-3xl font-bold text-slate-800">Interview Practice</h1>
-            <p className="text-slate-600 mt-2">Practice common interview questions with AI feedback</p>
+            <h1 className="text-3xl font-bold text-foreground">Interview Practice</h1>
+            <p className="text-muted-foreground mt-2">Practice common interview questions with AI feedback</p>
           </div>
           <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white">
             <Crown className="w-3 h-3 mr-1" />
@@ -424,8 +424,8 @@ const InterviewPractice = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Interview Practice</h1>
-          <p className="text-slate-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">Interview Practice</h1>
+          <p className="text-muted-foreground mt-1">
             Question {currentQuestionIndex + 1} of {sessionQuestions.length} • {selectedRole}
           </p>
         </div>

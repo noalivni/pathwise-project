@@ -51,6 +51,14 @@ export const useResumeData = () => {
     return `${education} professional seeking opportunities in ${field.toLowerCase()}. Skilled in ${skills} with a passion for delivering high-quality results and continuous learning.`;
   };
 
+  const formatSoftSkill = (skill: string): string => {
+    return skill
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   const fetchSkillsFromAssessments = async () => {
     if (!user) return { hardSkills: [], softSkills: [] };
 
@@ -65,20 +73,20 @@ export const useResumeData = () => {
       let softSkills: string[] = [];
 
       if (assessments && assessments.length > 0) {
-        // Get latest hard skills assessment
+        // Get latest hard skills assessment - only include Intermediate (2), Advanced (3), Expert (4)
         const hardSkillsAssessment = assessments.find(a => a.assessment_type === 'hard_skills');
         if (hardSkillsAssessment?.technical_skills) {
           hardSkills = Object.entries(hardSkillsAssessment.technical_skills)
-            .filter(([_, rating]) => (rating as number) >= 2) // Only include intermediate+ skills
+            .filter(([_, rating]) => (rating as number) >= 2) // Only Intermediate, Advanced, Expert
             .map(([skill, _]) => skill);
         }
 
-        // Get latest soft skills assessment
+        // Get latest soft skills assessment - only include Moderate (2), Very much (3), Extremely (4)
         const softSkillsAssessment = assessments.find(a => a.assessment_type === 'soft_skills');
         if (softSkillsAssessment?.soft_skills) {
           softSkills = Object.entries(softSkillsAssessment.soft_skills)
-            .filter(([_, rating]) => (rating as number) >= 2) // Only include moderate+ skills
-            .map(([skill, _]) => skill);
+            .filter(([_, rating]) => (rating as number) >= 2) // Only moderate+ skills
+            .map(([skill, _]) => formatSoftSkill(skill));
         }
       }
 

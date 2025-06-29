@@ -1,25 +1,48 @@
 
-// Utility to track and display first activity completion message
-export const FIRST_ACTIVITY_STORAGE_KEY = 'pathwise_first_activity_completed';
+export type FirstActivityType = 'skills_assessment' | 'interview_practice' | 'resume_builder' | 'job_matching';
 
-export type FirstActivityType = 'skills_assessment' | 'interview_practice' | 'resume_builder';
+const STORAGE_KEY = 'pathwise_first_activities';
 
-export const hasCompletedFirstActivity = (): boolean => {
-  return localStorage.getItem(FIRST_ACTIVITY_STORAGE_KEY) === 'true';
-};
+interface CompletedActivities {
+  [key: string]: boolean;
+}
 
 export const markFirstActivityCompleted = (activityType: FirstActivityType): boolean => {
-  const wasAlreadyCompleted = hasCompletedFirstActivity();
-  
-  if (!wasAlreadyCompleted) {
-    localStorage.setItem(FIRST_ACTIVITY_STORAGE_KEY, 'true');
-    localStorage.setItem('pathwise_first_activity_type', activityType);
-    return true; // Return true if this was the first activity
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const completed: CompletedActivities = stored ? JSON.parse(stored) : {};
+    
+    // Check if this activity was already completed
+    if (completed[activityType]) {
+      return false; // Not the first time
+    }
+    
+    // Mark as completed
+    completed[activityType] = true;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
+    
+    return true; // This was the first time
+  } catch (error) {
+    console.error('Error managing first activity tracking:', error);
+    return false;
   }
-  
-  return false; // Return false if already completed before
 };
 
-export const getFirstActivityType = (): FirstActivityType | null => {
-  return localStorage.getItem('pathwise_first_activity_type') as FirstActivityType | null;
+export const isFirstActivity = (activityType: FirstActivityType): boolean => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const completed: CompletedActivities = stored ? JSON.parse(stored) : {};
+    return !completed[activityType];
+  } catch (error) {
+    console.error('Error checking first activity status:', error);
+    return false;
+  }
+};
+
+export const resetFirstActivityTracking = (): void => {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    console.error('Error resetting first activity tracking:', error);
+  }
 };
