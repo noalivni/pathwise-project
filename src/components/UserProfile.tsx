@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,11 +28,31 @@ const UserProfile = () => {
           const softSkillsAssessment = assessments.find(a => a.assessment_type === 'soft_skills');
 
           if (hardSkillsAssessment?.technical_skills) {
-            setSkillRatings(hardSkillsAssessment.technical_skills);
+            // Type guard to ensure we have the correct type
+            const technicalSkills = hardSkillsAssessment.technical_skills;
+            if (typeof technicalSkills === 'object' && technicalSkills !== null && !Array.isArray(technicalSkills)) {
+              const skillsObj: { [key: string]: number } = {};
+              Object.entries(technicalSkills).forEach(([key, value]) => {
+                if (typeof value === 'number') {
+                  skillsObj[key] = value;
+                }
+              });
+              setSkillRatings(skillsObj);
+            }
           }
 
           if (softSkillsAssessment?.soft_skills) {
-            setSoftSkillRatings(softSkillsAssessment.soft_skills);
+            // Type guard to ensure we have the correct type
+            const softSkills = softSkillsAssessment.soft_skills;
+            if (typeof softSkills === 'object' && softSkills !== null && !Array.isArray(softSkills)) {
+              const skillsObj: { [key: string]: number } = {};
+              Object.entries(softSkills).forEach(([key, value]) => {
+                if (typeof value === 'number') {
+                  skillsObj[key] = value;
+                }
+              });
+              setSoftSkillRatings(skillsObj);
+            }
           }
         }
       } catch (error) {
