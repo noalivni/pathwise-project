@@ -48,7 +48,15 @@ const Dashboard = () => {
     const handleNavigateToAssessment = () => setActiveView('assessment');
     const handleNavigateToJobs = () => setActiveView('jobs');
     const handleNavigateToProfile = () => setActiveView('profile');
-    const handleNavigateToLearning = () => setActiveView('learning');
+    const handleNavigateToLearning = () => {
+      if (profile?.subscription_status !== 'premium') {
+        showUpgrade('Learning Resources', () => {
+          console.log('Upgrade to premium');
+        });
+        return;
+      }
+      setActiveView('learning');
+    };
     const handleNavigateToInterview = () => {
       if (profile?.subscription_status !== 'premium') {
         showUpgrade('Interview Practice', () => {
