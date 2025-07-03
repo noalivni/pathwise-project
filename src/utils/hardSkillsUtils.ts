@@ -1,10 +1,11 @@
 
 export const getSkillLevel = (rating: number) => {
-  if (rating === 0) return { level: "Not familiar", color: "bg-gray-500" };
-  if (rating <= 1) return { level: "Basic", color: "bg-red-500" };
-  if (rating <= 2) return { level: "Intermediate", color: "bg-orange-500" };
-  if (rating <= 3) return { level: "Advanced", color: "bg-blue-500" };
-  return { level: "Expert", color: "bg-green-500" };
+  if (rating === 0) return { level: "Not Familiar", color: "bg-gray-500" };
+  if (rating === 1) return { level: "Basic", color: "bg-red-500" };
+  if (rating === 2) return { level: "Intermediate", color: "bg-orange-500" };
+  if (rating === 3) return { level: "Advanced", color: "bg-blue-500" };
+  if (rating === 4) return { level: "Expert", color: "bg-green-500" };
+  return { level: "Not Familiar", color: "bg-gray-500" };
 };
 
 export const getRecommendations = (skillRatings: { [key: string]: number }) => {
