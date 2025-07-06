@@ -21,7 +21,7 @@ const LearningResourcesProButton = () => {
   };
 
   const handleUpgrade = () => {
-    console.log('Upgrade to premium');
+    // Profile will refresh automatically via auth context
     setShowUpgradeModal(false);
   };
 
