@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 interface MonthlyData {
   month: string;
@@ -27,27 +28,39 @@ export const useAdminDashboardData = () => {
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [popularJobs, setPopularJobs] = useState<JobRoleData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      console.log('Fetching dashboard data...');
+      console.log('🔄 Fetching admin dashboard data...');
 
-      // Fetch user breakdown by subscription status
+      // Fetch ALL user profiles (not just admin roles)
       const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('subscription_status');
+        .select('subscription_status, created_at');
 
       if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
+        console.error('❌ Error fetching profiles:', profilesError);
+        toast({
+          variant: "destructive",
+          title: "Error fetching user data",
+          description: profilesError.message
+        });
       } else {
-        console.log('All profiles data:', allProfiles);
+        console.log('✅ Profiles data:', allProfiles);
         const total = allProfiles?.length || 0;
         const free = allProfiles?.filter(p => p.subscription_status === 'free' || !p.subscription_status).length || 0;
         const premium = allProfiles?.filter(p => p.subscription_status === 'premium').length || 0;
         
         setUserBreakdown({ total, free, premium });
-        console.log('User breakdown:', { total, free, premium });
+        console.log('📊 User breakdown:', { total, free, premium });
+        
+        // Show success toast for debugging
+        toast({
+          title: "User Data Updated",
+          description: `Found ${total} total users (${free} free, ${premium} premium)`
+        });
       }
 
       // Fetch total interview sessions
@@ -56,9 +69,9 @@ export const useAdminDashboardData = () => {
         .select('*', { count: 'exact', head: true });
 
       if (interviewError) {
-        console.error('Error fetching interview count:', interviewError);
+        console.error('❌ Error fetching interview count:', interviewError);
       } else {
-        console.log('Interview count:', interviewCount);
+        console.log('✅ Interview count:', interviewCount);
         setTotalInterviews(interviewCount || 0);
       }
 
@@ -68,45 +81,34 @@ export const useAdminDashboardData = () => {
         .select('*', { count: 'exact', head: true });
 
       if (jobMatchesError) {
-        console.error('Error fetching job matches count:', jobMatchesError);
+        console.error('❌ Error fetching job matches count:', jobMatchesError);
       } else {
-        console.log('Job matches count:', jobMatchesCount);
+        console.log('✅ Job matches count:', jobMatchesCount);
         setTotalJobMatches(jobMatchesCount || 0);
       }
 
-      // Fetch monthly user registration data for full year (Jan-Dec)
-      const { data: profilesData, error: profilesDataError } = await supabase
-        .from('profiles')
-        .select('created_at')
-        .gte('created_at', new Date(new Date().getFullYear(), 0, 1).toISOString())
-        .order('created_at', { ascending: true });
+      // Process monthly data for all profiles
+      if (allProfiles && allProfiles.length > 0) {
+        const monthlyUserData = processMonthlyDataFullYear(allProfiles, 'created_at');
+        
+        // Fetch monthly interview data
+        const { data: interviewData, error: interviewDataError } = await supabase
+          .from('interview_sessions')
+          .select('completed_at')
+          .not('completed_at', 'is', null)
+          .gte('completed_at', new Date(new Date().getFullYear(), 0, 1).toISOString())
+          .order('completed_at', { ascending: true });
 
-      if (profilesDataError) {
-        console.error('Error fetching profiles data:', profilesDataError);
+        if (interviewDataError) {
+          console.error('❌ Error fetching interview data:', interviewDataError);
+        }
+
+        const monthlyInterviewData = processMonthlyDataFullYear(interviewData || [], 'completed_at');
+        const combinedMonthlyData = combineMonthlyData(monthlyUserData, monthlyInterviewData);
+        setMonthlyData(combinedMonthlyData);
       }
 
-      // Process monthly user data for full year
-      const monthlyUserData = processMonthlyDataFullYear(profilesData || [], 'created_at');
-
-      // Fetch monthly interview data for full year
-      const { data: interviewData, error: interviewDataError } = await supabase
-        .from('interview_sessions')
-        .select('completed_at')
-        .not('completed_at', 'is', null)
-        .gte('completed_at', new Date(new Date().getFullYear(), 0, 1).toISOString())
-        .order('completed_at', { ascending: true });
-
-      if (interviewDataError) {
-        console.error('Error fetching interview data:', interviewDataError);
-      }
-
-      const monthlyInterviewData = processMonthlyDataFullYear(interviewData || [], 'completed_at');
-
-      // Combine monthly data
-      const combinedMonthlyData = combineMonthlyData(monthlyUserData, monthlyInterviewData);
-      setMonthlyData(combinedMonthlyData);
-
-      // Fetch popular job roles data based on interactions (views, bookmarks)
+      // Fetch job interaction data with improved handling
       const { data: jobMatchData, error: jobMatchError } = await supabase
         .from('user_job_matches')
         .select(`
@@ -117,15 +119,34 @@ export const useAdminDashboardData = () => {
         `);
 
       if (jobMatchError) {
-        console.error('Error fetching job match data:', jobMatchError);
+        console.error('❌ Error fetching job match data:', jobMatchError);
+        toast({
+          variant: "destructive",
+          title: "Error fetching job data",
+          description: jobMatchError.message
+        });
       } else {
-        console.log('Job match data:', jobMatchData);
+        console.log('✅ Job match data:', jobMatchData);
         const jobRoleStats = processJobInteractionData(jobMatchData || []);
         setPopularJobs(jobRoleStats);
+        
+        if (jobRoleStats.length > 0) {
+          toast({
+            title: "Job Data Updated",
+            description: `Found ${jobRoleStats.length} popular jobs`
+          });
+        }
       }
 
+      setLastUpdated(new Date());
+
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('❌ Error fetching dashboard data:', error);
+      toast({
+        variant: "destructive",
+        title: "Dashboard Error",
+        description: "Failed to fetch dashboard data"
+      });
     } finally {
       setLoading(false);
     }
@@ -165,17 +186,17 @@ export const useAdminDashboardData = () => {
   };
 
   const processJobInteractionData = (data: any[]): JobRoleData[] => {
-    console.log('Processing job interaction data:', data);
+    console.log('📈 Processing job interaction data:', data);
     
     if (!data || data.length === 0) {
-      console.log('No job interaction data to process');
+      console.log('⚠️ No job interaction data to process');
       return [];
     }
 
     const jobStats: { [key: string]: { views: number, bookmarks: number, total: number } } = {};
     
     data.forEach(match => {
-      const jobTitle = match.job_roles?.job_title || 'Unknown';
+      const jobTitle = match.job_roles?.job_title || 'Unknown Job';
       
       if (!jobStats[jobTitle]) {
         jobStats[jobTitle] = { views: 0, bookmarks: 0, total: 0 };
@@ -184,22 +205,32 @@ export const useAdminDashboardData = () => {
       // Count views (every match record represents a view)
       jobStats[jobTitle].views++;
       
-      // Count bookmarks
+      // Count bookmarks (with higher weight)
       if (match.is_bookmarked) {
         jobStats[jobTitle].bookmarks++;
       }
       
-      // Calculate total interactions (views + bookmarks weighted)
+      // Calculate total interactions (views + weighted bookmarks)
       jobStats[jobTitle].total = jobStats[jobTitle].views + (jobStats[jobTitle].bookmarks * 2);
     });
 
-    console.log('Job interaction stats:', jobStats);
+    console.log('📊 Job interaction stats:', jobStats);
 
+    // Get all jobs, even if there's only one or two
     const sortedJobs = Object.entries(jobStats)
       .sort(([,a], [,b]) => b.total - a.total)
-      .slice(0, 5);
+      .slice(0, 8); // Show up to 8 jobs
 
-    const colors = ['#14B8A6', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444'];
+    const colors = [
+      '#14B8A6', // teal
+      '#3B82F6', // blue
+      '#8B5CF6', // purple
+      '#F59E0B', // amber
+      '#EF4444', // red
+      '#10B981', // emerald
+      '#F97316', // orange
+      '#6366F1'  // indigo
+    ];
     
     const result = sortedJobs.map(([name, stats], index) => ({
       name,
@@ -207,8 +238,13 @@ export const useAdminDashboardData = () => {
       color: colors[index] || '#6B7280',
     }));
 
-    console.log('Processed job interaction data:', result);
+    console.log('✅ Final job chart data:', result);
     return result;
+  };
+
+  const refreshData = () => {
+    console.log('🔄 Manual refresh triggered');
+    fetchDashboardData();
   };
 
   useEffect(() => {
@@ -220,7 +256,7 @@ export const useAdminDashboardData = () => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'profiles' },
         () => {
-          console.log('Profiles updated, refreshing dashboard data');
+          console.log('🔄 Profiles updated, refreshing dashboard data');
           fetchDashboardData();
         }
       )
@@ -231,7 +267,7 @@ export const useAdminDashboardData = () => {
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'interview_sessions' },
         () => {
-          console.log('Interview sessions updated, refreshing dashboard data');
+          console.log('🔄 Interview sessions updated, refreshing dashboard data');
           fetchDashboardData();
         }
       )
@@ -242,7 +278,7 @@ export const useAdminDashboardData = () => {
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'user_job_matches' },
         () => {
-          console.log('Job matches updated, refreshing dashboard data');
+          console.log('🔄 Job matches updated, refreshing dashboard data');
           fetchDashboardData();
         }
       )
@@ -261,6 +297,8 @@ export const useAdminDashboardData = () => {
     totalJobMatches,
     monthlyData,
     popularJobs,
-    loading
+    loading,
+    lastUpdated,
+    refreshData
   };
 };

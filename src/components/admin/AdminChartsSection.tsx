@@ -18,9 +18,10 @@ interface JobRoleData {
 interface AdminChartsSectionProps {
   monthlyData: MonthlyData[];
   popularJobs: JobRoleData[];
+  onRefresh?: () => void;
 }
 
-const AdminChartsSection = ({ monthlyData, popularJobs }: AdminChartsSectionProps) => {
+const AdminChartsSection = ({ monthlyData, popularJobs, onRefresh }: AdminChartsSectionProps) => {
   return (
     <>
       {/* Monthly Charts */}
@@ -30,7 +31,7 @@ const AdminChartsSection = ({ monthlyData, popularJobs }: AdminChartsSectionProp
       </div>
 
       {/* Popular Jobs Chart */}
-      <AdminJobsChart popularJobs={popularJobs} />
+      <AdminJobsChart popularJobs={popularJobs} onRefresh={onRefresh} />
     </>
   );
 };
