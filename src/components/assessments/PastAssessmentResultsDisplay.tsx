@@ -120,6 +120,21 @@ const PastAssessmentResultsDisplay = ({
         </p>
       </div>
 
+      {/* Professional Profile Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center text-foreground">
+            <User className="mr-2 h-5 w-5 text-blue-500" />
+            Your Profile: {fieldOfInterest === 'General' ? 'General Skills' : fieldOfInterest}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground leading-relaxed">
+            {professionalProfile}
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Skills Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {relevantSkills.map((skill, index) => {
@@ -177,27 +192,15 @@ const PastAssessmentResultsDisplay = ({
         </CardContent>
       </Card>
 
-      {/* Professional Profile Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center text-foreground">
-            <User className="mr-2 h-5 w-5 text-blue-500" />
-            Your Current Professional Profile
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground leading-relaxed mb-4">
-            {professionalProfile}
-          </p>
-          <Button 
-            className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-            onClick={() => window.dispatchEvent(new CustomEvent('navigate-to-jobs'))}
-          >
-            View Job Recommendations
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="text-center">
+        <Button 
+          className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+          onClick={() => window.dispatchEvent(new CustomEvent('navigate-to-jobs'))}
+        >
+          View Job Recommendations
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };

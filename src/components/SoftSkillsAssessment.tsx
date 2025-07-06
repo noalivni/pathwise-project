@@ -192,6 +192,21 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField = 'General' }: Soft
           </p>
         </div>
 
+        {/* Professional Profile Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-foreground">
+              <User className="mr-2 h-5 w-5 text-blue-500" />
+              Your Profile: {selectedField === 'General' ? 'General Skills' : selectedField}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground leading-relaxed">
+              {professionalProfile}
+            </p>
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {Object.entries(results).map(([category, score]) => (
             <Card key={category} className="bg-card border-border">
@@ -234,28 +249,6 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField = 'General' }: Soft
           </CardContent>
         </Card>
 
-        {/* Professional Profile Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center text-foreground">
-              <User className="mr-2 h-5 w-5 text-blue-500" />
-              Your Current Professional Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              {professionalProfile}
-            </p>
-            <Button 
-              className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-              onClick={handleViewJobs}
-            >
-              View Job Recommendations
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Button 
             onClick={handleRetake} 
@@ -267,10 +260,10 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField = 'General' }: Soft
           </Button>
           <Button 
             onClick={handleViewJobs} 
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
           >
             <Eye className="w-4 h-4 mr-2" />
-            View Job Matches
+            View Job Recommendations
           </Button>
         </div>
 
@@ -331,6 +324,9 @@ const SoftSkillsAssessment = ({ onReturnToHub, selectedField = 'General' }: Soft
             <div className="text-center">
               <div className="text-3xl font-bold text-primary mb-2">
                 {getSkillLevelDescription(currentResponse)}
+              </div>
+              <div className="text-lg text-muted-foreground">
+                ({currentResponse}/4)
               </div>
             </div>
             
