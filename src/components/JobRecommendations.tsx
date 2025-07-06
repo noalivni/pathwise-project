@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { BookOpen } from "lucide-react";
 import { parseSkillsFromText } from "@/utils/skillsParsing";
@@ -14,7 +13,6 @@ import JobRecommendationsList from "@/components/jobRecommendations/JobRecommend
 
 const JobRecommendations = () => {
   const { profile } = useAuth();
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const { careerRoles, loading, handleBookmark } = useJobRecommendations();
 
@@ -28,7 +26,7 @@ const JobRecommendations = () => {
   });
 
   const handleLearnMoreClick = () => {
-    navigate('/learning-resources');
+    window.dispatchEvent(new CustomEvent('navigate-to-learning'));
   };
 
   if (loading) {
