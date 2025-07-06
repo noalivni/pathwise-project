@@ -55,7 +55,9 @@ const UpgradeModal = ({
                 <Crown className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold mb-2">Unlock {featureName}</h2>
-              <p className="text-yellow-100">Upgrade to Premium to access this powerful feature</p>
+              <p className="text-yellow-100">
+                This feature is part of Pathwise Premium. Upgrade to unlock personalized interview practice and curated learning resources tailored to your career goals!
+              </p>
             </div>
             
             <div className="p-8">
@@ -93,7 +95,7 @@ const UpgradeModal = ({
                   className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
                 >
                   <Crown className="w-4 h-4 mr-2" />
-                  Upgrade Now
+                  Upgrade to Premium
                 </Button>
               </div>
             </div>
