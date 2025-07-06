@@ -3,8 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, Briefcase, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ArrowLeft, Calendar, Briefcase, MessageSquare, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import InterviewFeedback from "./InterviewFeedback";
 
@@ -28,9 +27,11 @@ interface InterviewSession {
 interface InterviewHistoryProps {
   interviews: InterviewSession[];
   onBack: () => void;
+  isLoading?: boolean;
+  error?: string;
 }
 
-const InterviewHistory = ({ interviews, onBack }: InterviewHistoryProps) => {
+const InterviewHistory = ({ interviews, onBack, isLoading = false, error }: InterviewHistoryProps) => {
   const [selectedInterview, setSelectedInterview] = useState<InterviewSession | null>(null);
 
   if (selectedInterview) {
@@ -99,12 +100,31 @@ const InterviewHistory = ({ interviews, onBack }: InterviewHistoryProps) => {
         </div>
       </div>
 
-      {interviews.length === 0 ? (
+      {isLoading ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Loader2 className="h-8 w-8 text-blue-600 mx-auto mb-4 animate-spin" />
+            <h3 className="text-lg font-medium text-slate-800 mb-2">Loading your interview history...</h3>
+            <p className="text-slate-600">Please wait while we fetch your past sessions.</p>
+          </CardContent>
+        </Card>
+      ) : error ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <MessageSquare className="h-12 w-12 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading History</h3>
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      ) : interviews.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
             <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-slate-800 mb-2">No interviews yet</h3>
-            <p className="text-slate-600">Start your first interview practice session to see it here.</p>
+            <h3 className="text-lg font-medium text-slate-800 mb-2">No interview history found yet</h3>
+            <p className="text-slate-600">Start practicing to see results here!</p>
           </CardContent>
         </Card>
       ) : (

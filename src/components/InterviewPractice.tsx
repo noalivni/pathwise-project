@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Mic, MicOff, Volume2, VolumeX, Play, Pause, Crown, Lock, History, Eye } from "lucide-react";
+import { MessageCircle, Mic, MicOff, Volume2, VolumeX, Play, Pause, Crown, Lock, History, Eye, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -48,6 +48,8 @@ const InterviewPractice = () => {
     response: string;
     feedback?: string;
   }>>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState<string>("");
 
   const isPro = profile?.subscription_status === 'premium';
 
@@ -96,26 +98,68 @@ const InterviewPractice = () => {
   const fetchPastInterviews = async () => {
     if (!user) return;
 
+    setIsLoadingHistory(true);
+    setHistoryError("");
+
     try {
+      console.log('Fetching interview sessions for user:', user.id);
+      
       const { data, error } = await supabase
         .from('interview_sessions')
         .select('*')
         .eq('user_id', user.id)
         .order('completed_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error fetching interviews:', error);
+        throw error;
+      }
 
-      const formattedInterviews: InterviewSession[] = data?.map(session => ({
-        id: session.id,
-        job_role: session.job_role || 'Unknown Role',
-        completed_at: session.completed_at || new Date().toISOString(),
-        questions: JSON.parse(String(session.questions || '[]')),
-        responses: JSON.parse(String(session.responses || '[]'))
-      })) || [];
+      console.log('Raw interview data:', data);
 
+      if (!data) {
+        setPastInterviews([]);
+        setIsLoadingHistory(false);
+        return;
+      }
+
+      const formattedInterviews: InterviewSession[] = data.map(session => {
+        console.log('Processing session:', session);
+        
+        // Parse questions and responses safely
+        let questions = [];
+        let responses = [];
+        
+        try {
+          questions = session.questions ? JSON.parse(String(session.questions)) : [];
+        } catch (e) {
+          console.warn('Failed to parse questions for session', session.id, e);
+          questions = [];
+        }
+        
+        try {
+          responses = session.responses ? JSON.parse(String(session.responses)) : [];
+        } catch (e) {
+          console.warn('Failed to parse responses for session', session.id, e);
+          responses = [];
+        }
+
+        return {
+          id: session.id,
+          job_role: session.job_role || 'Unknown Role',
+          completed_at: session.completed_at || new Date().toISOString(),
+          questions: questions,
+          responses: responses
+        };
+      });
+
+      console.log('Formatted interviews:', formattedInterviews);
       setPastInterviews(formattedInterviews);
     } catch (error) {
       console.error('Error fetching past interviews:', error);
+      setHistoryError('Failed to load interview history. Please try again.');
+    } finally {
+      setIsLoadingHistory(false);
     }
   };
 
@@ -328,6 +372,8 @@ const InterviewPractice = () => {
       <InterviewHistory 
         interviews={pastInterviews}
         onBack={() => setShowHistory(false)}
+        isLoading={isLoadingHistory}
+        error={historyError}
       />
     );
   }
@@ -362,9 +408,19 @@ const InterviewPractice = () => {
                 onClick={() => setShowHistory(true)}
                 variant="outline"
                 className="w-full"
+                disabled={isLoadingHistory}
               >
-                <Eye className="w-4 h-4 mr-2" />
-                View Interview History
+                {isLoadingHistory ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4 mr-2" />
+                    View Interview History
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>
