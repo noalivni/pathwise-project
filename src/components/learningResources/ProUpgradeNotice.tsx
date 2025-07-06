@@ -3,22 +3,26 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Lock, Crown } from "lucide-react";
-import UpgradeModal from "@/components/notifications/UpgradeModal";
+import CreditCardModal from "@/components/payment/CreditCardModal";
 
-const ProUpgradeNotice = () => {
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+interface ProUpgradeNoticeProps {
+  featureName?: string;
+}
+
+const ProUpgradeNotice = ({ featureName = "Learning Resources" }: ProUpgradeNoticeProps) => {
+  const [showCreditCardModal, setShowCreditCardModal] = useState(false);
 
   const handleUpgradeClick = () => {
-    setShowUpgradeModal(true);
+    setShowCreditCardModal(true);
   };
 
-  const handleUpgrade = () => {
+  const handleSuccess = () => {
     // Profile will refresh automatically via auth context
-    setShowUpgradeModal(false);
+    setShowCreditCardModal(false);
   };
 
   const handleClose = () => {
-    setShowUpgradeModal(false);
+    setShowCreditCardModal(false);
   };
 
   return (
@@ -36,12 +40,14 @@ const ProUpgradeNotice = () => {
               Pro Feature
             </CardTitle>
             <CardDescription>
-              Learning Resources are available for Pro subscribers only
+              {featureName} {featureName === "Learning Resources" ? "are" : "is"} available for Pro subscribers only
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-slate-600 mb-4">
-              Upgrade to Pro to access personalized learning materials, courses, and resources tailored to your career goals.
+              Upgrade to Pro to access {featureName === "AI-Powered Interview Practice" 
+                ? "personalized interview practice with AI feedback and detailed analytics" 
+                : "personalized learning materials, courses, and resources tailored to your career goals"}.
             </p>
             <Button 
               onClick={handleUpgradeClick}
@@ -54,11 +60,10 @@ const ProUpgradeNotice = () => {
         </Card>
       </div>
 
-      <UpgradeModal
-        isOpen={showUpgradeModal}
+      <CreditCardModal
+        isOpen={showCreditCardModal}
         onClose={handleClose}
-        onUpgrade={handleUpgrade}
-        featureName="Personalized Learning Resources"
+        onSuccess={handleSuccess}
       />
     </>
   );

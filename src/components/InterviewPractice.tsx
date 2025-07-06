@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useInterviewSession } from "@/hooks/useInterviewSession";
@@ -8,7 +7,7 @@ import InterviewSession from "./interview/InterviewSession";
 import InterviewHistory from "./interview/InterviewHistory";
 import InterviewError from "./interview/InterviewError";
 import InterviewLoading from "./interview/InterviewLoading";
-import InterviewProUpgrade from "./interview/InterviewProUpgrade";
+import ProUpgradeNotice from "./learningResources/ProUpgradeNotice";
 import UpgradeModal from "./notifications/UpgradeModal";
 
 const InterviewPractice = () => {
@@ -101,8 +100,8 @@ const InterviewPractice = () => {
           onUpgrade={handleUpgrade}
           featureName="AI-Powered Interview Practice"
         />
-        {/* Show the pro upgrade component when modal is closed */}
-        {!showUpgradeModal && <InterviewProUpgrade />}
+        {/* Show the pro upgrade notice when modal is closed */}
+        {!showUpgradeModal && <ProUpgradeNotice featureName="AI-Powered Interview Practice" />}
       </>
     );
   }
