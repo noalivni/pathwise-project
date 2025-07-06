@@ -1,7 +1,8 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, MapPin, GraduationCap, Briefcase, Award, Crown, CreditCard, Target, Edit3 } from "lucide-react";
+import { User, MapPin, GraduationCap, Briefcase, Award, Crown, CreditCard, Target } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +12,7 @@ const UserProfile = () => {
   const { profile, user } = useAuth();
   const [skillRatings, setSkillRatings] = useState<{ [key: string]: number }>({});
   const [softSkillRatings, setSoftSkillRatings] = useState<{ [key: string]: number }>({});
+  const [assessmentSkills, setAssessmentSkills] = useState<{ skill: string; rating: number; level: string; color: string }[]>([]);
 
   useEffect(() => {
     const fetchSkillRatings = async () => {
@@ -28,7 +30,6 @@ const UserProfile = () => {
           const softSkillsAssessment = assessments.find(a => a.assessment_type === 'soft_skills');
 
           if (hardSkillsAssessment?.technical_skills) {
-            // Type guard to ensure we have the correct type
             const technicalSkills = hardSkillsAssessment.technical_skills;
             if (typeof technicalSkills === 'object' && technicalSkills !== null && !Array.isArray(technicalSkills)) {
               const skillsObj: { [key: string]: number } = {};
@@ -38,11 +39,24 @@ const UserProfile = () => {
                 }
               });
               setSkillRatings(skillsObj);
+
+              // Create filtered skills for display (only 2+)
+              const filteredSkills = Object.entries(technicalSkills)
+                .filter(([_, rating]) => (rating as number) >= 2)
+                .map(([skill, rating]) => {
+                  const skillInfo = getSkillLevel(rating as number);
+                  return {
+                    skill,
+                    rating: rating as number,
+                    level: skillInfo.level,
+                    color: skillInfo.color
+                  };
+                });
+              setAssessmentSkills(filteredSkills);
             }
           }
 
           if (softSkillsAssessment?.soft_skills) {
-            // Type guard to ensure we have the correct type
             const softSkills = softSkillsAssessment.soft_skills;
             if (typeof softSkills === 'object' && softSkills !== null && !Array.isArray(softSkills)) {
               const skillsObj: { [key: string]: number } = {};
@@ -196,45 +210,27 @@ const UserProfile = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-sm text-pathwise-text-muted">Technical Skills</h3>
-              <Button variant="ghost" size="sm">
-                <Edit3 className="w-4 h-4 mr-1" />
-                Edit Skills
-              </Button>
-            </div>
+            <h3 className="font-semibold text-sm text-pathwise-text-muted mb-2">Technical Skills</h3>
             <div className="flex flex-wrap gap-2">
-              {profile.hard_skills && profile.hard_skills.length > 0 ? (
-                profile.hard_skills.map((skill, index) => {
-                  const rating = skillRatings[skill] || 0;
-                  const skillInfo = getSkillLevel(rating);
-                  return (
-                    <div key={index} className="flex items-center gap-1">
-                      <Badge variant="outline" className={`${skillInfo.color} text-white`}>
-                        {formatSkillName(skill)}
-                      </Badge>
-                      {rating > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          ({rating}/4)
-                        </span>
-                      )}
-                    </div>
-                  );
-                })
+              {assessmentSkills.length > 0 ? (
+                assessmentSkills.map((skillData, index) => (
+                  <div key={index} className="flex items-center gap-1">
+                    <Badge variant="outline" className={`${skillData.color} text-white`}>
+                      {formatSkillName(skillData.skill)}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      ({skillData.rating}/4)
+                    </span>
+                  </div>
+                ))
               ) : (
-                <p className="text-pathwise-text-secondary">No skills added yet</p>
+                <p className="text-pathwise-text-secondary">Complete a Hard Skills Assessment to see your skills here</p>
               )}
             </div>
           </div>
           
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-sm text-pathwise-text-muted">Soft Skills</h3>
-              <Button variant="ghost" size="sm">
-                <Edit3 className="w-4 h-4 mr-1" />
-                Edit Skills
-              </Button>
-            </div>
+            <h3 className="font-semibold text-sm text-pathwise-text-muted mb-2">Soft Skills</h3>
             <div className="flex flex-wrap gap-2">
               {Object.keys(softSkillRatings).length > 0 ? (
                 Object.entries(softSkillRatings).map(([skill, rating], index) => (

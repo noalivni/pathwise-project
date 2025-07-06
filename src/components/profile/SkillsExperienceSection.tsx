@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Award, Briefcase, Edit3, Save, X } from "lucide-react";
-import { useState } from "react";
+import { Award, Briefcase } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { getSkillLevel } from "@/utils/hardSkillsUtils";
 
 interface SkillsExperienceData {
@@ -22,22 +22,54 @@ interface SkillsExperienceSectionProps {
 }
 
 const SkillsExperienceSection = ({ isEditing, formData, onFormDataChange, onSkillsChange }: SkillsExperienceSectionProps) => {
-  const [editingSkill, setEditingSkill] = useState<string | null>(null);
-  const [skillRating, setSkillRating] = useState(2);
+  const { user } = useAuth();
+  const [assessmentSkills, setAssessmentSkills] = useState<{ skill: string; rating: number; level: string; color: string }[]>([]);
 
-  const handleSkillEdit = (skillName: string) => {
-    setEditingSkill(skillName);
-    // You could fetch the current rating from assessment data here
-    setSkillRating(2);
+  useEffect(() => {
+    const fetchAssessmentSkills = async () => {
+      if (!user) return;
+
+      try {
+        const { data: assessments } = await supabase
+          .from('skills_assessments')
+          .select('technical_skills')
+          .eq('user_id', user.id)
+          .eq('assessment_type', 'hard_skills')
+          .order('completed_at', { ascending: false })
+          .limit(1);
+
+        if (assessments && assessments.length > 0 && assessments[0].technical_skills) {
+          const technicalSkills = assessments[0].technical_skills;
+          if (typeof technicalSkills === 'object' && technicalSkills !== null && !Array.isArray(technicalSkills)) {
+            const filteredSkills = Object.entries(technicalSkills)
+              .filter(([_, rating]) => (rating as number) >= 2) // Only show Intermediate (2), Advanced (3), Expert (4)
+              .map(([skill, rating]) => {
+                const skillInfo = getSkillLevel(rating as number);
+                return {
+                  skill,
+                  rating: rating as number,
+                  level: skillInfo.level,
+                  color: skillInfo.color
+                };
+              });
+            setAssessmentSkills(filteredSkills);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching assessment skills:', error);
+      }
+    };
+
+    fetchAssessmentSkills();
+  }, [user]);
+
+  const formatSkillName = (name: string) => {
+    return name
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   };
-
-  const handleSkillSave = () => {
-    // Here you would save the skill rating to Supabase
-    console.log(`Saving skill: ${editingSkill} with rating: ${skillRating}`);
-    setEditingSkill(null);
-  };
-
-  const skillInfo = getSkillLevel(skillRating);
 
   return (
     <Card>
@@ -60,74 +92,21 @@ const SkillsExperienceSection = ({ isEditing, formData, onFormDataChange, onSkil
             />
           ) : (
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.hard_skills && formData.hard_skills.length > 0 ? (
-                formData.hard_skills.map((skill, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Badge variant="outline" className="cursor-pointer" onClick={() => handleSkillEdit(skill)}>
-                      {skill}
+              {assessmentSkills.length > 0 ? (
+                assessmentSkills.map((skillData, index) => (
+                  <div key={index} className="flex items-center gap-1">
+                    <Badge variant="outline" className={`${skillData.color} text-white`}>
+                      {formatSkillName(skillData.skill)}
                     </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSkillEdit(skill)}
-                      className="p-1 h-6 w-6"
-                    >
-                      <Edit3 className="w-3 h-3" />
-                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                      ({skillData.rating}/4)
+                    </span>
                   </div>
                 ))
               ) : (
-                <p className="text-pathwise-text-secondary">No skills added yet</p>
+                <p className="text-pathwise-text-secondary">Complete a Hard Skills Assessment to see your skills here</p>
               )}
             </div>
-          )}
-          
-          {editingSkill && (
-            <Card className="mt-4 p-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium">Edit {editingSkill}</h4>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditingSkill(null)}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary mb-2">
-                    {skillInfo.level}
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-4">
-                    ({skillRating}/4)
-                  </div>
-                </div>
-                
-                <Slider
-                  value={[skillRating]}
-                  onValueChange={(value) => setSkillRating(value[0])}
-                  max={4}
-                  min={0}
-                  step={1}
-                  className="w-full"
-                />
-                
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Not familiar</span>
-                  <span>Basic</span>
-                  <span>Intermediate</span>
-                  <span>Advanced</span>
-                  <span>Expert</span>
-                </div>
-                
-                <Button onClick={handleSkillSave} className="w-full">
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Rating
-                </Button>
-              </div>
-            </Card>
           )}
         </div>
         
