@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -10,12 +11,14 @@ interface PastAssessmentResultsDisplayProps {
   skillRatings: { [key: string]: number };
   assessmentType: 'hard_skills' | 'soft_skills';
   relevantSkills: Array<{ name: string; category?: string; icon?: string }>;
+  fieldOfInterest?: string;
 }
 
 const PastAssessmentResultsDisplay = ({
   skillRatings,
   assessmentType,
-  relevantSkills
+  relevantSkills,
+  fieldOfInterest = 'General'
 }: PastAssessmentResultsDisplayProps) => {
   const getSkillInfo = (rating: number) => {
     return assessmentType === 'hard_skills' 
@@ -39,7 +42,6 @@ const PastAssessmentResultsDisplay = ({
     const ratings = Object.values(skillRatings);
     const avgRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
     const highSkills = Object.entries(skillRatings).filter(([_, rating]) => rating >= 3);
-    const lowSkills = Object.entries(skillRatings).filter(([_, rating]) => rating <= 1);
 
     if (assessmentType === 'hard_skills') {
       const insights = [];
@@ -83,7 +85,6 @@ const PastAssessmentResultsDisplay = ({
   const generateProfessionalProfile = () => {
     const ratings = Object.values(skillRatings);
     const avgRating = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-    const highSkills = Object.entries(skillRatings).filter(([_, rating]) => rating >= 3);
 
     if (assessmentType === 'hard_skills') {
       if (avgRating >= 3) {
@@ -109,6 +110,16 @@ const PastAssessmentResultsDisplay = ({
 
   return (
     <div className="space-y-6">
+      {/* Header with Profile Summary */}
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-foreground">
+          {assessmentType === 'hard_skills' ? 'Hard Skills' : 'Soft Skills'} Assessment Results
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Your Profile: {fieldOfInterest === 'General' ? 'General Skills' : fieldOfInterest}
+        </p>
+      </div>
+
       {/* Skills Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {relevantSkills.map((skill, index) => {
@@ -151,7 +162,7 @@ const PastAssessmentResultsDisplay = ({
       {/* Insights Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center text-pathwise-text">
+          <CardTitle className="flex items-center text-foreground">
             <Lightbulb className="mr-2 h-5 w-5 text-yellow-500" />
             Insights
           </CardTitle>
@@ -160,7 +171,7 @@ const PastAssessmentResultsDisplay = ({
           {insights.map((insight, index) => (
             <div key={index} className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-              <p className="text-pathwise-text-secondary">{insight}</p>
+              <p className="text-muted-foreground">{insight}</p>
             </div>
           ))}
         </CardContent>
@@ -169,13 +180,13 @@ const PastAssessmentResultsDisplay = ({
       {/* Professional Profile Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center text-pathwise-text">
+          <CardTitle className="flex items-center text-foreground">
             <User className="mr-2 h-5 w-5 text-blue-500" />
             Your Current Professional Profile
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-pathwise-text-secondary leading-relaxed mb-4">
+          <p className="text-muted-foreground leading-relaxed mb-4">
             {professionalProfile}
           </p>
           <Button 
