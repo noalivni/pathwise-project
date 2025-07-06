@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Users, TrendingUp, PlayCircle, Briefcase } from "lucide-react";
+import { Users, TrendingUp, PlayCircle, Briefcase, UserCheck, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface MonthlyData {
@@ -17,8 +17,14 @@ interface JobRoleData {
   color: string;
 }
 
+interface UserBreakdown {
+  total: number;
+  free: number;
+  premium: number;
+}
+
 const AdminDashboard = () => {
-  const [totalUsers, setTotalUsers] = useState(0);
+  const [userBreakdown, setUserBreakdown] = useState<UserBreakdown>({ total: 0, free: 0, premium: 0 });
   const [totalInterviews, setTotalInterviews] = useState(0);
   const [totalJobMatches, setTotalJobMatches] = useState(0);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
@@ -74,19 +80,24 @@ const AdminDashboard = () => {
       setLoading(true);
       console.log('Fetching dashboard data...');
 
-      // Fetch total users count
-      const { count: usersCount, error: usersError } = await supabase
+      // Fetch user breakdown by subscription status
+      const { data: allProfiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*', { count: 'exact', head: true });
+        .select('subscription_status');
 
-      if (usersError) {
-        console.error('Error fetching users count:', usersError);
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
       } else {
-        console.log('Users count:', usersCount);
-        setTotalUsers(usersCount || 0);
+        console.log('All profiles data:', allProfiles);
+        const total = allProfiles?.length || 0;
+        const free = allProfiles?.filter(p => p.subscription_status === 'free' || !p.subscription_status).length || 0;
+        const premium = allProfiles?.filter(p => p.subscription_status === 'premium').length || 0;
+        
+        setUserBreakdown({ total, free, premium });
+        console.log('User breakdown:', { total, free, premium });
       }
 
-      // Fetch total interview sessions (using completed_at instead of created_at)
+      // Fetch total interview sessions
       const { count: interviewCount, error: interviewError } = await supabase
         .from('interview_sessions')
         .select('*', { count: 'exact', head: true });
@@ -110,43 +121,45 @@ const AdminDashboard = () => {
         setTotalJobMatches(jobMatchesCount || 0);
       }
 
-      // Fetch monthly user registration data (last 6 months) using created_at
+      // Fetch monthly user registration data for full year (Jan-Dec)
       const { data: profilesData, error: profilesDataError } = await supabase
         .from('profiles')
         .select('created_at')
-        .gte('created_at', new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString())
+        .gte('created_at', new Date(new Date().getFullYear(), 0, 1).toISOString())
         .order('created_at', { ascending: true });
 
       if (profilesDataError) {
         console.error('Error fetching profiles data:', profilesDataError);
       }
 
-      // Process monthly user data
-      const monthlyUserData = processMonthlyData(profilesData || [], 'created_at');
+      // Process monthly user data for full year
+      const monthlyUserData = processMonthlyDataFullYear(profilesData || [], 'created_at');
 
-      // Fetch monthly interview data (using completed_at since created_at doesn't exist)
+      // Fetch monthly interview data for full year
       const { data: interviewData, error: interviewDataError } = await supabase
         .from('interview_sessions')
         .select('completed_at')
         .not('completed_at', 'is', null)
-        .gte('completed_at', new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString())
+        .gte('completed_at', new Date(new Date().getFullYear(), 0, 1).toISOString())
         .order('completed_at', { ascending: true });
 
       if (interviewDataError) {
         console.error('Error fetching interview data:', interviewDataError);
       }
 
-      const monthlyInterviewData = processMonthlyData(interviewData || [], 'completed_at');
+      const monthlyInterviewData = processMonthlyDataFullYear(interviewData || [], 'completed_at');
 
       // Combine monthly data
       const combinedMonthlyData = combineMonthlyData(monthlyUserData, monthlyInterviewData);
       setMonthlyData(combinedMonthlyData);
 
-      // Fetch popular job roles data
+      // Fetch popular job roles data based on interactions (views, bookmarks)
       const { data: jobMatchData, error: jobMatchError } = await supabase
         .from('user_job_matches')
         .select(`
           job_role_id,
+          is_bookmarked,
+          viewed_at,
           job_roles!inner(job_title)
         `);
 
@@ -154,7 +167,7 @@ const AdminDashboard = () => {
         console.error('Error fetching job match data:', jobMatchError);
       } else {
         console.log('Job match data:', jobMatchData);
-        const jobRoleStats = processJobRoleData(jobMatchData || []);
+        const jobRoleStats = processJobInteractionData(jobMatchData || []);
         setPopularJobs(jobRoleStats);
       }
 
@@ -165,24 +178,22 @@ const AdminDashboard = () => {
     }
   };
 
-  const processMonthlyData = (data: any[], dateField: string) => {
+  const processMonthlyDataFullYear = (data: any[], dateField: string) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthlyCount: { [key: string]: number } = {};
+    const currentYear = new Date().getFullYear();
 
-    // Initialize last 6 months
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const monthKey = months[date.getMonth()];
-      monthlyCount[monthKey] = 0;
-    }
+    // Initialize all 12 months
+    months.forEach(month => {
+      monthlyCount[month] = 0;
+    });
 
     // Count items by month
     data.forEach(item => {
       if (item[dateField]) {
         const date = new Date(item[dateField]);
-        const monthKey = months[date.getMonth()];
-        if (monthlyCount.hasOwnProperty(monthKey)) {
+        if (date.getFullYear() === currentYear) {
+          const monthKey = months[date.getMonth()];
           monthlyCount[monthKey]++;
         }
       }
@@ -192,7 +203,7 @@ const AdminDashboard = () => {
   };
 
   const combineMonthlyData = (userData: { [key: string]: number }, interviewData: {[key: string]: number }) => {
-    const months = Object.keys(userData);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months.map(month => ({
       month,
       users: userData[month] || 0,
@@ -200,36 +211,50 @@ const AdminDashboard = () => {
     }));
   };
 
-  const processJobRoleData = (data: any[]): JobRoleData[] => {
-    console.log('Processing job role data:', data);
+  const processJobInteractionData = (data: any[]): JobRoleData[] => {
+    console.log('Processing job interaction data:', data);
     
     if (!data || data.length === 0) {
-      console.log('No job role data to process');
+      console.log('No job interaction data to process');
       return [];
     }
 
-    const jobCounts: { [key: string]: number } = {};
+    const jobStats: { [key: string]: { views: number, bookmarks: number, total: number } } = {};
     
     data.forEach(match => {
       const jobTitle = match.job_roles?.job_title || 'Unknown';
-      jobCounts[jobTitle] = (jobCounts[jobTitle] || 0) + 1;
+      
+      if (!jobStats[jobTitle]) {
+        jobStats[jobTitle] = { views: 0, bookmarks: 0, total: 0 };
+      }
+      
+      // Count views (every match record represents a view)
+      jobStats[jobTitle].views++;
+      
+      // Count bookmarks
+      if (match.is_bookmarked) {
+        jobStats[jobTitle].bookmarks++;
+      }
+      
+      // Calculate total interactions (views + bookmarks weighted)
+      jobStats[jobTitle].total = jobStats[jobTitle].views + (jobStats[jobTitle].bookmarks * 2);
     });
 
-    console.log('Job counts:', jobCounts);
+    console.log('Job interaction stats:', jobStats);
 
-    const sortedJobs = Object.entries(jobCounts)
-      .sort(([,a], [,b]) => b - a)
+    const sortedJobs = Object.entries(jobStats)
+      .sort(([,a], [,b]) => b.total - a.total)
       .slice(0, 5);
 
     const colors = ['#14B8A6', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444'];
     
-    const result = sortedJobs.map(([name, count], index) => ({
+    const result = sortedJobs.map(([name, stats], index) => ({
       name,
-      value: count,
+      value: stats.total,
       color: colors[index] || '#6B7280',
     }));
 
-    console.log('Processed job role data:', result);
+    console.log('Processed job interaction data:', result);
     return result;
   };
 
@@ -242,8 +267,8 @@ const AdminDashboard = () => {
             <p className="text-slate-600 mt-1">Loading platform analytics...</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          {[...Array(5)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
                 <div className="h-16 bg-gray-200 rounded"></div>
@@ -264,16 +289,38 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Enhanced KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
             <Users className="h-4 w-4 text-teal-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalUsers.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">Registered users</p>
+            <div className="text-2xl font-bold">{userBreakdown.total.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">All registered users</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Free Users</CardTitle>
+            <UserCheck className="h-4 w-4 text-gray-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{userBreakdown.free.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Free subscription</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Premium Users</CardTitle>
+            <Crown className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{userBreakdown.premium.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Premium subscription</p>
           </CardContent>
         </Card>
 
@@ -298,31 +345,15 @@ const AdminDashboard = () => {
             <p className="text-xs text-muted-foreground">Total matches created</p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Growth Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {monthlyData.length > 1 ? 
-                `+${Math.round(((monthlyData[monthlyData.length - 1]?.users || 0) / Math.max((monthlyData[monthlyData.length - 2]?.users || 1), 1) - 1) * 100)}%` : 
-                'N/A'
-              }
-            </div>
-            <p className="text-xs text-muted-foreground">Month over month</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly New Users */}
+        {/* Monthly New Users - Full Year */}
         <Card>
           <CardHeader>
-            <CardTitle>Monthly New Users</CardTitle>
-            <CardDescription>User growth over time</CardDescription>
+            <CardTitle>Monthly New Users ({new Date().getFullYear()})</CardTitle>
+            <CardDescription>User registrations throughout the year</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -363,11 +394,11 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* Popular Job Roles */}
+      {/* Most Popular Job Roles - Enhanced */}
       <Card>
         <CardHeader>
           <CardTitle>Most Popular Job Roles</CardTitle>
-          <CardDescription>Job roles with the most matches</CardDescription>
+          <CardDescription>Job roles with the most user interactions (views and bookmarks)</CardDescription>
         </CardHeader>
         <CardContent>
           {popularJobs.length > 0 ? (
@@ -391,22 +422,26 @@ const AdminDashboard = () => {
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex flex-col space-y-2 lg:ml-8">
-                {popularJobs.map((item, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: item.color }}
-                    ></div>
-                    <span className="text-sm">{item.name}</span>
-                    <span className="text-sm text-gray-500">({item.value})</span>
-                  </div>
-                ))}
+                {popularJobs.map((item, index) => {
+                  const total = popularJobs.reduce((sum, job) => sum + job.value, 0);
+                  const percentage = ((item.value / total) * 100).toFixed(1);
+                  return (
+                    <div key={index} className="flex items-center space-x-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: item.color }}
+                      ></div>
+                      <span className="text-sm">{item.name}</span>
+                      <span className="text-sm text-gray-500">({item.value} interactions - {percentage}%)</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">No job role data available yet</p>
-              <p className="text-sm text-gray-400 mt-2">Data will appear as users get job matches</p>
+              <p className="text-gray-500">No job interaction data available yet</p>
+              <p className="text-sm text-gray-400 mt-2">Data will appear as users interact with job roles</p>
             </div>
           )}
         </CardContent>
