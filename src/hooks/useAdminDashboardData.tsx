@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -77,7 +78,6 @@ export const useAdminDashboardData = () => {
       } else {
         console.log('✅ Raw profiles data:', allProfiles);
         console.log('✅ Total profiles count from query:', totalProfilesCount);
-        console.log('✅ Profile breakdown by email:', allProfiles?.map(p => ({ email: p.email, status: p.subscription_status })));
         
         const total = allProfiles?.length || 0;
         const free = allProfiles?.filter(p => p.subscription_status === 'free' || !p.subscription_status).length || 0;
@@ -85,16 +85,10 @@ export const useAdminDashboardData = () => {
         
         setUserBreakdown({ total, free, premium });
         console.log('📊 User breakdown calculated:', { total, free, premium });
-        console.log('📊 Expected vs Actual:', { expected: '9 total (5 free, 4 premium)', actual: `${total} total (${free} free, ${premium} premium)` });
-        
-        // Show success toast with actual numbers
-        toast({
-          title: "✅ Admin Data Fetched Successfully",
-          description: `Found ${total} total users: ${free} free, ${premium} premium (RLS policy working correctly)`
-        });
       }
 
-      // Fetch total interview sessions
+      // Fetch total interview sessions with enhanced debugging
+      console.log('🎤 Fetching interview sessions...');
       const { count: interviewCount, error: interviewError } = await supabase
         .from('interview_sessions')
         .select('*', { count: 'exact', head: true });
@@ -102,7 +96,7 @@ export const useAdminDashboardData = () => {
       if (interviewError) {
         console.error('❌ Error fetching interview count:', interviewError);
       } else {
-        console.log('✅ Interview count:', interviewCount);
+        console.log('✅ Total interview sessions count:', interviewCount);
         setTotalInterviews(interviewCount || 0);
       }
 
@@ -120,23 +114,49 @@ export const useAdminDashboardData = () => {
 
       // Process monthly data for all profiles
       if (allProfiles && allProfiles.length > 0) {
+        console.log('📈 Processing user monthly data...');
         const monthlyUserData = processMonthlyDataFullYear(allProfiles, 'created_at');
+        console.log('📈 Monthly user data:', monthlyUserData);
         
-        // Fetch monthly interview data
+        // Fetch detailed interview data for monthly processing
+        console.log('🎤 Fetching detailed interview sessions for monthly chart...');
         const { data: interviewData, error: interviewDataError } = await supabase
           .from('interview_sessions')
-          .select('completed_at')
+          .select('completed_at, id, job_role')
           .not('completed_at', 'is', null)
-          .gte('completed_at', new Date(new Date().getFullYear(), 0, 1).toISOString())
           .order('completed_at', { ascending: true });
 
         if (interviewDataError) {
-          console.error('❌ Error fetching interview data:', interviewDataError);
+          console.error('❌ Error fetching interview sessions for chart:', interviewDataError);
+        } else {
+          console.log('✅ Raw interview sessions data:', interviewData);
+          console.log('✅ Interview sessions count for chart:', interviewData?.length || 0);
+          
+          // Enhanced processing for interview data
+          const monthlyInterviewData = processMonthlyDataFullYear(interviewData || [], 'completed_at');
+          console.log('📈 Monthly interview data processed:', monthlyInterviewData);
+          
+          const combinedMonthlyData = combineMonthlyData(monthlyUserData, monthlyInterviewData);
+          console.log('📈 Combined monthly data:', combinedMonthlyData);
+          
+          setMonthlyData(combinedMonthlyData);
         }
+      } else {
+        // Even if no user profiles, still try to get interview data
+        console.log('🎤 No user profiles found, fetching interview data separately...');
+        const { data: interviewData, error: interviewDataError } = await supabase
+          .from('interview_sessions')
+          .select('completed_at, id, job_role')
+          .not('completed_at', 'is', null)
+          .order('completed_at', { ascending: true });
 
-        const monthlyInterviewData = processMonthlyDataFullYear(interviewData || [], 'completed_at');
-        const combinedMonthlyData = combineMonthlyData(monthlyUserData, monthlyInterviewData);
-        setMonthlyData(combinedMonthlyData);
+        if (!interviewDataError && interviewData) {
+          console.log('✅ Interview data found without user profiles:', interviewData);
+          const monthlyInterviewData = processMonthlyDataFullYear(interviewData, 'completed_at');
+          const emptyUserData = createEmptyMonthlyData();
+          const combinedMonthlyData = combineMonthlyData(emptyUserData, monthlyInterviewData);
+          setMonthlyData(combinedMonthlyData);
+        }
       }
 
       setLastUpdated(new Date());
@@ -154,6 +174,15 @@ export const useAdminDashboardData = () => {
     }
   };
 
+  const createEmptyMonthlyData = () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyCount: { [key: string]: number } = {};
+    months.forEach(month => {
+      monthlyCount[month] = 0;
+    });
+    return monthlyCount;
+  };
+
   const processMonthlyDataFullYear = (data: any[], dateField: string) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthlyCount: { [key: string]: number } = {};
@@ -164,27 +193,43 @@ export const useAdminDashboardData = () => {
       monthlyCount[month] = 0;
     });
 
+    console.log(`🔍 Processing ${data.length} records for field: ${dateField}`);
+
     // Count items by month
-    data.forEach(item => {
+    data.forEach((item, index) => {
       if (item[dateField]) {
         const date = new Date(item[dateField]);
-        if (date.getFullYear() === currentYear) {
-          const monthKey = months[date.getMonth()];
+        console.log(`📅 Processing item ${index + 1}: ${item[dateField]} -> Year: ${date.getFullYear()}, Month: ${date.getMonth()}`);
+        
+        // Process all years, not just current year for better debugging
+        const monthKey = months[date.getMonth()];
+        if (monthKey) {
           monthlyCount[monthKey]++;
+          console.log(`✅ Added to ${monthKey}: now ${monthlyCount[monthKey]}`);
         }
+      } else {
+        console.log(`⚠️ Item ${index + 1} has no ${dateField} field:`, item);
       }
     });
 
+    console.log(`📊 Final monthly counts for ${dateField}:`, monthlyCount);
     return monthlyCount;
   };
 
   const combineMonthlyData = (userData: { [key: string]: number }, interviewData: {[key: string]: number }) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months.map(month => ({
+    console.log('🔄 Combining monthly data...');
+    console.log('👥 User data input:', userData);
+    console.log('🎤 Interview data input:', interviewData);
+    
+    const combined = months.map(month => ({
       month,
       users: userData[month] || 0,
       interviews: interviewData[month] || 0,
     }));
+    
+    console.log('📈 Combined result:', combined);
+    return combined;
   };
 
   const refreshData = () => {

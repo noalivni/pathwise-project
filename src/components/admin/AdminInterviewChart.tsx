@@ -13,8 +13,20 @@ interface AdminInterviewChartProps {
 }
 
 const AdminInterviewChart = ({ monthlyData }: AdminInterviewChartProps) => {
-  const hasInterviewData = monthlyData && monthlyData.some(data => data.interviews > 0);
-  const totalInterviews = monthlyData.reduce((sum, data) => sum + data.interviews, 0);
+  console.log('🎤 AdminInterviewChart received data:', monthlyData);
+  
+  const hasInterviewData = monthlyData && monthlyData.some(data => {
+    console.log(`📊 Checking month ${data.month}: ${data.interviews} interviews`);
+    return data.interviews > 0;
+  });
+  
+  const totalInterviews = monthlyData ? monthlyData.reduce((sum, data) => sum + data.interviews, 0) : 0;
+  
+  console.log('🎤 Interview chart analysis:', {
+    hasData: hasInterviewData,
+    totalInterviews,
+    monthlyDataLength: monthlyData?.length || 0
+  });
 
   // Custom tooltip component with proper dark mode styling
   const CustomTooltip = ({ active, payload, label }: any) => {
