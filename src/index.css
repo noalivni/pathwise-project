@@ -224,9 +224,9 @@
   }
 
   .dark .recharts-tooltip-content {
-    background-color: hsl(var(--popover)) !important;
+    background-color: hsl(227 58% 28%) !important; /* Dark blue background */
     border-color: hsl(var(--border)) !important;
-    color: hsl(var(--popover-foreground)) !important;
+    color: #F0F0F0 !important; /* Light gray/white text for visibility */
   }
 
   /* Fix chart text colors in dark mode */
@@ -247,5 +247,14 @@
   .dark .recharts-cartesian-grid line {
     stroke: hsl(var(--border)) !important;
     opacity: 0.3;
+  }
+
+  /* Enhanced tooltip text visibility in dark mode */
+  .dark .recharts-tooltip-content .recharts-tooltip-label {
+    color: #F0F0F0 !important; /* Light color for month labels */
+  }
+
+  .dark .recharts-tooltip-content .recharts-tooltip-item {
+    color: #F0F0F0 !important; /* Light color for data values */
   }
 }

@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { LogOut, User, Crown, Home, Target, BookOpen, MessageSquare, FileText, Award, Users, BarChart3, Database } from "lucide-react";
+import { LogOut, User, Crown, Home, Target, BookOpen, MessageSquare, FileText, Award, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -53,10 +53,9 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
     { key: 'profile', label: 'Profile', icon: User },
   ];
 
+  // Removed User Management and Analytics from admin menu items
   const adminMenuItems: MenuItem[] = [
     { key: 'dashboard', label: 'Admin Dashboard', icon: BarChart3 },
-    { key: 'users', label: 'User Management', icon: Users },
-    { key: 'analytics', label: 'Analytics', icon: Database },
   ];
 
   const menuItems = userRole === 'admin' ? adminMenuItems : userMenuItems;
