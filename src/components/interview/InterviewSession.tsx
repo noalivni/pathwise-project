@@ -1,17 +1,10 @@
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Volume2, VolumeX, Loader2 } from "lucide-react";
-
-interface InterviewQuestion {
-  id: number;
-  question: string;
-  category: string;
-  difficulty: string;
-}
+import { InterviewQuestion } from "@/types/interview";
 
 interface InterviewSessionProps {
   currentQuestion: InterviewQuestion;
