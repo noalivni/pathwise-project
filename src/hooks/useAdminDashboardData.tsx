@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -35,10 +34,10 @@ export const useAdminDashboardData = () => {
       setLoading(true);
       console.log('🔄 Fetching admin dashboard data...');
 
-      // Fetch ALL user profiles (not just admin roles)
-      const { data: allProfiles, error: profilesError } = await supabase
+      // Fetch ALL user profiles - this is the correct approach
+      const { data: allProfiles, error: profilesError, count: totalProfilesCount } = await supabase
         .from('profiles')
-        .select('subscription_status, created_at');
+        .select('subscription_status, created_at', { count: 'exact' });
 
       if (profilesError) {
         console.error('❌ Error fetching profiles:', profilesError);
@@ -48,18 +47,21 @@ export const useAdminDashboardData = () => {
           description: profilesError.message
         });
       } else {
-        console.log('✅ Profiles data:', allProfiles);
+        console.log('✅ Raw profiles data:', allProfiles);
+        console.log('✅ Total profiles count from query:', totalProfilesCount);
+        
         const total = allProfiles?.length || 0;
         const free = allProfiles?.filter(p => p.subscription_status === 'free' || !p.subscription_status).length || 0;
         const premium = allProfiles?.filter(p => p.subscription_status === 'premium').length || 0;
         
         setUserBreakdown({ total, free, premium });
-        console.log('📊 User breakdown:', { total, free, premium });
+        console.log('📊 User breakdown calculated:', { total, free, premium });
+        console.log('📊 Count vs Length comparison:', { countFromQuery: totalProfilesCount, lengthFromData: total });
         
-        // Show success toast for debugging
+        // Show detailed breakdown in toast for debugging
         toast({
-          title: "User Data Updated",
-          description: `Found ${total} total users (${free} free, ${premium} premium)`
+          title: "User Data Fetched Successfully",
+          description: `Found ${total} total users: ${free} free, ${premium} premium (Query count: ${totalProfilesCount})`
         });
       }
 
@@ -108,7 +110,7 @@ export const useAdminDashboardData = () => {
         setMonthlyData(combinedMonthlyData);
       }
 
-      // Fetch job interaction data with improved handling
+      // Fetch job interaction data
       const { data: jobMatchData, error: jobMatchError } = await supabase
         .from('user_job_matches')
         .select(`
@@ -120,22 +122,10 @@ export const useAdminDashboardData = () => {
 
       if (jobMatchError) {
         console.error('❌ Error fetching job match data:', jobMatchError);
-        toast({
-          variant: "destructive",
-          title: "Error fetching job data",
-          description: jobMatchError.message
-        });
       } else {
         console.log('✅ Job match data:', jobMatchData);
         const jobRoleStats = processJobInteractionData(jobMatchData || []);
         setPopularJobs(jobRoleStats);
-        
-        if (jobRoleStats.length > 0) {
-          toast({
-            title: "Job Data Updated",
-            description: `Found ${jobRoleStats.length} popular jobs`
-          });
-        }
       }
 
       setLastUpdated(new Date());
@@ -216,20 +206,14 @@ export const useAdminDashboardData = () => {
 
     console.log('📊 Job interaction stats:', jobStats);
 
-    // Get all jobs, even if there's only one or two
+    // Show all jobs, even if there's only one or two
     const sortedJobs = Object.entries(jobStats)
       .sort(([,a], [,b]) => b.total - a.total)
-      .slice(0, 8); // Show up to 8 jobs
+      .slice(0, 8);
 
     const colors = [
-      '#14B8A6', // teal
-      '#3B82F6', // blue
-      '#8B5CF6', // purple
-      '#F59E0B', // amber
-      '#EF4444', // red
-      '#10B981', // emerald
-      '#F97316', // orange
-      '#6366F1'  // indigo
+      '#14B8A6', '#3B82F6', '#8B5CF6', '#F59E0B', 
+      '#EF4444', '#10B981', '#F97316', '#6366F1'
     ];
     
     const result = sortedJobs.map(([name, stats], index) => ({
@@ -250,7 +234,7 @@ export const useAdminDashboardData = () => {
   useEffect(() => {
     fetchDashboardData();
     
-    // Set up real-time subscriptions
+    // Set up real-time subscriptions for live updates
     const profilesChannel = supabase
       .channel('profiles-changes')
       .on('postgres_changes', 
