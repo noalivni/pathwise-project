@@ -59,6 +59,14 @@ export const useResumeData = () => {
       .join(' ');
   };
 
+  const formatSkillName = (name: string) => {
+    return name
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   const fetchSkillsFromAssessments = async () => {
     if (!user) return { hardSkills: [], softSkills: [] };
 
@@ -78,7 +86,7 @@ export const useResumeData = () => {
         if (hardSkillsAssessment?.technical_skills) {
           hardSkills = Object.entries(hardSkillsAssessment.technical_skills)
             .filter(([_, rating]) => (rating as number) >= 2) // Only Intermediate, Advanced, Expert
-            .map(([skill, _]) => skill);
+            .map(([skill, _]) => formatSkillName(skill));
         }
 
         // Get latest soft skills assessment - only include ratings 3, 4 (Advanced, Expert)
@@ -97,11 +105,30 @@ export const useResumeData = () => {
     }
   };
 
+  // Merge manual skills and assessment skills, avoiding duplicates
+  const getMergedHardSkills = (manualSkills: string[], assessmentSkills: string[]) => {
+    const allSkills = [...manualSkills];
+    
+    assessmentSkills.forEach(assessmentSkill => {
+      const isAlreadyIncluded = manualSkills.some(manualSkill => 
+        manualSkill.toLowerCase() === assessmentSkill.toLowerCase()
+      );
+      
+      if (!isAlreadyIncluded) {
+        allSkills.push(assessmentSkill);
+      }
+    });
+    
+    return allSkills;
+  };
+
   // Auto-populate from profile data and assessments
   useEffect(() => {
     const loadResumeData = async () => {
       if (profile) {
         const { hardSkills, softSkills } = await fetchSkillsFromAssessments();
+        const manualSkills = profile.hard_skills || [];
+        const mergedHardSkills = getMergedHardSkills(manualSkills, hardSkills);
         
         setResumeData({
           fullName: profile.full_name || "",
@@ -114,7 +141,7 @@ export const useResumeData = () => {
             year: profile.graduation_year || "",
             institution: ""
           },
-          skills: hardSkills.length > 0 ? hardSkills : (profile.hard_skills || []),
+          skills: mergedHardSkills, // Include both manual and assessment skills
           softSkills: softSkills,
           experience: profile.career_history || "",
           careerGoal: profile.field_of_interest || "",
