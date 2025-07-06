@@ -18,6 +18,8 @@ const JobRecommendations = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { careerRoles, loading, handleBookmark } = useJobRecommendations();
 
+  const isPro = profile?.subscription_status === 'premium';
+
   const filteredRoles = careerRoles.filter(role => {
     const skills = parseSkillsFromText(role.Skills_required || '');
     return role.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -37,28 +39,30 @@ const JobRecommendations = () => {
     <div className="space-y-6">
       <JobRecommendationsHeader fieldOfInterest={profile?.field_of_interest} />
 
-      <JobSearchInput 
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex-1">
+          <JobSearchInput 
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+          />
+        </div>
+        
+        {filteredRoles.length > 0 && (
+          <Button 
+            onClick={handleLearnMoreClick}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2 whitespace-nowrap"
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            Learn More About These Careers
+          </Button>
+        )}
+      </div>
 
       {filteredRoles.length > 0 ? (
-        <>
-          <JobRecommendationsList 
-            roles={filteredRoles}
-            onBookmark={handleBookmark}
-          />
-          
-          <div className="flex justify-center pt-6">
-            <Button 
-              onClick={handleLearnMoreClick}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 text-lg"
-            >
-              <BookOpen className="w-5 h-5 mr-2" />
-              Learn More About These Careers
-            </Button>
-          </div>
-        </>
+        <JobRecommendationsList 
+          roles={filteredRoles}
+          onBookmark={handleBookmark}
+        />
       ) : (
         <JobRecommendationsEmptyState 
           searchTerm={searchTerm}
