@@ -8,6 +8,7 @@ import InterviewSession from "./interview/InterviewSession";
 import InterviewHistory from "./interview/InterviewHistory";
 import InterviewError from "./interview/InterviewError";
 import InterviewLoading from "./interview/InterviewLoading";
+import InterviewProUpgrade from "./interview/InterviewProUpgrade";
 import UpgradeModal from "./notifications/UpgradeModal";
 
 const InterviewPractice = () => {
@@ -100,18 +101,8 @@ const InterviewPractice = () => {
           onUpgrade={handleUpgrade}
           featureName="AI-Powered Interview Practice"
         />
-        {/* Show the setup component in the background when modal is closed */}
-        {!showUpgradeModal && (
-          <InterviewSetup
-            selectedRole={selectedRole}
-            onRoleChange={setSelectedRole}
-            onStartSession={startInterviewSession}
-            onShowHistory={() => setShowHistory(true)}
-            pastInterviewsCount={pastInterviews.length}
-            isLoadingHistory={isLoadingHistory}
-            hasQuestions={true}
-          />
-        )}
+        {/* Show the pro upgrade component when modal is closed */}
+        {!showUpgradeModal && <InterviewProUpgrade />}
       </>
     );
   }
