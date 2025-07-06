@@ -30,6 +30,61 @@ interface InterviewSession {
   }>;
 }
 
+// Type guard for InterviewQuestion
+const isInterviewQuestion = (obj: any): obj is InterviewQuestion => {
+  return obj && 
+         typeof obj.id === 'number' &&
+         typeof obj.question === 'string' &&
+         typeof obj.category === 'string' &&
+         typeof obj.difficulty === 'string';
+};
+
+// Type guard for interview response
+const isInterviewResponse = (obj: any): obj is {question: string; response: string; feedback?: string} => {
+  return obj && 
+         typeof obj.question === 'string' &&
+         typeof obj.response === 'string' &&
+         (obj.feedback === undefined || typeof obj.feedback === 'string');
+};
+
+// Safe JSON parser for questions
+const parseQuestions = (data: any): InterviewQuestion[] => {
+  try {
+    let parsed = data;
+    if (typeof data === 'string') {
+      parsed = JSON.parse(data);
+    }
+    
+    if (Array.isArray(parsed)) {
+      return parsed.filter(isInterviewQuestion);
+    }
+    
+    return [];
+  } catch (error) {
+    console.warn('Failed to parse questions:', error);
+    return [];
+  }
+};
+
+// Safe JSON parser for responses
+const parseResponses = (data: any): Array<{question: string; response: string; feedback?: string}> => {
+  try {
+    let parsed = data;
+    if (typeof data === 'string') {
+      parsed = JSON.parse(data);
+    }
+    
+    if (Array.isArray(parsed)) {
+      return parsed.filter(isInterviewResponse);
+    }
+    
+    return [];
+  } catch (error) {
+    console.warn('Failed to parse responses:', error);
+    return [];
+  }
+};
+
 const InterviewPractice = () => {
   const { user, profile } = useAuth();
   const [error, setError] = useState<string>("");
@@ -97,38 +152,15 @@ const InterviewPractice = () => {
       console.log('Raw data from Supabase:', data);
 
       const formattedInterviews: InterviewSession[] = (data || []).map(session => {
-        let questions = [];
-        let responses = [];
-        
-        // Safe JSON parsing with fallbacks
-        try {
-          if (session.questions && typeof session.questions === 'string') {
-            questions = JSON.parse(session.questions);
-          } else if (session.questions && typeof session.questions === 'object') {
-            questions = session.questions as InterviewQuestion[];
-          }
-        } catch (e) {
-          console.warn('Failed to parse questions for session', session.id, e);
-          questions = [];
-        }
-        
-        try {
-          if (session.responses && typeof session.responses === 'string') {
-            responses = JSON.parse(session.responses);
-          } else if (session.responses && typeof session.responses === 'object') {
-            responses = session.responses as Array<{question: string; response: string; feedback?: string}>;
-          }
-        } catch (e) {
-          console.warn('Failed to parse responses for session', session.id, e);
-          responses = [];
-        }
+        const questions = parseQuestions(session.questions);
+        const responses = parseResponses(session.responses);
 
         return {
           id: session.id,
           job_role: session.job_role || 'Unknown Role',
           completed_at: session.completed_at || new Date().toISOString(),
-          questions: Array.isArray(questions) ? questions : [],
-          responses: Array.isArray(responses) ? responses : []
+          questions,
+          responses
         };
       });
 
