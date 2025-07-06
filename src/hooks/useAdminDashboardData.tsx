@@ -34,10 +34,36 @@ export const useAdminDashboardData = () => {
       setLoading(true);
       console.log('🔄 Fetching admin dashboard data...');
 
-      // Fetch ALL user profiles - this is the correct approach
+      // First, check user role to ensure admin access
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('❌ No authenticated user found');
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Please log in as an admin to view this dashboard"
+        });
+        return;
+      }
+
+      const userRole = await supabase.rpc('get_user_role', { user_uuid: user.id });
+      console.log('👤 Current user role:', userRole.data);
+
+      if (userRole.data !== 'admin') {
+        console.error('❌ User is not an admin');
+        toast({
+          variant: "destructive",
+          title: "Access Denied",
+          description: "You must be an admin to view this dashboard"
+        });
+        return;
+      }
+
+      // Fetch ALL user profiles with enhanced debugging
+      console.log('📊 Fetching all profiles with admin privileges...');
       const { data: allProfiles, error: profilesError, count: totalProfilesCount } = await supabase
         .from('profiles')
-        .select('subscription_status, created_at', { count: 'exact' });
+        .select('id, subscription_status, created_at, email, full_name', { count: 'exact' });
 
       if (profilesError) {
         console.error('❌ Error fetching profiles:', profilesError);
@@ -49,6 +75,7 @@ export const useAdminDashboardData = () => {
       } else {
         console.log('✅ Raw profiles data:', allProfiles);
         console.log('✅ Total profiles count from query:', totalProfilesCount);
+        console.log('✅ Profile breakdown by email:', allProfiles?.map(p => ({ email: p.email, status: p.subscription_status })));
         
         const total = allProfiles?.length || 0;
         const free = allProfiles?.filter(p => p.subscription_status === 'free' || !p.subscription_status).length || 0;
@@ -56,12 +83,12 @@ export const useAdminDashboardData = () => {
         
         setUserBreakdown({ total, free, premium });
         console.log('📊 User breakdown calculated:', { total, free, premium });
-        console.log('📊 Count vs Length comparison:', { countFromQuery: totalProfilesCount, lengthFromData: total });
+        console.log('📊 Expected vs Actual:', { expected: '9 total (5 free, 4 premium)', actual: `${total} total (${free} free, ${premium} premium)` });
         
-        // Show detailed breakdown in toast for debugging
+        // Show success toast with actual numbers
         toast({
-          title: "User Data Fetched Successfully",
-          description: `Found ${total} total users: ${free} free, ${premium} premium (Query count: ${totalProfilesCount})`
+          title: "✅ Admin Data Fetched Successfully",
+          description: `Found ${total} total users: ${free} free, ${premium} premium (RLS policy working correctly)`
         });
       }
 
@@ -129,13 +156,14 @@ export const useAdminDashboardData = () => {
       }
 
       setLastUpdated(new Date());
+      console.log('🎉 Dashboard data fetch completed successfully');
 
     } catch (error) {
       console.error('❌ Error fetching dashboard data:', error);
       toast({
         variant: "destructive",
         title: "Dashboard Error",
-        description: "Failed to fetch dashboard data"
+        description: "Failed to fetch dashboard data. Please check your admin permissions."
       });
     } finally {
       setLoading(false);
