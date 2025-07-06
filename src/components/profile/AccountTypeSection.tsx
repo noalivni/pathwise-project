@@ -4,14 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Crown, CreditCard } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import CreditCardModal from "@/components/payment/CreditCardModal";
+import ConfirmationModal from "@/components/notifications/ConfirmationModal";
+import { toast } from "@/hooks/use-toast";
 
 interface AccountTypeSectionProps {
   subscriptionStatus: string;
 }
 
 const AccountTypeSection = ({ subscriptionStatus }: AccountTypeSectionProps) => {
+  const { updateProfile } = useAuth();
   const [showCreditCardModal, setShowCreditCardModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleUpgradeClick = () => {
     setShowCreditCardModal(true);
@@ -19,6 +25,26 @@ const AccountTypeSection = ({ subscriptionStatus }: AccountTypeSectionProps) => 
 
   const handleCreditCardSuccess = () => {
     // Profile will refresh automatically via auth context
+  };
+
+  const handleCancelSubscription = async () => {
+    setIsProcessing(true);
+    try {
+      await updateProfile({ subscription_status: 'free' });
+      toast({
+        title: "Subscription Cancelled",
+        description: "Your subscription has been cancelled. You are now on the Free plan.",
+      });
+      setShowCancelModal(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel subscription. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -51,7 +77,16 @@ const AccountTypeSection = ({ subscriptionStatus }: AccountTypeSectionProps) => 
               )}
             </div>
             
-            {subscriptionStatus !== 'premium' && (
+            {subscriptionStatus === 'premium' ? (
+              <Button
+                onClick={() => setShowCancelModal(true)}
+                variant="outline"
+                size="sm"
+                className="text-red-600 border-red-200 hover:bg-red-50"
+              >
+                Cancel Premium Subscription
+              </Button>
+            ) : (
               <Button
                 onClick={handleUpgradeClick}
                 className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
@@ -69,6 +104,17 @@ const AccountTypeSection = ({ subscriptionStatus }: AccountTypeSectionProps) => 
         isOpen={showCreditCardModal}
         onClose={() => setShowCreditCardModal(false)}
         onSuccess={handleCreditCardSuccess}
+      />
+
+      <ConfirmationModal
+        title="Cancel Premium Subscription"
+        description="Are you sure you want to cancel your Premium subscription? You will lose access to premium features."
+        isOpen={showCancelModal}
+        onConfirm={handleCancelSubscription}
+        onCancel={() => setShowCancelModal(false)}
+        confirmText="Yes, Cancel"
+        cancelText="No, Keep Premium"
+        variant="destructive"
       />
     </>
   );
