@@ -209,4 +209,43 @@
   .btn-hover:hover {
     background-color: hsl(var(--standard-hover)) !important;
   }
+
+  /* Chart styling fixes for dark/light mode */
+  .recharts-tooltip-wrapper {
+    outline: none !important;
+  }
+
+  .recharts-tooltip-content {
+    background-color: hsl(var(--popover)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    color: hsl(var(--popover-foreground)) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  .dark .recharts-tooltip-content {
+    background-color: hsl(var(--popover)) !important;
+    border-color: hsl(var(--border)) !important;
+    color: hsl(var(--popover-foreground)) !important;
+  }
+
+  /* Fix chart text colors in dark mode */
+  .dark .recharts-cartesian-axis-tick-value {
+    fill: hsl(var(--muted-foreground)) !important;
+  }
+
+  .dark .recharts-text {
+    fill: hsl(var(--foreground)) !important;
+  }
+
+  /* Chart grid line colors */
+  .recharts-cartesian-grid line {
+    stroke: hsl(var(--border)) !important;
+    opacity: 0.5;
+  }
+
+  .dark .recharts-cartesian-grid line {
+    stroke: hsl(var(--border)) !important;
+    opacity: 0.3;
+  }
 }

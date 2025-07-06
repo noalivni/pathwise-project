@@ -17,16 +17,35 @@ interface AdminJobsChartProps {
 
 const AdminJobsChart = ({ popularJobs, onRefresh }: AdminJobsChartProps) => {
   const hasData = popularJobs && popularJobs.length > 0;
-  const totalInteractions = popularJobs.reduce((sum, job) => sum + job.value, 0);
+  const totalRecommendations = popularJobs.reduce((sum, job) => sum + job.value, 0);
+
+  // Custom tooltip component with proper dark mode styling
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0];
+      const percentage = ((data.value / totalRecommendations) * 100).toFixed(1);
+      
+      return (
+        <div className="bg-popover border border-border rounded-lg shadow-lg p-3 text-popover-foreground">
+          <p className="font-medium">{data.name}</p>
+          <p className="text-sm">
+            <span className="font-medium">{data.value}</span> recommendations
+          </p>
+          <p className="text-sm text-muted-foreground">{percentage}%</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Most Popular Job Roles</CardTitle>
+          <CardTitle className="text-foreground">Most Recommended Job Roles</CardTitle>
           <CardDescription>
-            Job roles with the most user interactions (views and bookmarks)
-            {hasData && ` • ${totalInteractions} total interactions`}
+            Job roles most frequently recommended to users
+            {hasData && ` • ${totalRecommendations} total recommendations`}
           </CardDescription>
         </div>
         {onRefresh && (
@@ -53,17 +72,12 @@ const AdminJobsChart = ({ popularJobs, onRefresh }: AdminJobsChartProps) => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip 
-                  formatter={(value: number, name: string) => [
-                    `${value} interactions`,
-                    name
-                  ]}
-                />
+                <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-col space-y-3 lg:ml-8 mt-4 lg:mt-0">
               {popularJobs.map((item, index) => {
-                const percentage = ((item.value / totalInteractions) * 100).toFixed(1);
+                const percentage = ((item.value / totalRecommendations) * 100).toFixed(1);
                 return (
                   <div key={index} className="flex items-center space-x-3">
                     <div 
@@ -71,9 +85,9 @@ const AdminJobsChart = ({ popularJobs, onRefresh }: AdminJobsChartProps) => {
                       style={{ backgroundColor: item.color }}
                     ></div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{item.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {item.value} interactions • {percentage}%
+                      <div className="text-sm font-medium text-foreground truncate">{item.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {item.value} recommendations • {percentage}%
                       </div>
                     </div>
                   </div>
@@ -84,14 +98,15 @@ const AdminJobsChart = ({ popularJobs, onRefresh }: AdminJobsChartProps) => {
         ) : (
           <div className="text-center py-12">
             <div className="text-4xl mb-4">📊</div>
-            <p className="text-gray-500 text-lg mb-2">No job interaction data yet</p>
-            <p className="text-sm text-gray-400 mb-4">
-              Data will appear as users view, bookmark, and interact with job roles
+            <p className="text-muted-foreground text-lg mb-2">No job recommendation data yet</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Data will appear as the system recommends jobs to users based on their profiles
             </p>
-            <div className="text-xs text-gray-400 bg-gray-50 p-3 rounded-lg">
-              <strong>Tip:</strong> Job popularity is calculated based on:
-              <br />• Views (1 point each)
-              <br />• Bookmarks (2 points each)
+            <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg">
+              <strong>How it works:</strong>
+              <br />• Each user receives 4 job recommendations
+              <br />• Chart shows most frequently recommended roles
+              <br />• Data updates as more users complete their profiles
             </div>
           </div>
         )}

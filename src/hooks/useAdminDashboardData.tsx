@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { useJobRecommendationStats } from "./useJobRecommendationStats";
 
 interface MonthlyData {
   month: string;
@@ -25,9 +26,10 @@ export const useAdminDashboardData = () => {
   const [totalInterviews, setTotalInterviews] = useState(0);
   const [totalJobMatches, setTotalJobMatches] = useState(0);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
-  const [popularJobs, setPopularJobs] = useState<JobRoleData[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const { jobRecommendationStats, loading: jobStatsLoading, refreshStats } = useJobRecommendationStats();
 
   const fetchDashboardData = async () => {
     try {
@@ -137,24 +139,6 @@ export const useAdminDashboardData = () => {
         setMonthlyData(combinedMonthlyData);
       }
 
-      // Fetch job interaction data
-      const { data: jobMatchData, error: jobMatchError } = await supabase
-        .from('user_job_matches')
-        .select(`
-          job_role_id,
-          is_bookmarked,
-          viewed_at,
-          job_roles!inner(job_title)
-        `);
-
-      if (jobMatchError) {
-        console.error('❌ Error fetching job match data:', jobMatchError);
-      } else {
-        console.log('✅ Job match data:', jobMatchData);
-        const jobRoleStats = processJobInteractionData(jobMatchData || []);
-        setPopularJobs(jobRoleStats);
-      }
-
       setLastUpdated(new Date());
       console.log('🎉 Dashboard data fetch completed successfully');
 
@@ -203,60 +187,10 @@ export const useAdminDashboardData = () => {
     }));
   };
 
-  const processJobInteractionData = (data: any[]): JobRoleData[] => {
-    console.log('📈 Processing job interaction data:', data);
-    
-    if (!data || data.length === 0) {
-      console.log('⚠️ No job interaction data to process');
-      return [];
-    }
-
-    const jobStats: { [key: string]: { views: number, bookmarks: number, total: number } } = {};
-    
-    data.forEach(match => {
-      const jobTitle = match.job_roles?.job_title || 'Unknown Job';
-      
-      if (!jobStats[jobTitle]) {
-        jobStats[jobTitle] = { views: 0, bookmarks: 0, total: 0 };
-      }
-      
-      // Count views (every match record represents a view)
-      jobStats[jobTitle].views++;
-      
-      // Count bookmarks (with higher weight)
-      if (match.is_bookmarked) {
-        jobStats[jobTitle].bookmarks++;
-      }
-      
-      // Calculate total interactions (views + weighted bookmarks)
-      jobStats[jobTitle].total = jobStats[jobTitle].views + (jobStats[jobTitle].bookmarks * 2);
-    });
-
-    console.log('📊 Job interaction stats:', jobStats);
-
-    // Show all jobs, even if there's only one or two
-    const sortedJobs = Object.entries(jobStats)
-      .sort(([,a], [,b]) => b.total - a.total)
-      .slice(0, 8);
-
-    const colors = [
-      '#14B8A6', '#3B82F6', '#8B5CF6', '#F59E0B', 
-      '#EF4444', '#10B981', '#F97316', '#6366F1'
-    ];
-    
-    const result = sortedJobs.map(([name, stats], index) => ({
-      name,
-      value: stats.total,
-      color: colors[index] || '#6B7280',
-    }));
-
-    console.log('✅ Final job chart data:', result);
-    return result;
-  };
-
   const refreshData = () => {
     console.log('🔄 Manual refresh triggered');
     fetchDashboardData();
+    refreshStats();
   };
 
   useEffect(() => {
@@ -308,8 +242,8 @@ export const useAdminDashboardData = () => {
     totalInterviews,
     totalJobMatches,
     monthlyData,
-    popularJobs,
-    loading,
+    popularJobs: jobRecommendationStats,
+    loading: loading || jobStatsLoading,
     lastUpdated,
     refreshData
   };
