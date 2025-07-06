@@ -7,13 +7,14 @@ import InterviewSetup from "./interview/InterviewSetup";
 import InterviewSession from "./interview/InterviewSession";
 import InterviewHistory from "./interview/InterviewHistory";
 import InterviewError from "./interview/InterviewError";
-import InterviewProUpgrade from "./interview/InterviewProUpgrade";
 import InterviewLoading from "./interview/InterviewLoading";
+import UpgradeModal from "./notifications/UpgradeModal";
 
 const InterviewPractice = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const {
     selectedRole,
@@ -49,6 +50,17 @@ const InterviewPractice = () => {
     fetchPastInterviews().finally(() => setLoading(false));
   };
 
+  const handleUpgrade = () => {
+    // Profile will refresh automatically via auth context
+    setShowUpgradeModal(false);
+  };
+
+  const handleClose = () => {
+    setShowUpgradeModal(false);
+    // Navigate back to dashboard
+    window.dispatchEvent(new CustomEvent('navigate-to-dashboard'));
+  };
+
   useEffect(() => {
     const initializeComponent = async () => {
       try {
@@ -77,9 +89,18 @@ const InterviewPractice = () => {
     return <InterviewError error={error} onRetry={handleRetry} />;
   }
 
-  // Non-premium users
+  // Non-premium users - show upgrade modal instead of upgrade page
   if (!isPro) {
-    return <InterviewProUpgrade />;
+    return (
+      <>
+        <UpgradeModal
+          isOpen={true}
+          onClose={handleClose}
+          onUpgrade={handleUpgrade}
+          featureName="AI-Powered Interview Practice"
+        />
+      </>
+    );
   }
 
   // History view

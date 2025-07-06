@@ -14,13 +14,19 @@ const LearningResources = () => {
     setShowUpgradeModal(false);
   };
 
+  const handleClose = () => {
+    setShowUpgradeModal(false);
+    // Navigate back to dashboard
+    window.dispatchEvent(new CustomEvent('navigate-to-dashboard'));
+  };
+
   // Show upgrade modal for Free users
   if (!isPro) {
     return (
       <>
         <UpgradeModal
           isOpen={true}
-          onClose={() => {}} // Don't allow closing since this is the main content
+          onClose={handleClose}
           onUpgrade={handleUpgrade}
           featureName="Personalized Learning Resources"
         />
