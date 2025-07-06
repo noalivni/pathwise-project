@@ -38,6 +38,10 @@ const UpgradeModal = ({
     onClose();
   };
 
+  const handleMaybeLater = () => {
+    onClose();
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -84,7 +88,7 @@ const UpgradeModal = ({
               
               <div className="flex gap-3">
                 <Button 
-                  onClick={onClose} 
+                  onClick={handleMaybeLater} 
                   variant="outline" 
                   className="flex-1"
                 >

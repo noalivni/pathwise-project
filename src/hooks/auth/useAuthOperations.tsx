@@ -42,15 +42,47 @@ export const useAuthOperations = () => {
 
   const signOut = useCallback(async () => {
     try {
+      // First attempt a normal sign out
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      
+      // If there's an error, try to handle it gracefully
+      if (error) {
+        console.warn('Sign out error:', error.message);
+        
+        // If it's a session-related error, clear local storage and proceed
+        if (error.message.includes('session') || error.message.includes('token')) {
+          // Clear any remaining auth tokens from localStorage
+          Object.keys(localStorage).forEach((key) => {
+            if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+              localStorage.removeItem(key);
+            }
+          });
+          
+          // Don't throw the error, just log it and continue
+          console.log('Cleared auth tokens due to session error');
+          return;
+        }
+        
+        // For other errors, still throw them
+        throw error;
+      }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
+      // Only show error toast for non-session related errors
+      if (!error.message.includes('session') && !error.message.includes('token')) {
+        toast({
+          title: "Logout Error",
+          description: "There was an issue logging out. Please try again.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+      
+      // For session errors, just clear storage and proceed silently
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
       });
-      throw error;
     }
   }, []);
 

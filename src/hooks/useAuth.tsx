@@ -32,12 +32,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = useCallback(async () => {
     try {
       await authSignOut();
+      
+      // Always clear state regardless of auth response
       setUser(null);
       setSession(null);
       setProfile(null);
       setUserRole('user');
+      
+      // Clear any remaining local storage items
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
     } catch (error) {
-      // Error already handled in useAuthOperations
+      // Even if logout fails, clear the local state
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setUserRole('user');
+      
+      // Clear local storage
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Error already handled in useAuthOperations, so don't re-throw
+      console.log('Logout completed despite error - local state cleared');
     }
   }, [authSignOut]);
 
