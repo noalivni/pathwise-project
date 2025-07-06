@@ -245,6 +245,10 @@ const UserProfile = () => {
               {mergedSkills.length > 0 ? (
                 mergedSkills.map((skill, index) => {
                   const assessmentData = getAssessmentDataForSkill(skill);
+                  const isManualSkill = (profile?.hard_skills || []).some(manualSkill => 
+                    manualSkill.toLowerCase() === skill.toLowerCase()
+                  );
+                  
                   return (
                     <div key={index} className="flex items-center gap-1">
                       <Badge 
@@ -252,6 +256,9 @@ const UserProfile = () => {
                         className={assessmentData ? `${assessmentData.color} text-white` : 'bg-blue-100 text-blue-800 border-blue-200'}
                       >
                         {skill}
+                        {isManualSkill && !assessmentData && (
+                          <span className="ml-1 text-xs opacity-75">(Manual)</span>
+                        )}
                       </Badge>
                       {assessmentData && (
                         <span className="text-xs text-muted-foreground">

@@ -13,7 +13,7 @@ import SkillsExperienceSection from "@/components/profile/SkillsExperienceSectio
 const EditableProfile = () => {
   const { profile, updateProfile, user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [assessmentSkills, setAssessmentSkills] = useState<string[]>([]);
+  const [assessmentSkills, setAssessmentSkills] = useState<{ skill: string; rating: number; level: string; color: string }[]>([]);
   const [formData, setFormData] = useState({
     full_name: "",
     location: "",
@@ -21,7 +21,7 @@ const EditableProfile = () => {
     fields_of_study: "",
     graduation_year: "",
     field_of_interest: "",
-    hard_skills: [] as string[],
+    hard_skills: [] as string[], // Only manual skills
     career_history: ""
   });
 
@@ -41,16 +41,18 @@ const EditableProfile = () => {
         if (assessments && assessments.length > 0 && assessments[0].technical_skills) {
           const technicalSkills = assessments[0].technical_skills;
           if (typeof technicalSkills === 'object' && technicalSkills !== null && !Array.isArray(technicalSkills)) {
-            const qualifyingSkills = Object.entries(technicalSkills)
-              .filter(([_, rating]) => (rating as number) >= 2)
-              .map(([skill, _]) => {
-                return skill
-                  .replace(/_/g, ' ')
-                  .split(' ')
-                  .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                  .join(' ');
+            const filteredSkills = Object.entries(technicalSkills)
+              .filter(([_, rating]) => (rating as number) >= 2) // Only show Intermediate (2), Advanced (3), Expert (4)
+              .map(([skill, rating]) => {
+                const skillInfo = getSkillLevel(rating as number);
+                return {
+                  skill,
+                  rating: rating as number,
+                  level: skillInfo.level,
+                  color: skillInfo.color
+                };
               });
-            setAssessmentSkills(qualifyingSkills);
+            setAssessmentSkills(filteredSkills);
           }
         }
       } catch (error) {
@@ -63,20 +65,7 @@ const EditableProfile = () => {
 
   useEffect(() => {
     if (profile) {
-      // Merge manual skills with assessment skills, avoiding duplicates
-      const manualSkills = profile.hard_skills || [];
-      const mergedSkills = [...manualSkills];
-      
-      assessmentSkills.forEach(assessmentSkill => {
-        const isAlreadyIncluded = manualSkills.some(manualSkill => 
-          manualSkill.toLowerCase() === assessmentSkill.toLowerCase()
-        );
-        
-        if (!isAlreadyIncluded) {
-          mergedSkills.push(assessmentSkill);
-        }
-      });
-
+      // Only use manual skills from the profile, don't merge with assessment skills
       setFormData({
         full_name: profile.full_name || "",
         location: profile.location || "",
@@ -84,22 +73,15 @@ const EditableProfile = () => {
         fields_of_study: profile.fields_of_study || "",
         graduation_year: profile.graduation_year || "",
         field_of_interest: profile.field_of_interest || "",
-        hard_skills: mergedSkills,
+        hard_skills: profile.hard_skills || [], // Only manual skills
         career_history: profile.career_history || ""
       });
     }
-  }, [profile, assessmentSkills]);
+  }, [profile]);
 
   const handleSave = async () => {
     try {
-      // Only save the manually entered skills to the profile
-      // Assessment skills will be merged during display
-      const skillsToSave = formData.hard_skills.filter(skill => {
-        return !assessmentSkills.some(assessmentSkill => 
-          assessmentSkill.toLowerCase() === skill.toLowerCase()
-        );
-      });
-
+      // Save only the manual skills to the profile
       await updateProfile({
         full_name: formData.full_name,
         location: formData.location,
@@ -107,7 +89,7 @@ const EditableProfile = () => {
         fields_of_study: formData.fields_of_study,
         graduation_year: formData.graduation_year,
         field_of_interest: formData.field_of_interest,
-        hard_skills: skillsToSave,
+        hard_skills: formData.hard_skills, // Only manual skills
         career_history: formData.career_history
       });
       
@@ -127,20 +109,7 @@ const EditableProfile = () => {
 
   const handleCancel = () => {
     if (profile) {
-      // Reset to original merged skills
-      const manualSkills = profile.hard_skills || [];
-      const mergedSkills = [...manualSkills];
-      
-      assessmentSkills.forEach(assessmentSkill => {
-        const isAlreadyIncluded = manualSkills.some(manualSkill => 
-          manualSkill.toLowerCase() === assessmentSkill.toLowerCase()
-        );
-        
-        if (!isAlreadyIncluded) {
-          mergedSkills.push(assessmentSkill);
-        }
-      });
-
+      // Reset to original manual skills only
       setFormData({
         full_name: profile.full_name || "",
         location: profile.location || "",
@@ -148,7 +117,7 @@ const EditableProfile = () => {
         fields_of_study: profile.fields_of_study || "",
         graduation_year: profile.graduation_year || "",
         field_of_interest: profile.field_of_interest || "",
-        hard_skills: mergedSkills,
+        hard_skills: profile.hard_skills || [], // Only manual skills
         career_history: profile.career_history || ""
       });
     }
@@ -209,9 +178,10 @@ const EditableProfile = () => {
       <SkillsExperienceSection
         isEditing={isEditing}
         formData={{
-          hard_skills: formData.hard_skills,
+          hard_skills: formData.hard_skills, // Only manual skills for editing
           career_history: formData.career_history
         }}
+        assessmentSkills={assessmentSkills} // Pass assessment skills separately
         onFormDataChange={handleFormDataChange}
         onSkillsChange={handleSkillsChange}
       />
