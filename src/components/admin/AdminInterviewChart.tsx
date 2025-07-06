@@ -25,7 +25,8 @@ const AdminInterviewChart = ({ monthlyData }: AdminInterviewChartProps) => {
   console.log('🎤 Interview chart analysis:', {
     hasData: hasInterviewData,
     totalInterviews,
-    monthlyDataLength: monthlyData?.length || 0
+    monthlyDataLength: monthlyData?.length || 0,
+    dataBreakdown: monthlyData?.map(d => ({ month: d.month, interviews: d.interviews }))
   });
 
   // Custom tooltip component with proper dark mode styling
@@ -71,10 +72,10 @@ const AdminInterviewChart = ({ monthlyData }: AdminInterviewChartProps) => {
               Encourage users to try the Interview Practice feature!
             </p>
             <div className="text-xs text-muted-foreground bg-muted p-3 rounded-lg">
-              <strong>How it works:</strong>
-              <br />• Users complete interview practice sessions
-              <br />• Chart shows monthly completion trends
-              <br />• Data updates as more users practice interviews
+              <strong>Debug Info:</strong>
+              <br />• Total data points: {monthlyData?.length || 0}
+              <br />• Total interviews found: {totalInterviews}
+              <br />• Has interview data: {hasInterviewData ? 'Yes' : 'No'}
             </div>
           </div>
         )}

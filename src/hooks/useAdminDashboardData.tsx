@@ -129,11 +129,11 @@ export const useAdminDashboardData = () => {
         if (interviewDataError) {
           console.error('❌ Error fetching interview sessions for chart:', interviewDataError);
         } else {
-          console.log('✅ Raw interview sessions data:', interviewData);
+          console.log('✅ Raw interview sessions data for chart:', interviewData);
           console.log('✅ Interview sessions count for chart:', interviewData?.length || 0);
           
-          // Enhanced processing for interview data
-          const monthlyInterviewData = processMonthlyDataFullYear(interviewData || [], 'completed_at');
+          // Fixed processing for interview data
+          const monthlyInterviewData = processMonthlyInterviewData(interviewData || []);
           console.log('📈 Monthly interview data processed:', monthlyInterviewData);
           
           const combinedMonthlyData = combineMonthlyData(monthlyUserData, monthlyInterviewData);
@@ -152,7 +152,7 @@ export const useAdminDashboardData = () => {
 
         if (!interviewDataError && interviewData) {
           console.log('✅ Interview data found without user profiles:', interviewData);
-          const monthlyInterviewData = processMonthlyDataFullYear(interviewData, 'completed_at');
+          const monthlyInterviewData = processMonthlyInterviewData(interviewData);
           const emptyUserData = createEmptyMonthlyData();
           const combinedMonthlyData = combineMonthlyData(emptyUserData, monthlyInterviewData);
           setMonthlyData(combinedMonthlyData);
@@ -186,7 +186,6 @@ export const useAdminDashboardData = () => {
   const processMonthlyDataFullYear = (data: any[], dateField: string) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthlyCount: { [key: string]: number } = {};
-    const currentYear = new Date().getFullYear();
 
     // Initialize all 12 months
     months.forEach(month => {
@@ -201,7 +200,6 @@ export const useAdminDashboardData = () => {
         const date = new Date(item[dateField]);
         console.log(`📅 Processing item ${index + 1}: ${item[dateField]} -> Year: ${date.getFullYear()}, Month: ${date.getMonth()}`);
         
-        // Process all years, not just current year for better debugging
         const monthKey = months[date.getMonth()];
         if (monthKey) {
           monthlyCount[monthKey]++;
@@ -213,6 +211,40 @@ export const useAdminDashboardData = () => {
     });
 
     console.log(`📊 Final monthly counts for ${dateField}:`, monthlyCount);
+    return monthlyCount;
+  };
+
+  // New dedicated function for processing interview data
+  const processMonthlyInterviewData = (interviewData: any[]) => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyCount: { [key: string]: number } = {};
+
+    // Initialize all 12 months
+    months.forEach(month => {
+      monthlyCount[month] = 0;
+    });
+
+    console.log(`🎤 Processing ${interviewData.length} interview sessions for monthly chart`);
+
+    // Count interview sessions by month
+    interviewData.forEach((session, index) => {
+      if (session.completed_at) {
+        const date = new Date(session.completed_at);
+        const monthIndex = date.getMonth(); // 0-11
+        const monthKey = months[monthIndex];
+        
+        console.log(`🎤 Interview ${index + 1}: ${session.completed_at} -> Month: ${monthKey} (${monthIndex})`);
+        
+        if (monthKey) {
+          monthlyCount[monthKey]++;
+          console.log(`✅ Interview added to ${monthKey}: now ${monthlyCount[monthKey]}`);
+        }
+      } else {
+        console.log(`⚠️ Interview session ${index + 1} has no completed_at:`, session);
+      }
+    });
+
+    console.log(`🎤 Final interview monthly counts:`, monthlyCount);
     return monthlyCount;
   };
 
@@ -229,6 +261,11 @@ export const useAdminDashboardData = () => {
     }));
     
     console.log('📈 Combined result:', combined);
+    
+    // Validate that interview data is being preserved
+    const totalInterviews = combined.reduce((sum, data) => sum + data.interviews, 0);
+    console.log('🎤 Total interviews in combined data:', totalInterviews);
+    
     return combined;
   };
 
