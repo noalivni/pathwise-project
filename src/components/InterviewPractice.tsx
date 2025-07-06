@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,8 +9,6 @@ import { MessageCircle, Mic, MicOff, Volume2, VolumeX, Play, Pause, Crown, Lock,
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import InterviewHistory from "@/components/interview/InterviewHistory";
-import InterviewFeedback from "@/components/interview/InterviewFeedback";
 
 interface InterviewQuestion {
   id: number;
@@ -67,33 +66,10 @@ const InterviewPractice = () => {
   ];
 
   useEffect(() => {
-    checkPremiumAccess();
-    if (isPro) {
+    if (isPro && user) {
       fetchPastInterviews();
     }
   }, [user, isPro]);
-
-  const checkPremiumAccess = async () => {
-    if (!user) return;
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('subscription_status')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.subscription_status !== 'premium') {
-        toast({
-          title: "Premium Feature",
-          description: "Interview Practice is available for premium users. Upgrade to access this feature.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Error checking premium access:', error);
-    }
-  };
 
   const fetchPastInterviews = async () => {
     if (!user) return;
@@ -102,8 +78,6 @@ const InterviewPractice = () => {
     setHistoryError("");
 
     try {
-      console.log('Fetching interview sessions for user:', user.id);
-      
       const { data, error } = await supabase
         .from('interview_sessions')
         .select('*')
@@ -111,36 +85,26 @@ const InterviewPractice = () => {
         .order('completed_at', { ascending: false });
 
       if (error) {
-        console.error('Supabase error fetching interviews:', error);
-        throw error;
-      }
-
-      console.log('Raw interview data:', data);
-
-      if (!data) {
-        setPastInterviews([]);
-        setIsLoadingHistory(false);
+        console.error('Error fetching interviews:', error);
+        setHistoryError('Failed to load interview history');
         return;
       }
 
-      const formattedInterviews: InterviewSession[] = data.map(session => {
-        console.log('Processing session:', session);
-        
-        // Parse questions and responses safely
+      const formattedInterviews: InterviewSession[] = (data || []).map(session => {
         let questions = [];
         let responses = [];
         
         try {
           questions = session.questions ? JSON.parse(String(session.questions)) : [];
         } catch (e) {
-          console.warn('Failed to parse questions for session', session.id, e);
+          console.warn('Failed to parse questions:', e);
           questions = [];
         }
         
         try {
           responses = session.responses ? JSON.parse(String(session.responses)) : [];
         } catch (e) {
-          console.warn('Failed to parse responses for session', session.id, e);
+          console.warn('Failed to parse responses:', e);
           responses = [];
         }
 
@@ -153,11 +117,10 @@ const InterviewPractice = () => {
         };
       });
 
-      console.log('Formatted interviews:', formattedInterviews);
       setPastInterviews(formattedInterviews);
     } catch (error) {
       console.error('Error fetching past interviews:', error);
-      setHistoryError('Failed to load interview history. Please try again.');
+      setHistoryError('Failed to load interview history');
     } finally {
       setIsLoadingHistory(false);
     }
@@ -187,8 +150,7 @@ const InterviewPractice = () => {
     speakText(selected[0].question);
   };
 
-  const nextQuestion = () => {
-    // Save current response
+  const nextQuestion = async () => {
     if (currentQuestion && userResponse.trim()) {
       const updatedResponses = [...sessionResponses];
       updatedResponses[currentQuestionIndex] = {
@@ -207,7 +169,7 @@ const InterviewPractice = () => {
       setFeedback("");
       speakText(sessionQuestions[nextIndex].question);
     } else {
-      endSession();
+      await endSession();
     }
   };
 
@@ -215,7 +177,6 @@ const InterviewPractice = () => {
     if (!user) return;
 
     try {
-      // Save final response if exists
       let finalResponses = [...sessionResponses];
       if (currentQuestion && userResponse.trim()) {
         finalResponses[currentQuestionIndex] = {
@@ -225,16 +186,13 @@ const InterviewPractice = () => {
         };
       }
 
-      const questionsJson = JSON.stringify(sessionQuestions);
-      const responsesJson = JSON.stringify(finalResponses);
-
       await supabase
         .from('interview_sessions')
         .insert({
           user_id: user.id,
           job_role: selectedRole,
-          questions: questionsJson,
-          responses: responsesJson
+          questions: JSON.stringify(sessionQuestions),
+          responses: JSON.stringify(finalResponses)
         });
 
       await supabase
@@ -286,7 +244,6 @@ const InterviewPractice = () => {
       });
 
       if (response.data?.feedback) {
-        // Ensure feedback is always a string
         const feedbackString = typeof response.data.feedback === 'string' 
           ? response.data.feedback 
           : JSON.stringify(response.data.feedback);
@@ -298,7 +255,6 @@ const InterviewPractice = () => {
       }
     } catch (error) {
       console.error('Error generating feedback:', error);
-      // Fallback to simple feedback
       const feedbackPoints = [
         "Good structure in your response.",
         "Consider providing more specific examples.",
@@ -335,6 +291,7 @@ const InterviewPractice = () => {
     }
   };
 
+  // Non-premium users
   if (!isPro) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -367,23 +324,91 @@ const InterviewPractice = () => {
     );
   }
 
+  // History view
   if (showHistory) {
     return (
-      <InterviewHistory 
-        interviews={pastInterviews}
-        onBack={() => setShowHistory(false)}
-        isLoading={isLoadingHistory}
-        error={historyError}
-      />
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-4">
+          <Button onClick={() => setShowHistory(false)} variant="outline" size="sm">
+            <History className="w-4 h-4 mr-2" />
+            Back to Practice
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800">Interview History</h1>
+            <p className="text-slate-600">Review your past interview practice sessions</p>
+          </div>
+        </div>
+
+        {isLoadingHistory ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Loader2 className="h-8 w-8 text-blue-600 mx-auto mb-4 animate-spin" />
+              <h3 className="text-lg font-medium text-slate-800 mb-2">Loading your interview history...</h3>
+              <p className="text-slate-600">Please wait while we fetch your past sessions.</p>
+            </CardContent>
+          </Card>
+        ) : historyError ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <MessageCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading History</h3>
+              <p className="text-red-600 mb-4">{historyError}</p>
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        ) : pastInterviews.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <MessageCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-slate-800 mb-2">No interview history found yet</h3>
+              <p className="text-slate-600">Start practicing to see results here!</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {pastInterviews.map((interview) => (
+              <Card key={interview.id} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageCircle className="h-5 w-5" />
+                        {interview.job_role}
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-2 mt-1">
+                        <History className="h-4 w-4" />
+                        {new Date(interview.completed_at).toLocaleDateString()}
+                      </CardDescription>
+                    </div>
+                    <Badge variant="secondary">
+                      {interview.responses.length} questions
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-slate-600">
+                    <p>{interview.responses.filter(r => r.response.trim()).length} responses completed</p>
+                    <p>{interview.responses.filter(r => r.feedback).length} feedback received</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     );
   }
 
+  // Main interview practice view (not started)
   if (!sessionStarted) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <div className="text-center flex-1">
             <h1 className="text-3xl font-bold text-foreground">Interview Practice</h1>
+            <div className="w-24 h-1 bg-gray-300 mx-auto mt-2"></div>
             <p className="text-muted-foreground mt-2">Practice common interview questions with AI feedback</p>
           </div>
           <Badge className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white">
@@ -452,23 +477,31 @@ const InterviewPractice = () => {
               </Select>
             </div>
 
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h3 className="font-medium text-blue-800 mb-2">What to expect:</h3>
-              <ul className="text-sm text-blue-700 space-y-1">
-                <li>• 5 randomized interview questions</li>
-                <li>• Text-to-speech for questions</li>
-                <li>• AI-powered detailed feedback on your responses</li>
-                <li>• Save and review past interview sessions</li>
-              </ul>
-            </div>
+            {interviewQuestions.length === 0 ? (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-yellow-800 text-center">
+                  No interview practice content available. Please check back soon!
+                </p>
+              </div>
+            ) : (
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <h3 className="font-medium text-blue-800 mb-2">What to expect:</h3>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• 5 randomized interview questions</li>
+                  <li>• Text-to-speech for questions</li>
+                  <li>• AI-powered detailed feedback on your responses</li>
+                  <li>• Save and review past interview sessions</li>
+                </ul>
+              </div>
+            )}
 
             <Button
               onClick={startInterviewSession}
               className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-              disabled={!selectedRole}
+              disabled={!selectedRole || interviewQuestions.length === 0}
             >
               <MessageCircle className="w-4 h-4 mr-2" />
-              Start Interview Practice
+              Start New Session
             </Button>
           </CardContent>
         </Card>
@@ -476,11 +509,13 @@ const InterviewPractice = () => {
     );
   }
 
+  // Active interview session
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Interview Practice</h1>
+          <div className="w-24 h-1 bg-gray-300 mt-2"></div>
           <p className="text-muted-foreground mt-1">
             Question {currentQuestionIndex + 1} of {sessionQuestions.length} • {selectedRole}
           </p>
@@ -544,7 +579,13 @@ const InterviewPractice = () => {
           </div>
 
           {feedback && (
-            <InterviewFeedback feedback={feedback} />
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageCircle className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium text-green-800">Feedback</span>
+              </div>
+              <p className="text-green-700 text-sm leading-relaxed">{feedback}</p>
+            </div>
           )}
 
           <div className="flex justify-between">
