@@ -9,6 +9,13 @@ const LearningResources = () => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const isPro = profile?.subscription_status === 'premium';
 
+  // Show upgrade modal for Free users on component mount
+  useState(() => {
+    if (!isPro) {
+      setShowUpgradeModal(true);
+    }
+  });
+
   const handleUpgrade = () => {
     // Profile will refresh automatically via auth context
     setShowUpgradeModal(false);
@@ -16,8 +23,6 @@ const LearningResources = () => {
 
   const handleClose = () => {
     setShowUpgradeModal(false);
-    // Navigate back to dashboard
-    window.dispatchEvent(new CustomEvent('navigate-to-dashboard'));
   };
 
   // Show upgrade modal for Free users
@@ -25,11 +30,13 @@ const LearningResources = () => {
     return (
       <>
         <UpgradeModal
-          isOpen={true}
+          isOpen={showUpgradeModal}
           onClose={handleClose}
           onUpgrade={handleUpgrade}
           featureName="Personalized Learning Resources"
         />
+        {/* Show the actual component in the background when modal is closed */}
+        {!showUpgradeModal && <LearningResourcesContainer />}
       </>
     );
   }

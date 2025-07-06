@@ -57,8 +57,6 @@ const InterviewPractice = () => {
 
   const handleClose = () => {
     setShowUpgradeModal(false);
-    // Navigate back to dashboard
-    window.dispatchEvent(new CustomEvent('navigate-to-dashboard'));
   };
 
   useEffect(() => {
@@ -68,6 +66,9 @@ const InterviewPractice = () => {
         
         if (isPro && user) {
           await fetchPastInterviews();
+        } else if (!isPro) {
+          // Show upgrade modal for free users
+          setShowUpgradeModal(true);
         }
       } catch (error) {
         console.error('Error initializing Interview Practice:', error);
@@ -89,16 +90,28 @@ const InterviewPractice = () => {
     return <InterviewError error={error} onRetry={handleRetry} />;
   }
 
-  // Non-premium users - show upgrade modal instead of upgrade page
+  // Non-premium users - show upgrade modal
   if (!isPro) {
     return (
       <>
         <UpgradeModal
-          isOpen={true}
+          isOpen={showUpgradeModal}
           onClose={handleClose}
           onUpgrade={handleUpgrade}
           featureName="AI-Powered Interview Practice"
         />
+        {/* Show the setup component in the background when modal is closed */}
+        {!showUpgradeModal && (
+          <InterviewSetup
+            selectedRole={selectedRole}
+            onRoleChange={setSelectedRole}
+            onStartSession={startInterviewSession}
+            onShowHistory={() => setShowHistory(true)}
+            pastInterviewsCount={pastInterviews.length}
+            isLoadingHistory={isLoadingHistory}
+            hasQuestions={true}
+          />
+        )}
       </>
     );
   }
