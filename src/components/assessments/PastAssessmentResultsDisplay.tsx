@@ -137,10 +137,7 @@ const PastAssessmentResultsDisplay = ({
                 <div className="space-y-3">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-primary mb-2">
-                      {skillInfo.level}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      ({rating}/{maxRating})
+                      ({rating}/{maxRating}) {skillInfo.level}
                     </div>
                   </div>
                   <Progress value={(rating / maxRating) * 100} className="mb-2" />
