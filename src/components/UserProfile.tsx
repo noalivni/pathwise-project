@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -85,6 +84,35 @@ const UserProfile = () => {
       .join(' ');
   };
 
+  // Merge manual skills and assessment skills, avoiding duplicates
+  const getMergedSkills = () => {
+    const manualSkills = profile?.hard_skills || [];
+    
+    // Create a combined list avoiding duplicates
+    const allSkills = [...manualSkills];
+    
+    assessmentSkills.forEach(assessmentSkill => {
+      const formattedAssessmentSkill = formatSkillName(assessmentSkill.skill);
+      const isAlreadyIncluded = manualSkills.some(manualSkill => 
+        manualSkill.toLowerCase() === formattedAssessmentSkill.toLowerCase()
+      );
+      
+      if (!isAlreadyIncluded) {
+        allSkills.push(formattedAssessmentSkill);
+      }
+    });
+    
+    return allSkills;
+  };
+
+  // Get assessment data for a skill to show rating
+  const getAssessmentDataForSkill = (skillName: string) => {
+    return assessmentSkills.find(assessmentSkill => {
+      const formattedAssessmentSkill = formatSkillName(assessmentSkill.skill);
+      return formattedAssessmentSkill.toLowerCase() === skillName.toLowerCase();
+    });
+  };
+
   if (!profile) {
     return (
       <div className="max-w-4xl mx-auto p-6">
@@ -94,6 +122,8 @@ const UserProfile = () => {
       </div>
     );
   }
+
+  const mergedSkills = getMergedSkills();
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -212,19 +242,27 @@ const UserProfile = () => {
           <div>
             <h3 className="font-semibold text-sm text-pathwise-text-muted mb-2">Technical Skills</h3>
             <div className="flex flex-wrap gap-2">
-              {assessmentSkills.length > 0 ? (
-                assessmentSkills.map((skillData, index) => (
-                  <div key={index} className="flex items-center gap-1">
-                    <Badge variant="outline" className={`${skillData.color} text-white`}>
-                      {formatSkillName(skillData.skill)}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      ({skillData.rating}/4)
-                    </span>
-                  </div>
-                ))
+              {mergedSkills.length > 0 ? (
+                mergedSkills.map((skill, index) => {
+                  const assessmentData = getAssessmentDataForSkill(skill);
+                  return (
+                    <div key={index} className="flex items-center gap-1">
+                      <Badge 
+                        variant="outline" 
+                        className={assessmentData ? `${assessmentData.color} text-white` : 'bg-blue-100 text-blue-800 border-blue-200'}
+                      >
+                        {skill}
+                      </Badge>
+                      {assessmentData && (
+                        <span className="text-xs text-muted-foreground">
+                          ({assessmentData.rating}/4)
+                        </span>
+                      )}
+                    </div>
+                  );
+                })
               ) : (
-                <p className="text-pathwise-text-secondary">Complete a Hard Skills Assessment to see your skills here</p>
+                <p className="text-pathwise-text-secondary">No skills added yet. Add skills manually or complete a Hard Skills Assessment.</p>
               )}
             </div>
           </div>

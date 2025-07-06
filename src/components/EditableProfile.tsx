@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { getSkillLevel } from "@/utils/hardSkillsUtils";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import AccountTypeSection from "@/components/profile/AccountTypeSection";
 import PersonalInfoSection from "@/components/profile/PersonalInfoSection";
@@ -9,8 +11,9 @@ import EducationSection from "@/components/profile/EducationSection";
 import SkillsExperienceSection from "@/components/profile/SkillsExperienceSection";
 
 const EditableProfile = () => {
-  const { profile, updateProfile } = useAuth();
+  const { profile, updateProfile, user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [assessmentSkills, setAssessmentSkills] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     full_name: "",
     location: "",
@@ -23,7 +26,57 @@ const EditableProfile = () => {
   });
 
   useEffect(() => {
+    const fetchAssessmentSkills = async () => {
+      if (!user) return;
+
+      try {
+        const { data: assessments } = await supabase
+          .from('skills_assessments')
+          .select('technical_skills')
+          .eq('user_id', user.id)
+          .eq('assessment_type', 'hard_skills')
+          .order('completed_at', { ascending: false })
+          .limit(1);
+
+        if (assessments && assessments.length > 0 && assessments[0].technical_skills) {
+          const technicalSkills = assessments[0].technical_skills;
+          if (typeof technicalSkills === 'object' && technicalSkills !== null && !Array.isArray(technicalSkills)) {
+            const qualifyingSkills = Object.entries(technicalSkills)
+              .filter(([_, rating]) => (rating as number) >= 2)
+              .map(([skill, _]) => {
+                return skill
+                  .replace(/_/g, ' ')
+                  .split(' ')
+                  .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                  .join(' ');
+              });
+            setAssessmentSkills(qualifyingSkills);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching assessment skills:', error);
+      }
+    };
+
+    fetchAssessmentSkills();
+  }, [user]);
+
+  useEffect(() => {
     if (profile) {
+      // Merge manual skills with assessment skills, avoiding duplicates
+      const manualSkills = profile.hard_skills || [];
+      const mergedSkills = [...manualSkills];
+      
+      assessmentSkills.forEach(assessmentSkill => {
+        const isAlreadyIncluded = manualSkills.some(manualSkill => 
+          manualSkill.toLowerCase() === assessmentSkill.toLowerCase()
+        );
+        
+        if (!isAlreadyIncluded) {
+          mergedSkills.push(assessmentSkill);
+        }
+      });
+
       setFormData({
         full_name: profile.full_name || "",
         location: profile.location || "",
@@ -31,14 +84,22 @@ const EditableProfile = () => {
         fields_of_study: profile.fields_of_study || "",
         graduation_year: profile.graduation_year || "",
         field_of_interest: profile.field_of_interest || "",
-        hard_skills: profile.hard_skills || [],
+        hard_skills: mergedSkills,
         career_history: profile.career_history || ""
       });
     }
-  }, [profile]);
+  }, [profile, assessmentSkills]);
 
   const handleSave = async () => {
     try {
+      // Only save the manually entered skills to the profile
+      // Assessment skills will be merged during display
+      const skillsToSave = formData.hard_skills.filter(skill => {
+        return !assessmentSkills.some(assessmentSkill => 
+          assessmentSkill.toLowerCase() === skill.toLowerCase()
+        );
+      });
+
       await updateProfile({
         full_name: formData.full_name,
         location: formData.location,
@@ -46,7 +107,7 @@ const EditableProfile = () => {
         fields_of_study: formData.fields_of_study,
         graduation_year: formData.graduation_year,
         field_of_interest: formData.field_of_interest,
-        hard_skills: formData.hard_skills,
+        hard_skills: skillsToSave,
         career_history: formData.career_history
       });
       
@@ -66,6 +127,20 @@ const EditableProfile = () => {
 
   const handleCancel = () => {
     if (profile) {
+      // Reset to original merged skills
+      const manualSkills = profile.hard_skills || [];
+      const mergedSkills = [...manualSkills];
+      
+      assessmentSkills.forEach(assessmentSkill => {
+        const isAlreadyIncluded = manualSkills.some(manualSkill => 
+          manualSkill.toLowerCase() === assessmentSkill.toLowerCase()
+        );
+        
+        if (!isAlreadyIncluded) {
+          mergedSkills.push(assessmentSkill);
+        }
+      });
+
       setFormData({
         full_name: profile.full_name || "",
         location: profile.location || "",
@@ -73,7 +148,7 @@ const EditableProfile = () => {
         fields_of_study: profile.fields_of_study || "",
         graduation_year: profile.graduation_year || "",
         field_of_interest: profile.field_of_interest || "",
-        hard_skills: profile.hard_skills || [],
+        hard_skills: mergedSkills,
         career_history: profile.career_history || ""
       });
     }
