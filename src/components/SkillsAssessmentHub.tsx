@@ -1,16 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Wrench, Heart, Target, ArrowRight, Clock, Eye } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { getSkillLevel } from "@/utils/skillLevelUtils";
-import { generatePersonalityProfile, generateDetailedFeedback } from "@/utils/personalityProfileGenerator";
-import { softSkills } from "@/data/softSkillsData";
 
 interface SkillsAssessmentHubProps {
   onSelectAssessment: (type: 'hard' | 'soft') => void;
@@ -67,6 +62,36 @@ const SkillsAssessmentHub = ({ onSelectAssessment }: SkillsAssessmentHubProps) =
     setShowModal(true);
   };
 
+  const getHardSkillLabel = (rating: number): string => {
+    const labels = {
+      0: "Not familiar",
+      1: "Basic", 
+      2: "Intermediate",
+      3: "Advanced",
+      4: "Expert"
+    };
+    return labels[rating as keyof typeof labels] || "Not familiar";
+  };
+
+  const getSoftSkillLabel = (rating: number): string => {
+    const labels = {
+      0: "Not me",
+      1: "Somewhat",
+      2: "Moderately", 
+      3: "Very much",
+      4: "Extremely"
+    };
+    return labels[rating as keyof typeof labels] || "Not me";
+  };
+
+  const formatSkillName = (skillName: string): string => {
+    return skillName
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
   const renderPastAssessmentModal = () => {
     if (!selectedAssessment) return null;
 
@@ -82,7 +107,7 @@ const SkillsAssessmentHub = ({ onSelectAssessment }: SkillsAssessmentHubProps) =
           <DialogHeader>
             <DialogTitle className="flex items-center text-foreground">
               <Wrench className="mr-2 h-5 w-5 text-teal-600" />
-              Hard Skills Assessment Results
+              Past Hard Skills Assessment
             </DialogTitle>
             <p className="text-sm text-muted-foreground flex items-center">
               <Clock className="mr-1 h-4 w-4" />
@@ -93,16 +118,22 @@ const SkillsAssessmentHub = ({ onSelectAssessment }: SkillsAssessmentHubProps) =
             <div className="grid gap-3">
               {skillEntries.map(([skill, rating], index) => {
                 const numericRating = typeof rating === 'number' ? rating : 0;
-                const skillInfo = getSkillLevel(numericRating);
+                const skillLabel = getHardSkillLabel(numericRating);
+                const formattedSkillName = formatSkillName(skill);
+                
                 return (
                   <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <div>
-                      <span className="font-medium text-foreground">{skill}</span>
-                      <p className="text-sm text-muted-foreground">Rating: {numericRating}/5</p>
+                      <span className="font-medium text-foreground">{formattedSkillName}</span>
                     </div>
-                    <Badge className={`${skillInfo.color} text-white`}>
-                      {skillInfo.level}
-                    </Badge>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-foreground">
+                        Rating: {numericRating}/4
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {skillLabel}
+                      </div>
+                    </div>
                   </div>
                 );
               })}
@@ -123,15 +154,14 @@ const SkillsAssessmentHub = ({ onSelectAssessment }: SkillsAssessmentHubProps) =
       );
     } else {
       const softSkillsData = selectedAssessment.soft_skills || {};
-      const personalityProfile = generatePersonalityProfile(softSkillsData);
-      const detailedFeedback = generateDetailedFeedback(softSkillsData);
+      const skillEntries = Object.entries(softSkillsData);
 
       return (
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-card border-border">
           <DialogHeader>
             <DialogTitle className="flex items-center text-foreground">
               <Heart className="mr-2 h-5 w-5 text-pink-600" />
-              Soft Skills Assessment Results
+              Past Soft Skills Assessment
             </DialogTitle>
             <p className="text-sm text-muted-foreground flex items-center">
               <Clock className="mr-1 h-4 w-4" />
@@ -139,45 +169,29 @@ const SkillsAssessmentHub = ({ onSelectAssessment }: SkillsAssessmentHubProps) =
             </p>
           </DialogHeader>
           <div className="space-y-4 mt-4">
-            <div className="p-4 bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-lg border border-pink-200 dark:border-pink-800">
-              <h4 className="font-semibold text-pink-800 dark:text-pink-200 mb-2">Your Profile: {personalityProfile.type}</h4>
-              <p className="text-pink-700 dark:text-pink-300 text-sm mb-3">{personalityProfile.environment}</p>
-              <div className="flex flex-wrap gap-2">
-                {personalityProfile.topStrengths.map((strength, index) => (
-                  <Badge key={index} className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700">
-                    {strength}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            
             <div className="grid gap-3">
-              {Object.entries(softSkillsData).map(([skill, rating], index) => {
+              {skillEntries.map(([skill, rating], index) => {
                 const numericRating = typeof rating === 'number' ? rating : 0;
-                const skillInfo = getSkillLevel(numericRating);
+                const skillLabel = getSoftSkillLabel(numericRating);
+                const formattedSkillName = formatSkillName(skill);
+                
                 return (
                   <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                     <div>
-                      <span className="font-medium text-foreground">{skill}</span>
-                      <Progress value={(numericRating / 5) * 100} className="w-32 mt-1" />
+                      <span className="font-medium text-foreground">{formattedSkillName}</span>
                     </div>
-                    <Badge className={`${skillInfo.color} text-white`}>
-                      {skillInfo.level}
-                    </Badge>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-foreground">
+                        Rating: {numericRating}/4
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {skillLabel}
+                      </div>
+                    </div>
                   </div>
                 );
               })}
             </div>
-
-            <div className="space-y-2">
-              <h4 className="font-semibold text-foreground">Career Insights:</h4>
-              {detailedFeedback.slice(0, 2).map((insight, index) => (
-                <p key={index} className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-2 rounded border border-blue-200 dark:border-blue-800">
-                  {insight}
-                </p>
-              ))}
-            </div>
-
             <div className="pt-4 border-t border-border">
               <Button 
                 onClick={() => {
@@ -203,7 +217,7 @@ const SkillsAssessmentHub = ({ onSelectAssessment }: SkillsAssessmentHubProps) =
           <p className="text-muted-foreground mt-2">Select the type of skills you'd like to evaluate</p>
         </div>
 
-        {/* Past Assessments Section - Fixed styling for dark mode */}
+        {/* Past Assessments Section */}
         {(pastAssessments.hardSkills || pastAssessments.softSkills) && (
           <div className="bg-muted p-6 rounded-lg border border-border">
             <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
