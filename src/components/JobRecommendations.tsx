@@ -1,10 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { BookOpen } from "lucide-react";
 import { parseSkillsFromText } from "@/utils/skillsParsing";
 import { useJobRecommendations } from "@/hooks/useJobRecommendations";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import JobSearchInput from "@/components/JobSearchInput";
 import JobRecommendationsHeader from "@/components/jobRecommendations/JobRecommendationsHeader";
 import JobRecommendationsLoadingState from "@/components/jobRecommendations/JobRecommendationsLoadingState";
@@ -12,11 +13,32 @@ import JobRecommendationsEmptyState from "@/components/jobRecommendations/JobRec
 import JobRecommendationsList from "@/components/jobRecommendations/JobRecommendationsList";
 
 const JobRecommendations = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [hasSkillsAssessment, setHasSkillsAssessment] = useState(false);
   const { careerRoles, loading, handleBookmark } = useJobRecommendations();
 
   const isPro = profile?.subscription_status === 'premium';
+
+  useEffect(() => {
+    const checkSkillsAssessment = async () => {
+      if (!user) return;
+
+      try {
+        const { data } = await supabase
+          .from('skills_assessments')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+        setHasSkillsAssessment(data && data.length > 0);
+      } catch (error) {
+        console.error('Error checking skills assessment:', error);
+      }
+    };
+
+    checkSkillsAssessment();
+  }, [user]);
 
   const filteredRoles = careerRoles.filter(role => {
     const skills = parseSkillsFromText(role.Skills_required || '');
@@ -35,7 +57,10 @@ const JobRecommendations = () => {
 
   return (
     <div className="space-y-6">
-      <JobRecommendationsHeader fieldOfInterest={profile?.field_of_interest} />
+      <JobRecommendationsHeader 
+        fieldOfInterest={profile?.field_of_interest} 
+        hasSkillsAssessment={hasSkillsAssessment}
+      />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex-1">
@@ -60,6 +85,7 @@ const JobRecommendations = () => {
         <JobRecommendationsList 
           roles={filteredRoles}
           onBookmark={handleBookmark}
+          hasSkillsAssessment={hasSkillsAssessment}
         />
       ) : (
         <JobRecommendationsEmptyState 
