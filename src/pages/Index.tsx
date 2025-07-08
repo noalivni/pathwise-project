@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import AuthModal from "@/components/AuthModal";
@@ -36,7 +37,7 @@ const LandingPage = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <img 
-              src="/lovable-uploads/e7f8b713-a59e-4bcc-9227-e97f445bfef3.png" 
+              src="/lovable-uploads/0cf3dc82-21d7-456e-a50d-03837c73c721.png" 
               alt="Pathwise Logo" 
               className="w-12 h-12"
             />
@@ -130,7 +131,7 @@ const LandingPage = () => {
           <div className="text-center p-6 rounded-lg bg-card border border-border hover:border-primary/50 transition-all duration-200">
             <div className="w-16 h-16 bg-purple-500/20 rounded-lg flex items-center justify-center mx-auto mb-4">
               <img 
-                src="/lovable-uploads/e7f8b713-a59e-4bcc-9227-e97f445bfef3.png" 
+                src="/lovable-uploads/0cf3dc82-21d7-456e-a50d-03837c73c721.png" 
                 alt="AI Guidance" 
                 className="w-8 h-8 opacity-80"
               />
@@ -170,7 +171,7 @@ const AppContent = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <img 
-            src="/lovable-uploads/e7f8b713-a59e-4bcc-9227-e97f445bfef3.png" 
+            src="/lovable-uploads/0cf3dc82-21d7-456e-a50d-03837c73c721.png" 
             alt="Pathwise Logo" 
             className="w-16 h-16 mx-auto mb-4 animate-pulse"
           />
