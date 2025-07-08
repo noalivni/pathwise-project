@@ -13,6 +13,21 @@ interface AdminMonthlyChartProps {
 }
 
 const AdminMonthlyChart = ({ monthlyData }: AdminMonthlyChartProps) => {
+  // Custom tooltip component with proper dark mode styling
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-popover border border-border rounded-lg shadow-lg p-3 text-popover-foreground">
+          <p className="font-medium">{label}</p>
+          <p className="text-sm">
+            <span className="font-medium">{payload[0].value}</span> new users
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -25,7 +40,7 @@ const AdminMonthlyChart = ({ monthlyData }: AdminMonthlyChartProps) => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
             <YAxis />
-            <Tooltip />
+            <Tooltip content={<CustomTooltip />} />
             <Line 
               type="monotone" 
               dataKey="users" 
