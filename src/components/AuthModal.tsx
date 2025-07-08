@@ -125,7 +125,7 @@ const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
         <DialogHeader className="text-center">
           <div className="flex justify-center mb-4">
             <img 
-              src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
+              src="/lovable-uploads/0cf3dc82-21d7-456e-a50d-03837c73c721.png" 
               alt="Pathwise Logo" 
               className="w-16 h-16"
             />
