@@ -39,7 +39,7 @@ const JobCard = ({ role, onBookmark, skillFitTags = [], hasSkillsAssessment = fa
                   {role.match_percentage || 0}% Match
                 </Badge>
                 {!hasSkillsAssessment && (
-                  <AlertTriangle className="h-4 w-4 text-yellow-500" title="Match estimate - complete skills assessment for accuracy" />
+                  <AlertTriangle className="h-4 w-4 text-yellow-500" />
                 )}
               </div>
             </div>
