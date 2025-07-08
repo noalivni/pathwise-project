@@ -44,9 +44,9 @@ const AdminMonthlyChart = ({ monthlyData }: AdminMonthlyChartProps) => {
             <Line 
               type="monotone" 
               dataKey="users" 
-              stroke="#14B8A6" 
+              stroke="#059669" 
               strokeWidth={3}
-              dot={{ fill: '#14B8A6', strokeWidth: 2, r: 4 }}
+              dot={{ fill: '#059669', strokeWidth: 2, r: 4 }}
             />
           </LineChart>
         </ResponsiveContainer>

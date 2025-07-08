@@ -61,7 +61,7 @@ const AdminInterviewChart = ({ monthlyData }: AdminInterviewChartProps) => {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="interviews" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="interviews" fill="#1E40AF" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         ) : (

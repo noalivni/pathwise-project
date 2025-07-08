@@ -19,6 +19,24 @@ const AdminJobsChart = ({ popularJobs, onRefresh }: AdminJobsChartProps) => {
   const hasData = popularJobs && popularJobs.length > 0;
   const totalRecommendations = popularJobs.reduce((sum, job) => sum + job.value, 0);
 
+  // Use more subdued colors for better dark mode experience
+  const darkModeColors = [
+    '#059669', // emerald-600
+    '#1E40AF', // blue-800
+    '#7C3AED', // violet-600
+    '#DC2626', // red-600
+    '#EA580C', // orange-600
+    '#0891B2', // cyan-600
+    '#65A30D', // lime-600
+    '#C026D3', // fuchsia-600
+  ];
+
+  // Update job colors to use dark mode friendly colors
+  const updatedJobs = popularJobs.map((job, index) => ({
+    ...job,
+    color: darkModeColors[index % darkModeColors.length]
+  }));
+
   // Custom tooltip component with proper dark mode styling
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -60,7 +78,7 @@ const AdminJobsChart = ({ popularJobs, onRefresh }: AdminJobsChartProps) => {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={popularJobs}
+                  data={updatedJobs}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
@@ -68,7 +86,7 @@ const AdminJobsChart = ({ popularJobs, onRefresh }: AdminJobsChartProps) => {
                   paddingAngle={2}
                   dataKey="value"
                 >
-                  {popularJobs.map((entry, index) => (
+                  {updatedJobs.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -76,7 +94,7 @@ const AdminJobsChart = ({ popularJobs, onRefresh }: AdminJobsChartProps) => {
               </PieChart>
             </ResponsiveContainer>
             <div className="flex flex-col space-y-3 lg:ml-8 mt-4 lg:mt-0">
-              {popularJobs.map((item, index) => {
+              {updatedJobs.map((item, index) => {
                 const percentage = ((item.value / totalRecommendations) * 100).toFixed(1);
                 return (
                   <div key={index} className="flex items-center space-x-3">
