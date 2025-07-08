@@ -111,7 +111,7 @@ const Dashboard = () => {
   const renderContent = () => {
     // Admin users only see admin dashboard
     if (userRole === 'admin') {
-      return <AdminDashboard />;
+      return <AdminDashboard activeView={activeView} />;
     }
 
     // Regular users see user-specific views
