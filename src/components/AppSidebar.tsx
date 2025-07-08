@@ -73,7 +73,7 @@ const AppSidebar = ({ userRole, activeView, onViewChange, onLogout }: AppSidebar
             onClick={handleLogoClick}
           >
             <img 
-              src="/lovable-uploads/c4491739-e997-4ba2-8b03-ce1daa476a86.png" 
+              src="/lovable-uploads/e7f8b713-a59e-4bcc-9227-e97f445bfef3.png" 
               alt="Pathwise Logo" 
               className="w-8 h-8"
             />
