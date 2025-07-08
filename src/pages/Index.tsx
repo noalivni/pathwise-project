@@ -67,7 +67,7 @@ const LandingPage = () => {
       <section className="container mx-auto px-6 py-16 text-center">
         <div className="mb-8">
           <img 
-            src="/lovable-uploads/ceb34abc-2d20-4666-9bc9-a202c773db0a.png" 
+            src="/lovable-uploads/0cf3dc82-21d7-456e-a50d-03837c73c721.png" 
             alt="Pathwise Logo" 
             className="w-20 h-20 mx-auto mb-6 opacity-90"
           />
