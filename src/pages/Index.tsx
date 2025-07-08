@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import AuthModal from "@/components/AuthModal";
@@ -36,7 +37,7 @@ const LandingPage = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <img 
-              src="/lovable-uploads/ceb34abc-2d20-4666-9bc9-a202c773db0a.png" 
+              src="/lovable-uploads/e7f8b713-a59e-4bcc-9227-e97f445bfef3.png" 
               alt="Pathwise Logo" 
               className="w-12 h-12"
             />
