@@ -33,7 +33,7 @@ const JobRecommendationsHeader = ({ fieldOfInterest, hasSkillsAssessment = false
           <AlertDescription className="text-yellow-800 dark:text-yellow-200">
             <div className="flex items-center justify-between">
               <span>
-                Match percentages are estimates based on your profile. Complete a skills assessment for more accurate recommendations.
+                Match percentages are estimated based on your profile. Complete a skills assessment for more accurate recommendations.
               </span>
               <Button 
                 variant="outline" 
