@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,16 +13,25 @@ interface AuthModalProps {
   open: boolean;
   onClose: () => void;
   onLogin: () => void;
+  defaultMode?: 'signin' | 'signup';
 }
 
-const AuthModal = ({ open, onClose, onLogin }: AuthModalProps) => {
+const AuthModal = ({ open, onClose, onLogin, defaultMode = 'signin' }: AuthModalProps) => {
   const { signIn, signUp } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(defaultMode === 'signup');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ email: '', password: '', fullName: '' });
+
+  // Reset modal state when it opens with a new default mode
+  useEffect(() => {
+    if (open) {
+      setIsSignUp(defaultMode === 'signup');
+      resetForm();
+    }
+  }, [open, defaultMode]);
 
   const validateForm = () => {
     const newErrors = { email: '', password: '', fullName: '' };
