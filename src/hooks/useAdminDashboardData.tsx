@@ -7,6 +7,8 @@ import { useJobRecommendationStats } from "./useJobRecommendationStats";
 interface MonthlyData {
   month: string;
   users: number;
+  freeUsers: number;
+  premiumUsers: number;
   interviews: number;
 }
 
@@ -115,7 +117,7 @@ export const useAdminDashboardData = () => {
       // Process monthly data for all profiles
       if (allProfiles && allProfiles.length > 0) {
         console.log('📈 Processing user monthly data...');
-        const monthlyUserData = processMonthlyDataFullYear(allProfiles, 'created_at');
+        const monthlyUserData = processMonthlyUserDataBySubscription(allProfiles);
         console.log('📈 Monthly user data:', monthlyUserData);
         
         // Fetch detailed interview data for monthly processing
@@ -153,7 +155,7 @@ export const useAdminDashboardData = () => {
         if (!interviewDataError && interviewData) {
           console.log('✅ Interview data found without user profiles:', interviewData);
           const monthlyInterviewData = processMonthlyInterviewData(interviewData);
-          const emptyUserData = createEmptyMonthlyData();
+          const emptyUserData = createEmptyMonthlyUserData();
           const combinedMonthlyData = combineMonthlyData(emptyUserData, monthlyInterviewData);
           setMonthlyData(combinedMonthlyData);
         }
@@ -174,43 +176,51 @@ export const useAdminDashboardData = () => {
     }
   };
 
-  const createEmptyMonthlyData = () => {
+  const createEmptyMonthlyUserData = () => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthlyCount: { [key: string]: number } = {};
+    const monthlyCount: { [key: string]: { total: number; free: number; premium: number } } = {};
     months.forEach(month => {
-      monthlyCount[month] = 0;
+      monthlyCount[month] = { total: 0, free: 0, premium: 0 };
     });
     return monthlyCount;
   };
 
-  const processMonthlyDataFullYear = (data: any[], dateField: string) => {
+  const processMonthlyUserDataBySubscription = (profiles: any[]) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthlyCount: { [key: string]: number } = {};
+    const monthlyCount: { [key: string]: { total: number; free: number; premium: number } } = {};
 
     // Initialize all 12 months
     months.forEach(month => {
-      monthlyCount[month] = 0;
+      monthlyCount[month] = { total: 0, free: 0, premium: 0 };
     });
 
-    console.log(`🔍 Processing ${data.length} records for field: ${dateField}`);
+    console.log(`🔍 Processing ${profiles.length} profiles for monthly subscription breakdown`);
 
-    // Count items by month
-    data.forEach((item, index) => {
-      if (item[dateField]) {
-        const date = new Date(item[dateField]);
-        console.log(`📅 Processing item ${index + 1}: ${item[dateField]} -> Year: ${date.getFullYear()}, Month: ${date.getMonth()}`);
-        
+    // Count users by month and subscription status
+    profiles.forEach((profile, index) => {
+      if (profile.created_at) {
+        const date = new Date(profile.created_at);
         const monthKey = months[date.getMonth()];
+        
         if (monthKey) {
-          monthlyCount[monthKey]++;
-          console.log(`✅ Added to ${monthKey}: now ${monthlyCount[monthKey]}`);
+          monthlyCount[monthKey].total++;
+          
+          const subscriptionStatus = profile.subscription_status;
+          if (subscriptionStatus === 'premium') {
+            monthlyCount[monthKey].premium++;
+          } else {
+            // Default to free for 'free' or null/undefined
+            monthlyCount[monthKey].free++;
+          }
+          
+          console.log(`✅ Added ${subscriptionStatus || 'free'} user to ${monthKey}: Free: ${monthlyCount[monthKey].free}, Premium: ${monthlyCount[monthKey].premium}`);
         }
       } else {
-        console.log(`⚠️ Item ${index + 1} has no ${dateField} field:`, item);
+        console.log(`⚠️ Profile ${index + 1} has no created_at field:`, profile);
       }
     });
 
-    console.log(`📊 Final monthly counts for ${dateField}:`, monthlyCount);
+    console.log(`📊 Final monthly user subscription breakdown:`, monthlyCount);
     return monthlyCount;
   };
 
@@ -248,7 +258,7 @@ export const useAdminDashboardData = () => {
     return monthlyCount;
   };
 
-  const combineMonthlyData = (userData: { [key: string]: number }, interviewData: {[key: string]: number }) => {
+  const combineMonthlyData = (userData: { [key: string]: { total: number; free: number; premium: number } }, interviewData: {[key: string]: number }) => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     console.log('🔄 Combining monthly data...');
     console.log('👥 User data input:', userData);
@@ -256,7 +266,9 @@ export const useAdminDashboardData = () => {
     
     const combined = months.map(month => ({
       month,
-      users: userData[month] || 0,
+      users: userData[month]?.total || 0,
+      freeUsers: userData[month]?.free || 0,
+      premiumUsers: userData[month]?.premium || 0,
       interviews: interviewData[month] || 0,
     }));
     

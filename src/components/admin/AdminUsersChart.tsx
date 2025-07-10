@@ -2,63 +2,40 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
-interface UserBreakdown {
-  total: number;
-  free: number;
-  premium: number;
+interface MonthlyData {
+  month: string;
+  users: number;
+  freeUsers: number;
+  premiumUsers: number;
+  interviews: number;
 }
 
 interface AdminUsersChartProps {
-  userBreakdown: UserBreakdown;
+  monthlyData: MonthlyData[];
 }
 
-const AdminUsersChart = ({ userBreakdown }: AdminUsersChartProps) => {
-  const chartData = [
-    {
-      name: "Free Users",
-      value: userBreakdown.free,
-      fill: "hsl(var(--chart-1))"
-    },
-    {
-      name: "Premium Users", 
-      value: userBreakdown.premium,
-      fill: "hsl(var(--chart-2))"
-    },
-    {
-      name: "Total Users",
-      value: userBreakdown.total,
-      fill: "hsl(var(--chart-3))"
-    }
-  ];
-
+const AdminUsersChart = ({ monthlyData }: AdminUsersChartProps) => {
   const chartConfig = {
-    value: {
-      label: "Users",
+    freeUsers: {
+      label: "Freemium Users",
+      color: "hsl(var(--muted-foreground))",
     },
-    free: {
-      label: "Free Users",
-      color: "hsl(var(--chart-1))",
-    },
-    premium: {
-      label: "Premium Users", 
-      color: "hsl(var(--chart-2))",
-    },
-    total: {
-      label: "Total Users",
-      color: "hsl(var(--chart-3))",
+    premiumUsers: {
+      label: "Premium Users",
+      color: "hsl(var(--accent))",
     },
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>User Statistics</CardTitle>
+        <CardTitle>Monthly User Statistics</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[200px]">
-          <BarChart data={chartData}>
+        <ChartContainer config={chartConfig} className="h-[300px]">
+          <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <XAxis 
-              dataKey="name" 
+              dataKey="month" 
               tick={{ fontSize: 12 }}
               tickLine={false}
               axisLine={false}
@@ -70,7 +47,15 @@ const AdminUsersChart = ({ userBreakdown }: AdminUsersChartProps) => {
             />
             <ChartTooltip content={<ChartTooltipContent />} />
             <Bar 
-              dataKey="value" 
+              dataKey="freeUsers" 
+              stackId="users"
+              fill="hsl(var(--muted-foreground))"
+              radius={[0, 0, 0, 0]}
+            />
+            <Bar 
+              dataKey="premiumUsers" 
+              stackId="users"
+              fill="hsl(var(--accent))"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

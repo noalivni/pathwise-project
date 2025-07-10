@@ -13,6 +13,8 @@ interface UserBreakdown {
 interface MonthlyData {
   month: string;
   users: number;
+  freeUsers: number;
+  premiumUsers: number;
   interviews: number;
 }
 
@@ -32,8 +34,8 @@ interface AdminChartsSectionProps {
 const AdminChartsSection = ({ userBreakdown, monthlyData, popularJobs, onRefresh }: AdminChartsSectionProps) => {
   return (
     <>
-      {/* User Statistics Chart */}
-      <AdminUsersChart userBreakdown={userBreakdown} />
+      {/* Monthly User Statistics Chart */}
+      <AdminUsersChart monthlyData={monthlyData} />
 
       {/* Monthly Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
