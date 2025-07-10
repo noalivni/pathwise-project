@@ -85,6 +85,7 @@ const AdminDashboard = ({ activeView }: AdminDashboardProps) => {
 
       {/* Charts */}
       <AdminChartsSection 
+        userBreakdown={userBreakdown}
         monthlyData={monthlyData}
         popularJobs={popularJobs}
         onRefresh={refreshData}
