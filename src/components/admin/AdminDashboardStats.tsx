@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlayCircle, Briefcase } from "lucide-react";
+import { PlayCircle, Briefcase, Users, User, Crown } from "lucide-react";
 
 interface UserBreakdown {
   total: number;
@@ -16,7 +16,40 @@ interface AdminDashboardStatsProps {
 
 const AdminDashboardStats = ({ userBreakdown, totalInterviews, totalJobMatches }: AdminDashboardStatsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+          <Users className="h-4 w-4 text-blue-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{userBreakdown.total.toLocaleString()}</div>
+          <p className="text-xs text-muted-foreground">All registered users</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Free Users</CardTitle>
+          <User className="h-4 w-4 text-gray-500" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{userBreakdown.free.toLocaleString()}</div>
+          <p className="text-xs text-muted-foreground">Freemium accounts</p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Premium Users</CardTitle>
+          <Crown className="h-4 w-4 text-purple-600" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{userBreakdown.premium.toLocaleString()}</div>
+          <p className="text-xs text-muted-foreground">Premium subscribers</p>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Interview Sessions</CardTitle>
