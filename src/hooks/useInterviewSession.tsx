@@ -117,16 +117,17 @@ export const useInterviewSession = () => {
       }
     } catch (error) {
       console.error('Error generating feedback:', error);
-      const feedbackPoints = [
-        "Good structure in your response.",
-        "Consider providing more specific examples.",
-        "Your answer shows good self-awareness.",
-        "Try to be more concise in your explanation.",
-        "Great use of the STAR method (Situation, Task, Action, Result)."
-      ];
-      const randomFeedback = feedbackPoints[Math.floor(Math.random() * feedbackPoints.length)];
-      setFeedback(randomFeedback);
-      speakText(randomFeedback);
+      
+      // Provide structured fallback feedback
+      const structuredFallback = {
+        strengths: "You provided a response that shows engagement with the question. Your willingness to share your thoughts demonstrates good communication initiative.",
+        improvements: "To strengthen your answer, consider adding more specific examples from your experience and providing concrete details that support your points.",
+        suggestions: "Try using the STAR method (Situation, Task, Action, Result) to structure your response. Include quantifiable achievements when possible, and connect your experience directly to the role requirements.",
+        relevance: `For a ${selectedRole} position, focus on demonstrating key competencies like problem-solving, leadership, or technical skills. Highlight experiences that directly relate to this role's daily responsibilities.`
+      };
+      
+      setFeedback(JSON.stringify(structuredFallback));
+      speakText("I've generated feedback for your response. Please review the detailed suggestions to improve your interview performance.");
     } finally {
       setIsGeneratingFeedback(false);
     }

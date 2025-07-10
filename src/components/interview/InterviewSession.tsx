@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Volume2, VolumeX, Loader2 } from "lucide-react";
 import { InterviewQuestion } from "@/types/interview";
+import InterviewFeedback from "./InterviewFeedback";
 
 interface InterviewSessionProps {
   currentQuestion: InterviewQuestion;
@@ -116,14 +117,7 @@ const InterviewSession = ({
             </div>
           </div>
 
-          {feedback && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-green-800">Feedback</span>
-              </div>
-              <p className="text-green-700 text-sm leading-relaxed">{feedback}</p>
-            </div>
-          )}
+          {feedback && <InterviewFeedback feedback={feedback} />}
 
           <div className="flex justify-between">
             <Button onClick={onSkipQuestion} variant="outline">
