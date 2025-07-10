@@ -1,6 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface MonthlyData {
   month: string;
@@ -15,37 +14,43 @@ interface AdminUsersChartProps {
 }
 
 const AdminUsersChart = ({ monthlyData }: AdminUsersChartProps) => {
-  const chartConfig = {
-    freeUsers: {
-      label: "Freemium Users",
-      color: "hsl(var(--muted-foreground))",
-    },
-    premiumUsers: {
-      label: "Premium Users",
-      color: "hsl(var(--accent))",
-    },
+  // Custom tooltip component with proper dark mode styling
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const total = payload.reduce((sum: number, entry: any) => sum + entry.value, 0);
+      return (
+        <div className="bg-popover border border-border rounded-lg shadow-lg p-3 text-popover-foreground">
+          <p className="font-medium">{label}</p>
+          <div className="space-y-1">
+            {payload.map((entry: any, index: number) => (
+              <p key={index} className="text-sm">
+                <span className="inline-block w-3 h-3 rounded mr-2" style={{ backgroundColor: entry.color }}></span>
+                <span className="font-medium">{entry.value}</span> {entry.dataKey === 'freeUsers' ? 'freemium' : 'premium'} users
+              </p>
+            ))}
+            <p className="text-sm font-medium border-t pt-1">
+              Total: {total} users
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Monthly User Statistics</CardTitle>
+        <CardDescription>User breakdown by subscription type throughout the year</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
-          <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <XAxis 
-              dataKey="month" 
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis 
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <ChartTooltip content={<ChartTooltipContent />} />
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={monthlyData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip content={<CustomTooltip />} />
             <Bar 
               dataKey="freeUsers" 
               stackId="users"
@@ -55,11 +60,11 @@ const AdminUsersChart = ({ monthlyData }: AdminUsersChartProps) => {
             <Bar 
               dataKey="premiumUsers" 
               stackId="users"
-              fill="hsl(var(--accent))"
+              fill="#7C3AED"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
-        </ChartContainer>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );
