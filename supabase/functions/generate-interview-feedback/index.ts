@@ -40,127 +40,94 @@ serve(async (req) => {
       hasUserExperience: !!userExperience
     });
 
-    const systemPrompt = `You are an expert interview coach with 15+ years of experience in hiring and career development. 
-    Your task is to provide genuinely personalized, IN-DEPTH feedback that varies significantly between responses while maintaining four key sections.
+    const systemPrompt = `You are an expert interview coach analyzing a specific interview question and response. Your goal is to provide contextual, natural feedback that feels like a real conversation with a hiring manager.
 
-    CRITICAL RESPONSE LENGTH REQUIREMENTS:
-    - MINIMUM 3-4 sentences per section for poor/brief responses (under 30 words)
-    - MINIMUM 2-3 sentences per section for adequate responses 
-    - Each section must provide substantial, actionable analysis - never single sentences
-    - Poor responses trigger EDUCATIONAL COACHING MODE with detailed explanations
-    - Brief responses require comprehensive gap analysis and learning opportunities
+    ANALYSIS APPROACH:
+    1. First understand what this specific question is trying to assess (leadership skills, problem-solving, technical knowledge, cultural fit, etc.)
+    2. Evaluate how well their response addresses what the interviewer is looking for
+    3. Consider their background and how it relates to both the question and the target role
+    4. Provide specific, actionable guidance that feels natural and conversational
 
-    RESPONSE QUALITY DETECTION & ADAPTIVE DEPTH:
-    For VERY BRIEF responses (under 20 words): Enter COMPREHENSIVE COACHING MODE
-    - Provide detailed explanations of what good responses include
-    - Offer specific examples and frameworks (STAR method, problem-solving approaches)
-    - Explain why certain elements are important for the role
-    - Give step-by-step improvement guidance with 4+ sentences per section
+    QUESTION CONTEXT AWARENESS:
+    - Behavioral questions (Tell me about a time...): Focus on STAR method, specific examples, measurable results
+    - Technical questions: Assess knowledge depth, problem-solving approach, communication of complex concepts
+    - Situational questions (What would you do if...): Evaluate reasoning process, decision-making framework
+    - Cultural fit questions: Look for alignment with company values, team collaboration
+    - Strength/weakness questions: Check for self-awareness, growth mindset, relevance to role
 
-    For OFF-TOPIC responses: Enter REDIRECTION MODE  
-    - Extensively explain how to refocus on the question
-    - Provide concrete examples of relevant responses
-    - Explain the connection between the question and role requirements
-    - Offer detailed guidance on structuring better answers
+    ROLE-SPECIFIC EVALUATION:
+    - Software roles: Technical depth, problem-solving, code quality, system thinking
+    - Management roles: Leadership experience, team building, conflict resolution, strategic thinking
+    - Sales roles: Relationship building, results orientation, resilience, communication skills
+    - Marketing roles: Creativity, data analysis, campaign experience, brand thinking
+    - Finance roles: Analytical thinking, attention to detail, risk assessment, compliance knowledge
 
-    For WEAK responses: Enter DEVELOPMENT MODE
-    - Identify specific content gaps with detailed analysis
-    - Explain what stronger candidates typically include
-    - Provide multiple improvement strategies per section
-    - Connect weaknesses to specific role competencies
+    FEEDBACK STYLE:
+    - Write as if you're a thoughtful interviewer providing honest, helpful feedback
+    - Quote their specific words when relevant: "When you mentioned X..."
+    - Reference their background specifically: "Given your experience in Y..."
+    - Vary your language and approach - avoid formulaic responses
+    - Be encouraging but honest about areas needing improvement
+    - Provide concrete examples and next steps
 
-    For STRONG responses: Enter REFINEMENT MODE
-    - Focus on nuanced improvements and advanced insights
-    - Highlight sophisticated aspects of their approach
-    - Provide expert-level suggestions for enhancement
-    - Maintain substantial depth while focusing on polish
-
-    MANDATORY SECTION DEPTH REQUIREMENTS:
-    ✅ STRENGTHS (2-4 sentences):
-    - Even for poor responses, find specific positives and explain their value
-    - Quote exact phrases and explain why they demonstrate potential
-    - Connect strengths to role requirements with detailed reasoning
-    - For brief responses, explain what they got right and build confidence
-
-    ⚠️ AREAS TO IMPROVE (3-5 sentences):
-    - Provide comprehensive gap analysis with specific examples
-    - Explain what's missing and why it matters for the role
-    - For poor responses, offer detailed educational explanations
-    - Include multiple improvement areas with specific reasoning
-
-    💡 SUGGESTIONS (3-5 sentences):
-    - Always provide step-by-step, actionable advice with examples
-    - Include specific frameworks, structures, or approaches they can use
-    - For poor responses, offer detailed "how-to" guidance
-    - Provide concrete examples of what better responses sound like
-
-    🎯 RELEVANCE TO ROLE (2-4 sentences):
-    - Connect their response to specific role competencies with detailed analysis
-    - Explain how their approach aligns or misaligns with job requirements
-    - For poor responses, educate about key role expectations
-    - Provide specific examples of role-relevant improvements
-
-    EDUCATIONAL COACHING FOR INADEQUATE RESPONSES:
-    When responses are brief, off-topic, or lack substance:
-    - Switch to teaching mode with explanations of interview best practices
-    - Include examples of stronger responses without being condescending
-    - Provide detailed framework suggestions (STAR, problem-solving, etc.)
-    - Explain the "why" behind your suggestions to build understanding
-    - Offer encouragement while being thorough about improvement areas
-    - Use phrases like "Strong candidates typically...", "Consider this approach...", "Here's a framework that works well..."
-
-    CONTENT VARIATION MANDATE:
-    - Each response must feel completely different in tone, focus, and approach
-    - Vary your analytical lens and coaching style significantly
-    - Use different vocabulary and phrasing patterns for each response
-    - Never repeat the same insights, even if they seem applicable
-    - Adapt depth and educational content based on response quality
-
-    MANDATORY PERSONALIZATION:
-    - Quote their exact words or phrases in every section
-    - Reference specific scenarios, projects, or examples they described
-    - Comment on their actual word choices and communication style
-    - Use phrases like "When you said...", "Your example about...", "The way you described..."
-    - Make every piece of feedback unique to their specific response content
-
-    Provide feedback in this JSON structure with titles and emojis:
+    RESPONSE FORMAT:
+    Return a JSON object with natural, conversational feedback:
     {
-      "strengths": "✅ Strengths - [2-4 sentences of detailed analysis]",
-      "improvements": "⚠️ Areas to Improve - [3-5 sentences of comprehensive gap analysis]", 
-      "suggestions": "💡 Suggestions - [3-5 sentences of step-by-step actionable advice]",
-      "relevance": "🎯 Relevance to Role - [2-4 sentences connecting to role requirements]"
-    }`;
+      "strengths": "What worked well in their response and why",
+      "improvements": "Specific areas where the response could be stronger", 
+      "suggestions": "Actionable advice for improving their answer",
+      "relevance": "How well their response aligns with the target role requirements"
+    }
 
+    Make each response feel unique and tailored to the specific question-answer combination.`;
+
+    // Analyze question type and what it's assessing
+    const getQuestionAnalysis = (question: string, category: string) => {
+      const q = question.toLowerCase();
+      
+      if (q.includes('tell me about a time') || q.includes('describe a situation')) {
+        return 'This behavioral question is assessing your past experience and how you handle specific situations. The interviewer wants to see concrete examples, your thought process, and measurable results.';
+      } else if (q.includes('what would you do') || q.includes('how would you handle')) {
+        return 'This situational question is evaluating your decision-making process and problem-solving approach. The interviewer wants to understand your reasoning and judgment.';
+      } else if (q.includes('strength') || q.includes('weakness')) {
+        return 'This self-assessment question is checking for self-awareness, honesty, and growth mindset. The interviewer wants to see how well you know yourself and how you develop professionally.';
+      } else if (q.includes('why do you want') || q.includes('why are you interested')) {
+        return 'This motivation question is assessing your genuine interest and cultural fit. The interviewer wants to understand your career goals and alignment with the role/company.';
+      } else if (category?.toLowerCase() === 'technical') {
+        return 'This technical question is evaluating your knowledge depth and problem-solving skills. The interviewer wants to see both your technical competence and how you communicate complex concepts.';
+      } else {
+        return 'This question is designed to understand your experience, skills, and fit for the role. The interviewer is looking for specific examples and relevant competencies.';
+      }
+    };
+
+    const questionAnalysis = getQuestionAnalysis(question, questionCategory);
+    
     // Format user experience for context
     const experienceContext = userExperience ? `
-    CANDIDATE BACKGROUND:
-    - Education: ${userExperience.degree_certification || 'Not specified'} in ${userExperience.fields_of_study || 'Not specified'} (${userExperience.graduation_year || 'Year not specified'})
-    - Field of Interest: ${userExperience.field_of_interest || 'Not specified'}
-    - Technical Skills: ${userExperience.hard_skills?.join(', ') || 'Not specified'}
-    - Career History: ${userExperience.career_history || 'Not specified'}
-    ` : 'No background information available.';
+CANDIDATE BACKGROUND:
+- Education: ${userExperience.degree_certification || 'Not specified'} in ${userExperience.fields_of_study || 'Not specified'} (${userExperience.graduation_year || 'Year not specified'})
+- Field of Interest: ${userExperience.field_of_interest || 'Not specified'}
+- Technical Skills: ${userExperience.hard_skills?.join(', ') || 'Not specified'}
+- Career History: ${userExperience.career_history || 'Not specified'}` : 'No background information available.';
 
-    const userPrompt = `
-    CONTEXT:
-    Job Role: ${jobRole}
-    Question Category: ${questionCategory} 
-    Question Difficulty: ${questionDifficulty}
-    
-    ${experienceContext}
-    
-    INTERVIEW QUESTION: "${question}"
-    
-    CANDIDATE'S RESPONSE: "${answer}"
-    
-    INSTRUCTIONS: Analyze this specific response in the context of their background and experience. Consider how their educational background, technical skills, and career history relate to both the question asked and their response. Provide personalized feedback that:
-    
-    1. References their actual experience and how it connects (or could connect better) to their answer
-    2. Evaluates how well they leveraged their background to answer the question
-    3. Suggests specific ways they could better highlight relevant experience for a ${jobRole} role
-    4. Quotes their exact words and references their specific examples
-    5. Makes suggestions that build on their actual education, skills, and career history
-    
-    Focus on the alignment between their background, their response, and the ${jobRole} role requirements. If their experience is relevant but they didn't highlight it well, guide them on how to better showcase it. If their experience seems limited, suggest how to frame what they do have more effectively.`;
+    const userPrompt = `INTERVIEW CONTEXT:
+Position: ${jobRole}
+Question: "${question}"
+Candidate Response: "${answer}"
+
+${experienceContext}
+
+QUESTION ANALYSIS: ${questionAnalysis}
+
+INSTRUCTIONS:
+Analyze this response specifically for a ${jobRole} position. Consider:
+
+1. What this question is trying to assess and how well they addressed it
+2. How their background relates to their answer and the role requirements  
+3. Specific gaps or strengths in their response
+4. Concrete ways to improve their answer using their actual experience
+
+Provide natural, conversational feedback that quotes their specific words and references their background. Make suggestions that are actionable and role-specific. Avoid generic advice - focus on this exact question-answer combination.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
