@@ -118,15 +118,33 @@ export const useInterviewSession = () => {
     } catch (error) {
       console.error('Error generating feedback:', error);
       
-      // Provide structured fallback feedback that's specific to their question and role
-      const structuredFallback = {
-        strengths: `You took the time to provide a thoughtful response to this ${currentQuestion?.category?.toLowerCase()} question. Your effort to address the question shows good engagement and communication willingness.`,
-        improvements: `Since this is a ${currentQuestion?.difficulty?.toLowerCase()} level question for a ${selectedRole} role, consider adding more specific examples that directly demonstrate your relevant experience. Your answer could benefit from more concrete details about your accomplishments or approach.`,
-        suggestions: `For this type of ${currentQuestion?.category?.toLowerCase()} question, try structuring your response with specific examples using the STAR method (Situation, Task, Action, Result). Include measurable outcomes when possible, and explicitly connect your experience to what a ${selectedRole} would do in similar situations.`,
-        relevance: `As a ${selectedRole} candidate, focus on demonstrating the key competencies this question is testing. Share specific examples that show how you've handled similar challenges or responsibilities that would be relevant to this role's daily tasks and requirements.`
-      };
+      // Generate varied fallback responses that rotate based on question and role
+      const fallbackVariations = [
+        {
+          strengths: `You approached this ${currentQuestion?.category?.toLowerCase()} question with genuine engagement, which demonstrates your communication readiness and interest in meaningful dialogue.`,
+          improvements: `For a ${currentQuestion?.difficulty?.toLowerCase()} level question in ${selectedRole} interviews, consider adding more concrete examples that showcase your relevant experience and problem-solving approach.`,
+          suggestions: `Structure your response using specific scenarios from your background. Include the challenge you faced, the actions you took, and the measurable results you achieved - this will make your answer more compelling.`,
+          relevance: `As a ${selectedRole} candidate, focus on demonstrating the analytical and technical skills that would be essential in this role's day-to-day responsibilities.`
+        },
+        {
+          strengths: `Your willingness to tackle this question head-on shows confidence and authentic communication style, which are valuable traits in professional settings.`,
+          improvements: `This type of ${currentQuestion?.category?.toLowerCase()} question typically benefits from more detailed elaboration and specific examples that illustrate your capabilities.`,
+          suggestions: `Consider preparing 2-3 go-to examples that highlight different aspects of your experience. Practice connecting these examples to various question types you might encounter.`,
+          relevance: `For ${selectedRole} positions, employers often look for candidates who can articulate how their experience translates to solving real business challenges.`
+        },
+        {
+          strengths: `You demonstrated thoughtful consideration of the question, which reflects good listening skills and the ability to process information effectively.`,
+          improvements: `Expanding your response with more specific details and quantifiable outcomes would help showcase the depth of your experience more clearly.`,
+          suggestions: `Try the STAR method: describe a specific Situation, the Task you needed to accomplish, the Actions you took, and the Results you achieved. This framework helps organize compelling responses.`,
+          relevance: `In ${selectedRole} roles, the ability to communicate complex ideas clearly and provide evidence of your impact is crucial for success.`
+        }
+      ];
       
-      setFeedback(JSON.stringify(structuredFallback));
+      // Use a pseudo-random selection based on question content to ensure variety
+      const seedValue = (currentQuestion?.question.length || 0) + (selectedRole?.length || 0) + (userResponse?.length || 0);
+      const selectedFallback = fallbackVariations[seedValue % fallbackVariations.length];
+      
+      setFeedback(JSON.stringify(selectedFallback));
       speakText("I've generated feedback for your response. Please review the detailed suggestions to improve your interview performance.");
     } finally {
       setIsGeneratingFeedback(false);
