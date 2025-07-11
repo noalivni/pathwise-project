@@ -15,11 +15,29 @@ serve(async (req) => {
   }
 
   try {
-    const { question, answer, jobRole, questionCategory, questionDifficulty } = await req.json();
+    const requestBody = await req.json();
+    console.log('Request received:', { requestBody });
+
+    const { question, answer, jobRole, questionCategory, questionDifficulty } = requestBody;
+
+    // Input validation
+    if (!question || !answer || !jobRole) {
+      console.log('Missing required fields:', { question: !!question, answer: !!answer, jobRole: !!jobRole });
+      throw new Error('Missing required fields: question, answer, or jobRole');
+    }
 
     if (!openAIApiKey) {
+      console.log('OpenAI API key not configured');
       throw new Error('OpenAI API key not configured');
     }
+
+    console.log('Calling OpenAI API with:', {
+      question: question.substring(0, 100),
+      answer: answer.substring(0, 100),
+      jobRole,
+      questionCategory,
+      questionDifficulty
+    });
 
     const systemPrompt = `You are an expert interview coach with 15+ years of experience in hiring and career development. 
     Your task is to provide genuinely personalized, IN-DEPTH feedback that varies significantly between responses while maintaining four key sections.
@@ -144,23 +162,46 @@ serve(async (req) => {
       }),
     });
 
+    console.log('OpenAI API response status:', response.status, response.statusText);
+
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`);
+      const errorText = await response.text();
+      console.log('OpenAI API error response:', errorText);
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('OpenAI API response received:', {
+      choices: data.choices?.length,
+      hasContent: !!data.choices?.[0]?.message?.content,
+      contentLength: data.choices?.[0]?.message?.content?.length
+    });
+
     const feedbackText = data.choices[0].message.content;
+    console.log('Feedback text received:', feedbackText.substring(0, 200) + '...');
 
     // Try to parse as JSON, fallback to structured response if parsing fails
     let feedback;
     try {
+      console.log('Attempting to parse feedback as JSON...');
       feedback = JSON.parse(feedbackText);
+      console.log('JSON parsing successful, validating structure...');
+      
       // Validate that we have the expected structure
       if (!feedback.strengths || !feedback.improvements || !feedback.suggestions || !feedback.relevance) {
+        console.log('Invalid feedback structure:', {
+          hasStrengths: !!feedback.strengths,
+          hasImprovements: !!feedback.improvements,
+          hasSuggestions: !!feedback.suggestions,
+          hasRelevance: !!feedback.relevance
+        });
         throw new Error('Invalid feedback structure');
       }
+      console.log('Feedback structure validation passed');
     } catch (parseError) {
-      console.log('JSON parsing failed, creating structured response from text:', parseError);
+      console.log('JSON parsing failed:', parseError);
+      console.log('Raw feedback text that failed to parse:', feedbackText);
+      
       // Create structured fallback if AI didn't return proper JSON
       feedback = {
         strengths: "✅ Strengths - " + (feedbackText.substring(0, 200) || "You engaged thoughtfully with this question."),
@@ -170,11 +211,21 @@ serve(async (req) => {
       };
     }
 
+    console.log('Returning successful response with feedback');
     return new Response(JSON.stringify({ feedback }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in generate-interview-feedback function:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    
+    // Log additional context for debugging
+    console.log('Current environment variables available:', {
+      hasOpenAIKey: !!openAIApiKey,
+      openAIKeyLength: openAIApiKey?.length
+    });
     
     // Generate varied fallback responses based on role and question
     const fallbackResponses = [
