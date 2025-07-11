@@ -28,30 +28,31 @@ serve(async (req) => {
 
     Analyze the user's answer thoroughly and provide constructive feedback in this EXACT JSON structure:
     {
-      "strengths": "Quote specific phrases or words they used that were effective. Reference their actual examples, stories, or technical points they mentioned. Acknowledge their communication style, tone, or approach that worked well. Make them feel heard by showing you understood their specific response.",
-      "improvements": "Point to specific parts of their answer that need work. Quote phrases that were unclear, mention specific examples they started but didn't finish, or reference parts where they went off-topic. Be direct about what exactly in their response could be stronger.",
-      "suggestions": "Give them specific, actionable advice based on their actual response. If they mentioned a project, tell them how to elaborate on it better. If they used certain words, suggest better alternatives. Provide exact phrases they could have used instead of what they said. Reference their specific context.",
-      "relevance": "Analyze their specific examples, experiences, or skills they mentioned in relation to the job role. Reference the actual content they shared and explain how it does or doesn't demonstrate key competencies for this specific position. Be specific about which parts of their answer were most/least relevant."
+      "strengths": "✅ Strengths - Highlight specific things you did well in your response. Quote exact phrases, words, or examples you used. Reference your communication style, structure, clarity, professionalism, or emotional intelligence that worked well. Always start by acknowledging what you actually said that was effective.",
+      "improvements": "⚠️ Areas to Improve - Identify specific parts of your answer that were weak, vague, off-topic, overly negative, or lacked detail. Quote the exact phrases that could be stronger. Point to specific moments where you missed opportunities to demonstrate key competencies for the role.",
+      "suggestions": "💡 Suggestions - Offer practical, example-based guidance on how you could reframe or improve your response. Reference your specific answer and provide alternative phrasing or approaches. If you mentioned examples, explain how to elaborate on them better. Give exact phrases you could have used instead.",
+      "relevance": "🎯 Relevance to Role - Explain how your specific response aligns (or doesn't align) with expectations for this job role. Reference the actual examples, skills, or experiences you mentioned and analyze how they demonstrate (or fail to demonstrate) fit for the position. Be specific about what you should emphasize more."
     }
 
     PERSONALIZATION REQUIREMENTS:
     - ALWAYS quote their exact words or phrases when giving feedback
     - Reference specific examples, stories, or details they mentioned
-    - Respond to their communication style and approach
-    - Make observations about their actual word choices and expressions
+    - Respond to their communication style and approach based on their actual words
+    - Make observations about their word choices, tone, and expressions
     - If they gave an example, comment specifically on that example
     - If they missed something, point to exactly where in their response they could have added it
+    - Use phrases like "When you said...", "Your example about...", "The way you described...", "I noticed you mentioned..."
+    - Every piece of feedback must connect directly to their actual response
+    - Use second-person voice throughout (you/your) to make it feel direct and personal
     - Make it feel like you're having a conversation about their specific answer, not giving generic advice
-    - Use phrases like "When you said..." "Your example about..." "The way you described..." "I noticed you mentioned..."
 
     Guidelines:
-    - Every piece of feedback must connect to their actual response
     - Quote their words to show you listened carefully
     - Be specific about what they said vs. what they could have said
-    - Reference their tone, confidence level, or communication style based on their actual words
+    - Reference their confidence level or communication style based on their actual words
     - Make suggestions that build on what they already shared
-    - Always use "you" and "your" - make it conversational and direct
-    - Each section should feel like personalized coaching, not template feedback`;
+    - Each section should feel like personalized coaching, not template feedback
+    - Always connect feedback to their actual response content`;
 
     const userPrompt = `
     CONTEXT:
