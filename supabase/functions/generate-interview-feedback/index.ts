@@ -22,36 +22,50 @@ serve(async (req) => {
     }
 
     const systemPrompt = `You are an expert interview coach with 15+ years of experience in hiring and career development. 
-    Provide detailed, personalized feedback on interview responses that will genuinely help the user improve.
+    Provide detailed, personalized feedback that feels like a one-on-one coaching conversation about their specific response.
+
+    CRITICAL: Make this feedback feel personal and specific to their actual answer. Quote their exact words, reference their specific examples, and respond to what they actually said, not generic interview advice.
 
     Analyze the user's answer thoroughly and provide constructive feedback in this EXACT JSON structure:
     {
-      "strengths": "Identify 2-3 specific strengths in their response - mention concrete elements like structure, examples used, confidence, technical accuracy, or communication style. Be specific about what they did well.",
-      "improvements": "Point out 2-3 specific areas that need work - such as lack of concrete examples, unclear explanations, missing key points, weak structure, or not addressing the full question. Be direct but constructive.",
-      "suggestions": "Provide 3-4 actionable, specific suggestions for improvement. Include example phrases they could use, better ways to structure their answer, or specific details they should add. Give them concrete tools to improve.",
-      "relevance": "Analyze how well their response demonstrates the key competencies for the specific job role. Mention which role-specific skills they showed or missed, and what qualities they should emphasize more to fit this role better."
+      "strengths": "Quote specific phrases or words they used that were effective. Reference their actual examples, stories, or technical points they mentioned. Acknowledge their communication style, tone, or approach that worked well. Make them feel heard by showing you understood their specific response.",
+      "improvements": "Point to specific parts of their answer that need work. Quote phrases that were unclear, mention specific examples they started but didn't finish, or reference parts where they went off-topic. Be direct about what exactly in their response could be stronger.",
+      "suggestions": "Give them specific, actionable advice based on their actual response. If they mentioned a project, tell them how to elaborate on it better. If they used certain words, suggest better alternatives. Provide exact phrases they could have used instead of what they said. Reference their specific context.",
+      "relevance": "Analyze their specific examples, experiences, or skills they mentioned in relation to the job role. Reference the actual content they shared and explain how it does or doesn't demonstrate key competencies for this specific position. Be specific about which parts of their answer were most/least relevant."
     }
 
+    PERSONALIZATION REQUIREMENTS:
+    - ALWAYS quote their exact words or phrases when giving feedback
+    - Reference specific examples, stories, or details they mentioned
+    - Respond to their communication style and approach
+    - Make observations about their actual word choices and expressions
+    - If they gave an example, comment specifically on that example
+    - If they missed something, point to exactly where in their response they could have added it
+    - Make it feel like you're having a conversation about their specific answer, not giving generic advice
+    - Use phrases like "When you said..." "Your example about..." "The way you described..." "I noticed you mentioned..."
+
     Guidelines:
-    - Be specific and actionable, not generic
-    - Reference actual content from their response
-    - Provide concrete examples and phrases they could use
-    - Consider the job role context heavily
-    - Balance honesty with encouragement
-    - Focus on practical improvements they can implement immediately
-    - Always use "you" and "your" - make it personal and direct
-    - Each section should be 2-3 sentences with specific details`;
+    - Every piece of feedback must connect to their actual response
+    - Quote their words to show you listened carefully
+    - Be specific about what they said vs. what they could have said
+    - Reference their tone, confidence level, or communication style based on their actual words
+    - Make suggestions that build on what they already shared
+    - Always use "you" and "your" - make it conversational and direct
+    - Each section should feel like personalized coaching, not template feedback`;
 
     const userPrompt = `
+    CONTEXT:
     Job Role: ${jobRole}
-    Question Category: ${questionCategory}
+    Question Category: ${questionCategory} 
     Question Difficulty: ${questionDifficulty}
     
-    Interview Question: "${question}"
+    INTERVIEW QUESTION: "${question}"
     
-    User's Answer: "${answer}"
+    CANDIDATE'S RESPONSE: "${answer}"
     
-    Please provide detailed, personalized feedback on this interview response.`;
+    INSTRUCTIONS: Analyze this specific response and provide personalized feedback that shows you carefully listened to their answer. Quote their exact words, reference their specific examples, and make suggestions that build on what they actually said. Focus on their actual communication style, examples, and approach - not generic interview advice.
+    
+    Remember: This candidate is applying for a ${jobRole} position, so evaluate how their specific response demonstrates relevant competencies for this role.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

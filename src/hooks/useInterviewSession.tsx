@@ -118,12 +118,12 @@ export const useInterviewSession = () => {
     } catch (error) {
       console.error('Error generating feedback:', error);
       
-      // Provide structured fallback feedback
+      // Provide structured fallback feedback that's specific to their question and role
       const structuredFallback = {
-        strengths: "You provided a response that shows engagement with the question. Your willingness to share your thoughts demonstrates good communication initiative.",
-        improvements: "To strengthen your answer, consider adding more specific examples from your experience and providing concrete details that support your points.",
-        suggestions: "Try using the STAR method (Situation, Task, Action, Result) to structure your response. Include quantifiable achievements when possible, and connect your experience directly to the role requirements.",
-        relevance: `For a ${selectedRole} position, focus on demonstrating key competencies like problem-solving, leadership, or technical skills. Highlight experiences that directly relate to this role's daily responsibilities.`
+        strengths: `You took the time to provide a thoughtful response to this ${currentQuestion?.category?.toLowerCase()} question. Your effort to address the question shows good engagement and communication willingness.`,
+        improvements: `Since this is a ${currentQuestion?.difficulty?.toLowerCase()} level question for a ${selectedRole} role, consider adding more specific examples that directly demonstrate your relevant experience. Your answer could benefit from more concrete details about your accomplishments or approach.`,
+        suggestions: `For this type of ${currentQuestion?.category?.toLowerCase()} question, try structuring your response with specific examples using the STAR method (Situation, Task, Action, Result). Include measurable outcomes when possible, and explicitly connect your experience to what a ${selectedRole} would do in similar situations.`,
+        relevance: `As a ${selectedRole} candidate, focus on demonstrating the key competencies this question is testing. Share specific examples that show how you've handled similar challenges or responsibilities that would be relevant to this role's daily tasks and requirements.`
       };
       
       setFeedback(JSON.stringify(structuredFallback));
