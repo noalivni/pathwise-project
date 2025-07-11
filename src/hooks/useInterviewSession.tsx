@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { interviewQuestions } from "@/data/interviewQuestions";
 
 export const useInterviewSession = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   
   // Session state
   const [selectedRole, setSelectedRole] = useState("");
@@ -101,7 +101,15 @@ export const useInterviewSession = () => {
           answer: userResponse,
           jobRole: selectedRole,
           questionCategory: currentQuestion?.category,
-          questionDifficulty: currentQuestion?.difficulty
+          questionDifficulty: currentQuestion?.difficulty,
+          userExperience: {
+            degree_certification: profile?.degree_certification,
+            fields_of_study: profile?.fields_of_study,
+            graduation_year: profile?.graduation_year,
+            field_of_interest: profile?.field_of_interest,
+            hard_skills: profile?.hard_skills,
+            career_history: profile?.career_history
+          }
         }
       });
 
@@ -149,7 +157,7 @@ export const useInterviewSession = () => {
     } finally {
       setIsGeneratingFeedback(false);
     }
-  }, [userResponse, currentQuestion, selectedRole, speakText]);
+  }, [userResponse, currentQuestion, selectedRole, profile, speakText]);
 
   const nextQuestion = useCallback(async () => {
     if (currentQuestion && userResponse.trim()) {

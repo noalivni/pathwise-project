@@ -18,7 +18,7 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log('Request received:', { requestBody });
 
-    const { question, answer, jobRole, questionCategory, questionDifficulty } = requestBody;
+    const { question, answer, jobRole, questionCategory, questionDifficulty, userExperience } = requestBody;
 
     // Input validation
     if (!question || !answer || !jobRole) {
@@ -36,7 +36,8 @@ serve(async (req) => {
       answer: answer.substring(0, 100),
       jobRole,
       questionCategory,
-      questionDifficulty
+      questionDifficulty,
+      hasUserExperience: !!userExperience
     });
 
     const systemPrompt = `You are an expert interview coach with 15+ years of experience in hiring and career development. 
@@ -130,19 +131,36 @@ serve(async (req) => {
       "relevance": "🎯 Relevance to Role - [2-4 sentences connecting to role requirements]"
     }`;
 
+    // Format user experience for context
+    const experienceContext = userExperience ? `
+    CANDIDATE BACKGROUND:
+    - Education: ${userExperience.degree_certification || 'Not specified'} in ${userExperience.fields_of_study || 'Not specified'} (${userExperience.graduation_year || 'Year not specified'})
+    - Field of Interest: ${userExperience.field_of_interest || 'Not specified'}
+    - Technical Skills: ${userExperience.hard_skills?.join(', ') || 'Not specified'}
+    - Career History: ${userExperience.career_history || 'Not specified'}
+    ` : 'No background information available.';
+
     const userPrompt = `
     CONTEXT:
     Job Role: ${jobRole}
     Question Category: ${questionCategory} 
     Question Difficulty: ${questionDifficulty}
     
+    ${experienceContext}
+    
     INTERVIEW QUESTION: "${question}"
     
     CANDIDATE'S RESPONSE: "${answer}"
     
-    INSTRUCTIONS: Analyze this specific response and provide personalized feedback that shows you carefully listened to their answer. Quote their exact words, reference their specific examples, and make suggestions that build on what they actually said. Focus on their actual communication style, examples, and approach - not generic interview advice.
+    INSTRUCTIONS: Analyze this specific response in the context of their background and experience. Consider how their educational background, technical skills, and career history relate to both the question asked and their response. Provide personalized feedback that:
     
-    Remember: This candidate is applying for a ${jobRole} position, so evaluate how their specific response demonstrates relevant competencies for this role.`;
+    1. References their actual experience and how it connects (or could connect better) to their answer
+    2. Evaluates how well they leveraged their background to answer the question
+    3. Suggests specific ways they could better highlight relevant experience for a ${jobRole} role
+    4. Quotes their exact words and references their specific examples
+    5. Makes suggestions that build on their actual education, skills, and career history
+    
+    Focus on the alignment between their background, their response, and the ${jobRole} role requirements. If their experience is relevant but they didn't highlight it well, guide them on how to better showcase it. If their experience seems limited, suggest how to frame what they do have more effectively.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
