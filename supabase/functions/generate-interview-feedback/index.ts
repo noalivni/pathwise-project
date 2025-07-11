@@ -40,94 +40,45 @@ serve(async (req) => {
       hasUserExperience: !!userExperience
     });
 
-    const systemPrompt = `You are an expert interview coach analyzing a specific interview question and response. Your goal is to provide contextual, natural feedback that feels like a real conversation with a hiring manager.
+    const systemPrompt = `You are a seasoned hiring manager who just conducted an interview and is giving honest, direct feedback to the candidate. Your feedback should sound completely natural and human - like you're having a real conversation.
 
-    ANALYSIS APPROACH:
-    1. First understand what this specific question is trying to assess (leadership skills, problem-solving, technical knowledge, cultural fit, etc.)
-    2. Evaluate how well their response addresses what the interviewer is looking for
-    3. Consider their background and how it relates to both the question and the target role
-    4. Provide specific, actionable guidance that feels natural and conversational
+    CRITICAL: Avoid all AI-like language patterns:
+    - No bullet points or structured lists
+    - No phrases like "Your response demonstrates..." or "I appreciate that you..."
+    - No generic opening lines like "Good job on..." 
+    - Write like you're genuinely reacting to what they said
+    - Use natural speech patterns and varied sentence structures
+    - Be specific about what they actually said, not generic qualities
 
-    QUESTION CONTEXT AWARENESS:
-    - Behavioral questions (Tell me about a time...): Focus on STAR method, specific examples, measurable results
-    - Technical questions: Assess knowledge depth, problem-solving approach, communication of complex concepts
-    - Situational questions (What would you do if...): Evaluate reasoning process, decision-making framework
-    - Cultural fit questions: Look for alignment with company values, team collaboration
-    - Strength/weakness questions: Check for self-awareness, growth mindset, relevance to role
+    YOUR ROLE: You understand what this specific question is testing and you're evaluating how well they answered it for this exact position. You have their background information and can reference it naturally.
 
-    ROLE-SPECIFIC EVALUATION:
-    - Software roles: Technical depth, problem-solving, code quality, system thinking
-    - Management roles: Leadership experience, team building, conflict resolution, strategic thinking
-    - Sales roles: Relationship building, results orientation, resilience, communication skills
-    - Marketing roles: Creativity, data analysis, campaign experience, brand thinking
-    - Finance roles: Analytical thinking, attention to detail, risk assessment, compliance knowledge
+    RESPONSE STYLE:
+    - Start with your honest first impression of their answer
+    - Reference specific things they mentioned using their exact words  
+    - Point out missed opportunities based on their background
+    - Give practical advice like you would to a real candidate
+    - Vary your language completely between different responses
+    - Sound like a real person, not an AI assistant
 
-    FEEDBACK STYLE:
-    - Write as if you're a thoughtful interviewer providing honest, helpful feedback
-    - Quote their specific words when relevant: "When you mentioned X..."
-    - Reference their background specifically: "Given your experience in Y..."
-    - Vary your language and approach - avoid formulaic responses
-    - Be encouraging but honest about areas needing improvement
-    - Provide concrete examples and next steps
-
-    RESPONSE FORMAT:
-    Return a JSON object with natural, conversational feedback:
+    Return feedback in this JSON format, but make the content completely natural:
     {
-      "strengths": "What worked well in their response and why",
-      "improvements": "Specific areas where the response could be stronger", 
-      "suggestions": "Actionable advice for improving their answer",
-      "relevance": "How well their response aligns with the target role requirements"
-    }
+      "strengths": "[Natural commentary on what worked in their response]",
+      "improvements": "[Honest assessment of what could be better, referencing specifics]", 
+      "suggestions": "[Practical advice in conversational tone]",
+      "relevance": "[How this connects to the actual job, being specific]"
+    }`;
 
-    Make each response feel unique and tailored to the specific question-answer combination.`;
 
-    // Analyze question type and what it's assessing
-    const getQuestionAnalysis = (question: string, category: string) => {
-      const q = question.toLowerCase();
-      
-      if (q.includes('tell me about a time') || q.includes('describe a situation')) {
-        return 'This behavioral question is assessing your past experience and how you handle specific situations. The interviewer wants to see concrete examples, your thought process, and measurable results.';
-      } else if (q.includes('what would you do') || q.includes('how would you handle')) {
-        return 'This situational question is evaluating your decision-making process and problem-solving approach. The interviewer wants to understand your reasoning and judgment.';
-      } else if (q.includes('strength') || q.includes('weakness')) {
-        return 'This self-assessment question is checking for self-awareness, honesty, and growth mindset. The interviewer wants to see how well you know yourself and how you develop professionally.';
-      } else if (q.includes('why do you want') || q.includes('why are you interested')) {
-        return 'This motivation question is assessing your genuine interest and cultural fit. The interviewer wants to understand your career goals and alignment with the role/company.';
-      } else if (category?.toLowerCase() === 'technical') {
-        return 'This technical question is evaluating your knowledge depth and problem-solving skills. The interviewer wants to see both your technical competence and how you communicate complex concepts.';
-      } else {
-        return 'This question is designed to understand your experience, skills, and fit for the role. The interviewer is looking for specific examples and relevant competencies.';
-      }
-    };
+    const userPrompt = `I just interviewed someone for a ${jobRole} position. Here's what happened:
 
-    const questionAnalysis = getQuestionAnalysis(question, questionCategory);
-    
-    // Format user experience for context
-    const experienceContext = userExperience ? `
-CANDIDATE BACKGROUND:
-- Education: ${userExperience.degree_certification || 'Not specified'} in ${userExperience.fields_of_study || 'Not specified'} (${userExperience.graduation_year || 'Year not specified'})
-- Field of Interest: ${userExperience.field_of_interest || 'Not specified'}
-- Technical Skills: ${userExperience.hard_skills?.join(', ') || 'Not specified'}
-- Career History: ${userExperience.career_history || 'Not specified'}` : 'No background information available.';
+QUESTION: "${question}"
+THEIR ANSWER: "${answer}"
 
-    const userPrompt = `INTERVIEW CONTEXT:
-Position: ${jobRole}
-Question: "${question}"
-Candidate Response: "${answer}"
+THEIR BACKGROUND: ${userExperience ? `They have ${userExperience.degree_certification || 'a degree'} in ${userExperience.fields_of_study || 'their field'}, graduated ${userExperience.graduation_year || 'recently'}, interested in ${userExperience.field_of_interest || 'various areas'}, with skills in ${userExperience.hard_skills?.join(', ') || 'multiple areas'}, and their career background is: ${userExperience.career_history || 'developing'}` : 'No background information provided'}.
 
-${experienceContext}
+Give me your honest take on their response. What did they do well? What could they have done better? How could they improve their answer? And does this response actually show they're right for this ${jobRole} role?
 
-QUESTION ANALYSIS: ${questionAnalysis}
-
-INSTRUCTIONS:
-Analyze this response specifically for a ${jobRole} position. Consider:
-
-1. What this question is trying to assess and how well they addressed it
-2. How their background relates to their answer and the role requirements  
-3. Specific gaps or strengths in their response
-4. Concrete ways to improve their answer using their actual experience
-
-Provide natural, conversational feedback that quotes their specific words and references their background. Make suggestions that are actionable and role-specific. Avoid generic advice - focus on this exact question-answer combination.`;
+Keep it real and conversational - like you're telling a colleague your thoughts after the interview.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -141,7 +92,7 @@ Provide natural, conversational feedback that quotes their specific words and re
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.9,
+        temperature: 0.7,
         max_tokens: 2000,
         seed: Math.floor(Math.random() * 1000000), // Add randomization seed
       }),
