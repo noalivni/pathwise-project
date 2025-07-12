@@ -110,16 +110,14 @@ const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
             ))}
           </div>
         ) : (
-          /* Single Resource Button */
-          resource.url && (
-            <Button
-              onClick={() => onResourceClick(resource)}
-              className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Access Resource
-            </Button>
-          )
+          /* Single Resource Button - Always show if no multiple resources */
+          <Button
+            onClick={() => onResourceClick(resource)}
+            className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            {resource.url ? 'Access Resource' : 'Learn More'}
+          </Button>
         )}
       </CardContent>
     </Card>

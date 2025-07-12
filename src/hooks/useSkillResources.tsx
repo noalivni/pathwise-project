@@ -109,7 +109,7 @@ export const useSkillResources = () => {
         }
       });
 
-      if (response.data?.resources) {
+      if (response.data?.resources && response.data.resources.length > 0) {
         return response.data.resources.map((resource: any) => ({
           title: resource.title,
           description: resource.description,
@@ -119,7 +119,13 @@ export const useSkillResources = () => {
     } catch (error) {
       console.error('Error fetching skill resources:', error);
     }
-    return [];
+    
+    // Fallback: Ensure at least one resource with a search link
+    return [{
+      title: `Learn ${skill} Online`,
+      description: `Find comprehensive tutorials and courses for ${skill} development`,
+      url: `https://www.google.com/search?q=${encodeURIComponent(skill + ' tutorial course certification')}`
+    }];
   };
 
   return {

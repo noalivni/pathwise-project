@@ -100,7 +100,7 @@ export const useJobResources = () => {
         }
       });
 
-      if (response.data?.resources) {
+      if (response.data?.resources && response.data.resources.length > 0) {
         return response.data.resources.map((resource: any) => ({
           title: resource.title,
           description: resource.description,
@@ -110,7 +110,13 @@ export const useJobResources = () => {
     } catch (error) {
       console.error('Error fetching job resources:', error);
     }
-    return [];
+    
+    // Fallback: Ensure at least one resource with a search link
+    return [{
+      title: `${jobTitle} Career Guide`,
+      description: `Explore career paths, requirements, and opportunities in ${jobTitle}`,
+      url: `https://www.google.com/search?q=${encodeURIComponent(jobTitle + ' career guide how to become requirements')}`
+    }];
   };
 
   return {

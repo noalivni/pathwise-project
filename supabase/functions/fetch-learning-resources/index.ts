@@ -27,57 +27,91 @@ serve(async (req) => {
 
     const resources = [];
 
-    // Search for job-related resources
+    // Search for job-related resources with multiple query strategies
     for (const jobTitle of jobTitles.slice(0, 2)) {
-      const jobQuery = `"${jobTitle}" tutorial guide career "how to become"`;
-      const jobUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(jobQuery)}&api_key=${serpApiKey}&num=3`;
+      const jobQueries = [
+        `"${jobTitle}" career guide requirements skills`,
+        `"how to become ${jobTitle}" tutorial certification`,
+        `"${jobTitle}" training course online learning`
+      ];
       
-      try {
-        const jobResponse = await fetch(jobUrl);
-        const jobData = await jobResponse.json();
+      for (const jobQuery of jobQueries) {
+        const jobUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(jobQuery)}&api_key=${serpApiKey}&num=2`;
         
-        if (jobData.organic_results) {
-          jobData.organic_results.forEach((result: any) => {
-            resources.push({
-              title: result.title,
-              description: result.snippet,
-              url: result.link,
-              resource_type: 'career_guide',
-              related_job_roles: [jobTitle],
-              related_skills: [],
-              source: 'SerpAPI'
+        try {
+          const jobResponse = await fetch(jobUrl);
+          const jobData = await jobResponse.json();
+          
+          if (jobData.organic_results && jobData.organic_results.length > 0) {
+            jobData.organic_results.forEach((result: any) => {
+              // Filter out low-quality results
+              if (result.link && !result.link.includes('facebook.com') && !result.link.includes('twitter.com')) {
+                resources.push({
+                  title: result.title,
+                  description: result.snippet || `Learn about ${jobTitle} career opportunities and requirements`,
+                  url: result.link,
+                  resource_type: 'career_guide',
+                  related_job_roles: [jobTitle],
+                  related_skills: [],
+                  source: 'SerpAPI'
+                });
+              }
             });
-          });
+            break; // Stop if we found results for this job
+          }
+        } catch (error) {
+          console.error(`Error fetching resources for ${jobTitle} with query "${jobQuery}":`, error);
         }
-      } catch (error) {
-        console.error(`Error fetching resources for ${jobTitle}:`, error);
       }
     }
 
-    // Search for skill-related resources
+    // Search for skill-related resources with multiple query strategies
     for (const skill of skills.slice(0, 3)) {
-      const skillQuery = `"${skill}" tutorial course learn online certification`;
-      const skillUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(skillQuery)}&api_key=${serpApiKey}&num=2`;
+      const skillQueries = [
+        `"${skill}" tutorial course online free`,
+        `"learn ${skill}" certification training`,
+        `"${skill}" bootcamp guide beginner`
+      ];
       
-      try {
-        const skillResponse = await fetch(skillUrl);
-        const skillData = await skillResponse.json();
+      for (const skillQuery of skillQueries) {
+        const skillUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(skillQuery)}&api_key=${serpApiKey}&num=2`;
         
-        if (skillData.organic_results) {
-          skillData.organic_results.forEach((result: any) => {
-            resources.push({
-              title: result.title,
-              description: result.snippet,
-              url: result.link,
-              resource_type: 'skill_tutorial',
-              related_job_roles: [],
-              related_skills: [skill],
-              source: 'SerpAPI'
+        try {
+          const skillResponse = await fetch(skillUrl);
+          const skillData = await skillResponse.json();
+          
+          if (skillData.organic_results && skillData.organic_results.length > 0) {
+            skillData.organic_results.forEach((result: any) => {
+              // Filter out low-quality results and prioritize educational content
+              if (result.link && 
+                  !result.link.includes('facebook.com') && 
+                  !result.link.includes('twitter.com') &&
+                  (result.link.includes('coursera') || 
+                   result.link.includes('udemy') || 
+                   result.link.includes('pluralsight') ||
+                   result.link.includes('codecademy') ||
+                   result.link.includes('freecodecamp') ||
+                   result.link.includes('khanacademy') ||
+                   result.link.includes('edx') ||
+                   result.title.toLowerCase().includes('tutorial') ||
+                   result.title.toLowerCase().includes('course') ||
+                   result.title.toLowerCase().includes('learn'))) {
+                resources.push({
+                  title: result.title,
+                  description: result.snippet || `Learn ${skill} with comprehensive tutorials and courses`,
+                  url: result.link,
+                  resource_type: 'skill_tutorial',
+                  related_job_roles: [],
+                  related_skills: [skill],
+                  source: 'SerpAPI'
+                });
+              }
             });
-          });
+            break; // Stop if we found results for this skill
+          }
+        } catch (error) {
+          console.error(`Error fetching resources for ${skill} with query "${skillQuery}":`, error);
         }
-      } catch (error) {
-        console.error(`Error fetching resources for ${skill}:`, error);
       }
     }
 
