@@ -190,7 +190,7 @@ Keep it real and conversational - like you're telling a colleague your thoughts 
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        feedback: randomResponse
+        feedback: randomResponse,
       }), 
       {
         status: 200, // Change to 200 to prevent error handling in frontend
