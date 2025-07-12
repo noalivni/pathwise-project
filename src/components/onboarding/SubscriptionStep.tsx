@@ -43,7 +43,7 @@ const SubscriptionStep = ({ formData, updateFormData }: SubscriptionStepProps) =
             onValueChange={handleSubscriptionChange}
             className="space-y-4"
           >
-            <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-slate-50">
+            <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-accent/20 transition-colors">
               <RadioGroupItem value="free" id="free" />
               <div className="flex-1">
                 <Label htmlFor="free" className="text-lg font-medium cursor-pointer">
@@ -56,7 +56,7 @@ const SubscriptionStep = ({ formData, updateFormData }: SubscriptionStepProps) =
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-slate-50 border-teal-200 bg-teal-50">
+            <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-accent/30 transition-colors border-accent/30 bg-accent/10">
               <RadioGroupItem value="premium" id="premium" />
               <div className="flex-1">
                 <Label htmlFor="premium" className="text-lg font-medium cursor-pointer flex items-center">
