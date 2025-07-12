@@ -27,31 +27,38 @@ serve(async (req) => {
 
     const resources = [];
 
-    // Search for job-related resources with high-quality educational content
+    // Search for job-related resources with broader approach
     for (const jobTitle of jobTitles.slice(0, 2)) {
       const jobQueries = [
-        `"${jobTitle}" career guide site:indeed.com OR site:glassdoor.com OR site:linkedin.com/advice`,
-        `"how to become ${jobTitle}" site:coursera.org OR site:edx.org OR site:udemy.com`,
-        `"${jobTitle}" requirements skills site:bls.gov OR site:onetcenter.org`,
-        `"${jobTitle}" career path training certification`
+        `"${jobTitle}" career guide how to become`,
+        `"${jobTitle}" job description requirements skills`,
+        `"${jobTitle}" training course certification`,
+        `${jobTitle} career path entry level`
       ];
       
       for (const jobQuery of jobQueries) {
-        const jobUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(jobQuery)}&api_key=${serpApiKey}&num=3`;
+        if (resources.filter(r => r.related_job_roles.includes(jobTitle)).length >= 3) break;
+        
+        const jobUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(jobQuery)}&api_key=${serpApiKey}&num=5`;
         
         try {
           const jobResponse = await fetch(jobUrl);
           const jobData = await jobResponse.json();
           
+          console.log(`SerpAPI response for "${jobQuery}":`, JSON.stringify(jobData, null, 2));
+          
           if (jobData.organic_results && jobData.organic_results.length > 0) {
             jobData.organic_results.forEach((result: any) => {
-              // Only include direct links to educational/career content
+              // More permissive filtering - exclude only obvious non-educational sites
               if (result.link && 
-                  !result.link.includes('google.com') &&
+                  result.title && 
+                  result.snippet &&
                   !result.link.includes('facebook.com') && 
                   !result.link.includes('twitter.com') &&
                   !result.link.includes('instagram.com') &&
-                  result.title && result.snippet) {
+                  !result.link.includes('youtube.com/watch') &&
+                  !result.link.includes('tiktok.com') &&
+                  result.link.startsWith('http')) {
                 resources.push({
                   title: result.title,
                   description: result.snippet,
@@ -63,7 +70,6 @@ serve(async (req) => {
                 });
               }
             });
-            // Continue to try more queries to get more results
           }
         } catch (error) {
           console.error(`Error fetching resources for ${jobTitle} with query "${jobQuery}":`, error);
@@ -71,31 +77,38 @@ serve(async (req) => {
       }
     }
 
-    // Search for skill-related resources with targeted educational platforms
+    // Search for skill-related resources with broader approach
     for (const skill of skills.slice(0, 3)) {
       const skillQueries = [
-        `"${skill}" tutorial site:freecodecamp.org OR site:codecademy.com OR site:w3schools.com`,
-        `"learn ${skill}" site:coursera.org OR site:udemy.com OR site:pluralsight.com`,
-        `"${skill}" course site:edx.org OR site:khanacademy.org OR site:lynda.com`,
-        `"${skill}" certification training guide`
+        `"${skill}" tutorial learn online`,
+        `"${skill}" course training guide`,
+        `"${skill}" certification bootcamp`,
+        `${skill} programming tutorial`
       ];
       
       for (const skillQuery of skillQueries) {
-        const skillUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(skillQuery)}&api_key=${serpApiKey}&num=3`;
+        if (resources.filter(r => r.related_skills.includes(skill)).length >= 3) break;
+        
+        const skillUrl = `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(skillQuery)}&api_key=${serpApiKey}&num=5`;
         
         try {
           const skillResponse = await fetch(skillUrl);
           const skillData = await skillResponse.json();
           
+          console.log(`SerpAPI response for "${skillQuery}":`, JSON.stringify(skillData, null, 2));
+          
           if (skillData.organic_results && skillData.organic_results.length > 0) {
             skillData.organic_results.forEach((result: any) => {
-              // Only include direct links to educational content
+              // More permissive filtering - exclude only obvious non-educational sites
               if (result.link && 
-                  !result.link.includes('google.com') &&
+                  result.title && 
+                  result.snippet &&
                   !result.link.includes('facebook.com') && 
                   !result.link.includes('twitter.com') &&
                   !result.link.includes('instagram.com') &&
-                  result.title && result.snippet) {
+                  !result.link.includes('youtube.com/watch') &&
+                  !result.link.includes('tiktok.com') &&
+                  result.link.startsWith('http')) {
                 resources.push({
                   title: result.title,
                   description: result.snippet,
@@ -107,7 +120,6 @@ serve(async (req) => {
                 });
               }
             });
-            // Continue to try more queries to get more results
           }
         } catch (error) {
           console.error(`Error fetching resources for ${skill} with query "${skillQuery}":`, error);

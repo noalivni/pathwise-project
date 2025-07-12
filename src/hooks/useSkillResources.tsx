@@ -101,6 +101,7 @@ export const useSkillResources = () => {
 
   const fetchSkillResources = async (skill: string) => {
     try {
+      console.log(`Fetching resources for skill: ${skill}`);
       const response = await supabase.functions.invoke('fetch-learning-resources', {
         body: {
           jobTitles: [],
@@ -109,19 +110,28 @@ export const useSkillResources = () => {
         }
       });
 
+      console.log(`Response for ${skill}:`, response);
+
       if (response.data?.resources && response.data.resources.length > 0) {
+        console.log(`Found ${response.data.resources.length} resources for ${skill}`);
         return response.data.resources.map((resource: any) => ({
           title: resource.title,
           description: resource.description,
           url: resource.url
         }));
       }
+      
+      console.log(`No resources found for ${skill}, providing fallback`);
     } catch (error) {
       console.error('Error fetching skill resources:', error);
     }
     
-    // Return empty array if no direct resources found
-    return [];
+    // Provide a direct educational resource as fallback
+    return [{
+      title: `${skill} Learning Guide`,
+      description: `Comprehensive guide to learning ${skill} with tutorials and examples`,
+      url: `https://developer.mozilla.org/en-US/search?q=${encodeURIComponent(skill)}`
+    }];
   };
 
   return {

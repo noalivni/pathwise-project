@@ -92,6 +92,7 @@ export const useJobResources = () => {
 
   const fetchJobResources = async (jobTitle: string) => {
     try {
+      console.log(`Fetching resources for job: ${jobTitle}`);
       const response = await supabase.functions.invoke('fetch-learning-resources', {
         body: {
           jobTitles: [jobTitle],
@@ -100,19 +101,28 @@ export const useJobResources = () => {
         }
       });
 
+      console.log(`Response for ${jobTitle}:`, response);
+
       if (response.data?.resources && response.data.resources.length > 0) {
+        console.log(`Found ${response.data.resources.length} resources for ${jobTitle}`);
         return response.data.resources.map((resource: any) => ({
           title: resource.title,
           description: resource.description,
           url: resource.url
         }));
       }
+      
+      console.log(`No resources found for ${jobTitle}, providing fallback`);
     } catch (error) {
       console.error('Error fetching job resources:', error);
     }
     
-    // Return empty array if no direct resources found
-    return [];
+    // Provide a direct career resource as fallback
+    return [{
+      title: `${jobTitle} Career Information`,
+      description: `Learn about ${jobTitle} career requirements, salary, and job outlook`,
+      url: `https://www.bls.gov/ooh/search.htm?search=${encodeURIComponent(jobTitle)}`
+    }];
   };
 
   return {
