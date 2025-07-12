@@ -49,7 +49,7 @@ const SubscriptionStep = ({ formData, updateFormData }: SubscriptionStepProps) =
                 <Label htmlFor="free" className="text-lg font-medium cursor-pointer">
                   Free Plan
                 </Label>
-                <p className="text-sm text-slate-600 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   • Basic skills assessment
                   • Job recommendations
                   • Profile creation
@@ -63,7 +63,7 @@ const SubscriptionStep = ({ formData, updateFormData }: SubscriptionStepProps) =
                   <Crown className="w-4 h-4 mr-2 text-yellow-600" />
                   Pro Plan
                 </Label>
-                <p className="text-sm text-slate-600 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   • Everything in Free
                   • Advanced learning resources
                   • Interview practice sessions
