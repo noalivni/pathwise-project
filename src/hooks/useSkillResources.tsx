@@ -120,12 +120,8 @@ export const useSkillResources = () => {
       console.error('Error fetching skill resources:', error);
     }
     
-    // Fallback: Ensure at least one resource with a search link
-    return [{
-      title: `Learn ${skill} Online`,
-      description: `Find comprehensive tutorials and courses for ${skill} development`,
-      url: `https://www.google.com/search?q=${encodeURIComponent(skill + ' tutorial course certification')}`
-    }];
+    // Return empty array if no direct resources found
+    return [];
   };
 
   return {

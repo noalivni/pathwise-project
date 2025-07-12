@@ -110,14 +110,15 @@ const ResourceCard = ({ resource, onResourceClick }: ResourceCardProps) => {
             ))}
           </div>
         ) : (
-          /* Single Resource Button - Always show if no multiple resources */
-          <Button
-            onClick={() => onResourceClick(resource)}
-            className="w-full bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700"
-          >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            {resource.url ? 'Access Resource' : 'Learn More'}
-          </Button>
+          /* Show message if no direct resources are available */
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground">
+              {isSkillResource 
+                ? `Direct learning resources for ${resource.skillName} will be added soon.`
+                : `Career resources for ${resource.jobTitle} will be added soon.`
+              }
+            </p>
+          </div>
         )}
       </CardContent>
     </Card>

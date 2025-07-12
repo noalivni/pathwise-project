@@ -111,12 +111,8 @@ export const useJobResources = () => {
       console.error('Error fetching job resources:', error);
     }
     
-    // Fallback: Ensure at least one resource with a search link
-    return [{
-      title: `${jobTitle} Career Guide`,
-      description: `Explore career paths, requirements, and opportunities in ${jobTitle}`,
-      url: `https://www.google.com/search?q=${encodeURIComponent(jobTitle + ' career guide how to become requirements')}`
-    }];
+    // Return empty array if no direct resources found
+    return [];
   };
 
   return {
