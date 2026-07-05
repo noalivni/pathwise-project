@@ -7,10 +7,35 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -49,28 +74,34 @@ export type Database = {
       }
       job_roles: {
         Row: {
-          ID_num: number
-          Industry: string | null
-          job_title: string | null
-          Pay_grade: string | null
-          Short_description: string | null
-          Skills_required: string | null
+          category: string | null
+          created_at: string | null
+          id: string
+          job_description: string | null
+          job_title: string
+          location: string | null
+          required_skills: string[] | null
+          salary_range: string | null
         }
         Insert: {
-          ID_num: number
-          Industry?: string | null
-          job_title?: string | null
-          Pay_grade?: string | null
-          Short_description?: string | null
-          Skills_required?: string | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          job_description?: string | null
+          job_title: string
+          location?: string | null
+          required_skills?: string[] | null
+          salary_range?: string | null
         }
         Update: {
-          ID_num?: number
-          Industry?: string | null
-          job_title?: string | null
-          Pay_grade?: string | null
-          Short_description?: string | null
-          Skills_required?: string | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          job_description?: string | null
+          job_title?: string
+          location?: string | null
+          required_skills?: string[] | null
+          salary_range?: string | null
         }
         Relationships: []
       }
@@ -231,7 +262,7 @@ export type Database = {
         Row: {
           id: string
           is_bookmarked: boolean | null
-          job_role_id: number
+          job_role_id: string
           match_percentage: number | null
           user_id: string
           viewed_at: string | null
@@ -239,7 +270,7 @@ export type Database = {
         Insert: {
           id?: string
           is_bookmarked?: boolean | null
-          job_role_id: number
+          job_role_id: string
           match_percentage?: number | null
           user_id: string
           viewed_at?: string | null
@@ -247,7 +278,7 @@ export type Database = {
         Update: {
           id?: string
           is_bookmarked?: boolean | null
-          job_role_id?: number
+          job_role_id?: string
           match_percentage?: number | null
           user_id?: string
           viewed_at?: string | null
@@ -258,7 +289,7 @@ export type Database = {
             columns: ["job_role_id"]
             isOneToOne: false
             referencedRelation: "job_roles"
-            referencedColumns: ["ID_num"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -420,6 +451,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       user_role: ["user", "admin"],

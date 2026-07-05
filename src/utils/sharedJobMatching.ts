@@ -43,26 +43,27 @@ export const fetchAndCalculateJobMatches = async (user: any, profile: any, limit
     if (profile.field_of_interest) {
       const fieldLower = profile.field_of_interest.toLowerCase();
       
-      // Primary filter: exact or partial matches
-      const primaryMatches = allJobRoles.filter(role => {
-        const categoryLower = role.Industry?.toLowerCase() || '';
-        const titleLower = role.job_title?.toLowerCase() || '';
-        
-        return categoryLower.includes(fieldLower) || 
-               fieldLower.includes(categoryLower) ||
-               titleLower.includes(fieldLower) ||
-               fieldLower.includes(titleLower);
-      });
-      
+    // Primary filter: exact or partial matches
+    const primaryMatches = allJobRoles.filter(role => {
+      const categoryLower = role.category?.toLowerCase() || '';
+      const titleLower = role.job_title?.toLowerCase() || '';
+
+  return (
+    categoryLower.includes(fieldLower) ||
+    fieldLower.includes(categoryLower) ||
+    titleLower.includes(fieldLower) ||
+    fieldLower.includes(titleLower)
+  );
+});
       // If we have enough primary matches, use them
       if (primaryMatches.length >= 4) {
         filteredRoles = primaryMatches;
       } else {
         // Fallback: include broader matches and general roles
         const secondaryMatches = allJobRoles.filter(role => {
-          const categoryLower = role.Industry?.toLowerCase() || '';
+          const categoryLower = role.category?.toLowerCase() || '';
           const titleLower = role.job_title?.toLowerCase() || '';
-          const descriptionLower = role.Short_description?.toLowerCase() || '';
+          const descriptionLower = role.job_description?.toLowerCase() || '';
           
           // Check for keyword overlap or general business roles
           const fieldWords = fieldLower.split(' ');
@@ -80,7 +81,7 @@ export const fetchAndCalculateJobMatches = async (user: any, profile: any, limit
         // Combine primary and secondary matches, remove duplicates
         const combinedMatches = [...primaryMatches];
         secondaryMatches.forEach(role => {
-          if (!combinedMatches.find(existing => existing.ID_num === role.ID_num)) {
+          if (!combinedMatches.find(existing => existing.id === role.id)) {
             combinedMatches.push(role);
           }
         });
@@ -92,16 +93,27 @@ export const fetchAndCalculateJobMatches = async (user: any, profile: any, limit
     // Calculate personalized matches for all filtered roles
     let rolesWithMatches = filteredRoles.map(role => {
       const matchPercentage = calculatePersonalizedCareerMatch({
-        role,
-        profile,
-        softSkillsAssessment,
-        hardSkillsAssessment
-      });
+       role,
+       profile,
+       softSkillsAssessment,
+       hardSkillsAssessment
+  });
+
       return {
-        ...role,
-        match_percentage: matchPercentage
-      };
-    });
+       ...role,
+
+      // Compatibility with the rest of the app
+       ID_num: role.id,
+      Industry: role.category,
+      Short_description: role.job_description,
+      Skills_required: Array.isArray(role.required_skills)
+      ? role.required_skills.join(", ")
+      : "",
+      Pay_grade: role.salary_range,
+
+      match_percentage: matchPercentage
+  };
+});
 
     // Sort by match percentage and take top results
     rolesWithMatches = rolesWithMatches
